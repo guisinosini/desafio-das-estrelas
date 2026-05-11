@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: #D4AF37; /* Kamaleon Gold */
+  --color-primary-foreground: #001A14;
+  --color-secondary: #002B21; /* Kamaleon Dark Green */
+  --color-accent: #C5A028; /* Deeper Gold */
+  --color-muted: #003D2E;
+  --color-muted-foreground: #A4B8B2;
+  --color-border: #004D3B;
+}
+
+:root {
+  --background: #001A14; /* Deepest Green */
+  --foreground: #FAFAFA; /* Off-white for better readability than cream */
+  --destructive-foreground: #fafafa;
+  --border: #002B21;
+  --input: #002B21;
+  --ring: #D4AF37;
+  --radius: 0.75rem;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.glass {
+  background: rgba(0, 43, 33, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #D4AF37, #F5E6BE);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
+}
