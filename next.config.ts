@@ -5,10 +5,7 @@ const nextConfig: NextConfig = {
     // Ignora a ditadura do TypeScript para botar o site da clínica no ar (erros apenas informativos).
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // Mesma tática para formatação de texto e alertas não críticos de layout
-    ignoreDuringBuilds: true,
-  },
+
   images: {
     remotePatterns: [
       {
