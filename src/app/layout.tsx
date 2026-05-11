@@ -17,8 +17,6 @@ export const metadata: Metadata = {
   title: 'Desafio das Estrelas - Estação de Comando',
   description: 'Transforme responsabilidades em conquistas galácticas.',
   manifest: '/conquistas/manifest.json',
-  themeColor: '#2dd4bf',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0',
   appleWebApp: {
     capable: true,
     title: 'Desafio Estrelas',
@@ -28,6 +26,14 @@ export const metadata: Metadata = {
     icon: '/conquistas/icon.png',
     apple: '/conquistas/icon.png',
   },
+};
+
+export const viewport = {
+  themeColor: '#2dd4bf',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
