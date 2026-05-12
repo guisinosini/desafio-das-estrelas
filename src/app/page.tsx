@@ -41,10 +41,10 @@ import confetti from "canvas-confetti";
 import clsx from "clsx";
 
 import { AVATARS, StarField, SpaceShipVideo, HeroCharacter } from "@/components/desafio/HeroElements";
-
-// --- Tipos ---
-
-
+import { MissionList } from "@/components/desafio/MissionList";
+import { RewardShop } from "@/components/desafio/RewardShop";
+import { ParentDashboard } from "@/components/desafio/ParentDashboard";
+import type { ChildData, Stage, Task, Reward, TaskRecurrence } from "@/types/desafio";
 
 export default function DesafioEstrelas() {
   const [supabase] = useState(() => createClient());
@@ -1319,140 +1319,19 @@ export default function DesafioEstrelas() {
                   </div>
 
                   <div className="lg:w-2/3 space-y-12 w-full">
-                    <section className="space-y-12">
-                      {[
-                        { title: '📍 Missões do Dia', key: 'daily', icon: Rocket, color: 'text-primary' },
-                        { title: '🗓️ Missões da Semana', key: 'weekly', icon: Clock, color: 'text-purple-400' },
-                        { title: '🪐 Grandes Objetivos', key: ['monthly', 'once'], icon: Zap, color: 'text-yellow-400' }
-                      ].map((group: any) => {
-                        const filteredTasks = tasks.filter((t: Task) =>
-                          Array.isArray(group.key) ? group.key.includes(t.recurrence) : t.recurrence === group.key
-                        );
-
-                        if (filteredTasks.length === 0) return null;
-
-                        return (
-                          <div key={Array.isArray(group.key) ? group.key.join('-') : group.key} className="space-y-4">
-                            <h2 className={clsx("text-sm font-black uppercase italic tracking-tighter flex items-center gap-2 opacity-80", group.color)}>
-                              <group.icon className="w-4 h-4" /> {group.title}
-                            </h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3">
-                              {filteredTasks.map((task: Task, idx: number) => (
-                                <motion.button
-                                  key={task.id}
-                                  initial={{ opacity: 0, scale: 0.9 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{ delay: idx * 0.05 }}
-                                  whileHover={task.status === 'available' ? { scale: 1.02, y: -2 } : {}}
-                                  whileTap={task.status === 'available' ? { scale: 0.95 } : {}}
-                                  onClick={(e) => task.status === 'available' && handleCompleteTask(task, e)}
-                                  disabled={task.status !== 'available'}
-                                  className={clsx(
-                                    "relative group p-4 rounded-[24px] border-2 transition-all flex flex-col items-center text-center gap-2 overflow-hidden min-h-[120px] justify-center",
-                                    task.status === 'pending' ? "bg-white/5 border-white/5 opacity-60" :
-                                      task.status === 'done' ? "bg-emerald-500/10 border-emerald-500/50" :
-                                        "bg-white/5 border-white/10 hover:border-primary/40 shadow-xl backdrop-blur-md"
-                                  )}
-                                >
-                                  <div className="flex gap-0.5">
-                                    {[...Array(Math.min(task.stars, 3))].map((_, i: number) => (
-                                      <Star key={i} className={clsx("w-2 h-2", task.status === 'done' ? "text-emerald-400 fill-emerald-400" : "text-yellow-400 fill-yellow-400")} />
-                                    ))}
-                                    {task.stars > 3 && <span className="text-[8px] text-yellow-400 font-black">+{task.stars - 3}</span>}
-                                  </div>
-                                  <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 overflow-hidden relative text-xl">
-                                    {task.status === 'done' ? "✅" : AVATARS.find(a => a.id === activeChild?.avatar)?.emoji}
-                                  </div>
-                                  <h3 className={clsx("text-[9px] md:text-xs font-black uppercase italic tracking-tighter leading-tight", task.status === 'done' ? "text-emerald-400" : "text-white")}>
-                                    {task.title}
-                                  </h3>
-
-                                  {task.status === 'pending' && (
-                                    <div className="absolute inset-0 bg-[#16213e]/90 backdrop-blur-md flex flex-col items-center justify-center p-4">
-                                      <RefreshCw className="w-5 h-5 text-primary animate-spin mb-1" />
-                                      <p className="text-[7px] font-black uppercase tracking-widest">Validando...</p>
-                                    </div>
-                                  )}
-
-                                  {task.status === 'done' && (
-                                    <div className="absolute top-2 right-4">
-                                      <CheckCircle2 className="w-4 h-4 text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
-                                    </div>
-                                  )}
-                                </motion.button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </section>
-
-                    <section className="space-y-6">
-                      <h2 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3"><ShoppingBag className="w-5 h-5 text-[#f59e0b]" /> Loja Galáctica</h2>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
-                        {rewards.map((reward: Reward) => {
-                          const progress = Math.min((stars / reward.cost) * 100, 100);
-                          const canRedeem = stars >= reward.cost;
-                          return (
-                            <motion.button
-                              key={reward.id}
-                              whileHover={canRedeem ? { scale: 1.02 } : {}}
-                              whileTap={canRedeem ? { scale: 0.98 } : {}}
-                              onClick={() => canRedeem && handleRedeemReward(reward)}
-                              disabled={!canRedeem}
-                              className={clsx(
-                                "p-4 md:p-6 border rounded-2xl md:rounded-[32px] flex flex-col gap-3 md:gap-4 relative overflow-hidden shadow-2xl backdrop-blur-md transition-all text-left w-full",
-                                canRedeem ? "bg-white/10 border-primary/40 cursor-pointer" : "bg-white/5 border-white/10 cursor-default opacity-80"
-                              )}
-                            >
-                              <div className="flex justify-between items-start relative z-10">
-                                <div className="space-y-1">
-                                  <h3 className={clsx("text-sm md:text-lg font-black uppercase italic tracking-tighter transition-colors", canRedeem ? "text-primary" : "text-white")}>{reward.title}</h3>
-                                  <div className="flex items-center gap-2">
-                                    <Star className={clsx("w-3 h-3 md:w-4 md:h-4", canRedeem ? "text-yellow-400 fill-yellow-400" : "text-white/20")} />
-                                    <span className="text-[10px] md:text-xs font-black text-white/40">{reward.cost}</span>
-                                  </div>
-                                </div>
-                                {canRedeem && (
-                                  <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-                                    <Gift className="w-8 h-8 md:w-12 md:h-12 text-primary drop-shadow-[0_0_15px_rgba(45,212,191,0.5)]" />
-                                  </motion.div>
-                                )}
-                              </div>
-
-                              <div className="space-y-3 relative z-10">
-                                <div className="h-4 bg-white/5 rounded-full border border-white/10 p-1 shadow-inner">
-                                  <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className={clsx("h-full rounded-full transition-colors", canRedeem ? "bg-primary animate-pulse" : "bg-purple-500")} />
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white/40">
-                                    {canRedeem ? "VOCÊ CONSEGUIU!" : `FALTAM ${reward.cost - stars} ESTRELAS`}
-                                  </p>
-                                  {canRedeem && (
-                                    <span className="bg-primary text-black px-3 py-1 rounded-full text-[8px] font-black uppercase animate-bounce">
-                                      Resgatar Agora
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Efeito de Brilho se puder resgatar */}
-                              {canRedeem && <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent pointer-events-none animate-pulse" />}
-                            </motion.button>
-                          );
-                        })}
-                      </div>
-                    </section>
+                    <MissionList
+                      tasks={tasks}
+                      activeChildAvatar={activeChild?.avatar || 'ast1'}
+                      handleCompleteTask={handleCompleteTask}
+                    />
+                    <RewardShop
+                      rewards={rewards}
+                      stars={stars}
+                      handleRedeemReward={handleRedeemReward}
+                    />
                   </div>
                 </div>
               ) : (
-                /* --- PAINEL PARENTAL UNIVERSO --- */
-                <div className="flex flex-col lg:flex-row gap-8 md:gap-12 relative z-10">
-                  <div className="lg:w-64 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 scrollbar-hide snap-x">
-                    {[
-                      { id: 'approvals', label: 'Validações', icon: CheckCircle2 },
-                      { id: 'missions', label: 'Sala de Controle', icon: Rocket },
-                      { id: 'ranking', label: 'Ranking', icon: Trophy },
                       { id: 'fleet', label: 'Aliança', icon: Zap },
                       { id: 'behavior', label: 'Comportamento', icon: AlertCircle },
                       { id: 'settings', label: 'Ajustes Perfil', icon: Settings },
