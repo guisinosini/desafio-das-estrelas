@@ -1011,7 +1011,7 @@ export default function DesafioEstrelas() {
             <div className="text-center space-y-4">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Planetas de Destino</h2>
               <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
-                <strong>O Destino da Jornada:</strong> É fundamental que a criança saiba onde queremos chegar. Os planetas representam os grandes objetivos <em>(ex: Melhorar notas, Ser mais organizado, Ter mais empatia)</em>. Ter clareza do propósito ajuda a manter a motivação nas missões diárias!
+                <strong>Ancoragem Cognitiva:</strong> Do ponto de vista psicológico, crianças precisam de metas tangíveis e previsibilidade. Os "Planetas" funcionam como grandes objetivos visuais <em>(ex: Melhorar o foco, Ser mais organizado, Ter mais empatia)</em> que ativam o senso de propósito e estimulam a constância a longo prazo.
               </p>
             </div>
 
@@ -1099,7 +1099,7 @@ export default function DesafioEstrelas() {
             <div className="text-center space-y-4">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Missões da Jornada</h2>
               <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
-                <strong>O Caminho para as Estrelas:</strong> As missões são as ações diárias necessárias para alcançar os Planetas de Destino. Crie tarefas tangíveis e claras. <em>(Dica: Quebre os grandes objetivos em pequenos passos diários e vincule cada missão ao seu respectivo planeta!)</em>
+                <strong>Construção de Hábitos:</strong> O cérebro infantil constrói rotinas através da repetição e do reforço. As missões dividem os grandes objetivos (Planetas) em passos diários e acessíveis. Cada tarefa concluída libera dopamina, criando um sistema de motivação que transforma obrigações em conquistas naturais!
               </p>
             </div>
 
@@ -1196,9 +1196,11 @@ export default function DesafioEstrelas() {
         {stage === 'setup_rewards' && (
           <motion.div key="setup_rewards" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-col justify-center p-6 space-y-8">
             <button onClick={() => setStage('setup_tasks')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-4">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Tesouros Galácticos</h2>
-              <p className="text-white/40 text-sm">O que o {activeChild?.name} poderá resgatar com suas estrelas?</p>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
+                <strong>Reforço Positivo:</strong> O cérebro aprende mais rápido quando o esforço é validado. Os prêmios não são "subornos", mas celebradores do esforço. Eles tangibilizam a dedicação da criança e consolidam caminhos neurais saudáveis. <em>(Dica: Misture recompensas materiais com tempo de qualidade em família!)</em>
+              </p>
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
