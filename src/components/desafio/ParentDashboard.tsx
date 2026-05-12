@@ -14,13 +14,14 @@ import {
   LogOut,
   Check,
   X,
+  Gift,
 } from 'lucide-react';
 import type { Task, Reward, ChildData, TaskRecurrence } from '@/types/desafio';
 import { AVATARS } from '@/components/desafio/HeroElements';
 
 interface ParentDashboardProps {
   parentSubView: string;
-  setParentSubView: (view: string) => void;
+  setParentSubView: (view: any) => void;
   children: ChildData[];
   activeChild?: ChildData | null;
   activeChildId: string | null;
@@ -28,9 +29,9 @@ interface ParentDashboardProps {
   tasks: Task[];
   rewards: Reward[];
   history: any[];
-  setStage: (stage: string) => void;
-  setView: (view: string) => void;
-  handleLogout: () => Promise<void>;
+  setStage: (stage: any) => void;
+  setView: (view: any) => void;
+  handleLogout: () => void;
   setNewChild: (child: { name: string; avatar: string }) => void;
   setStageSetupChild: () => void;
   handleApprove: (taskId: string) => void;
