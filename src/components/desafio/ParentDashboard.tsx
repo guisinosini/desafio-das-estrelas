@@ -36,9 +36,9 @@ interface ParentDashboardProps {
   setStageSetupChild: () => void;
   handleApprove: (taskId: string) => void;
   updateActiveChild: (updates: Partial<ChildData>) => void;
-  addTask: (title: string, starCount: number, recurrence?: TaskRecurrence) => void;
-  customTask: { title: string; stars: number; recurrence: TaskRecurrence };
-  setCustomTask: (task: { title: string; stars: number; recurrence: TaskRecurrence }) => void;
+  addTask: (title: string, starCount: number, recurrence?: TaskRecurrence, planetId?: string) => void;
+  customTask: { title: string; stars: number; recurrence: TaskRecurrence; planetId?: string };
+  setCustomTask: (task: { title: string; stars: number; recurrence: TaskRecurrence; planetId?: string }) => void;
   addReward: (title: string, cost: number) => void;
   customReward: { title: string; cost: number };
   setCustomReward: (reward: { title: string; cost: number }) => void;
@@ -215,6 +215,16 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <select
+                    value={customTask.planetId || ''}
+                    onChange={e => setCustomTask({ ...customTask, planetId: e.target.value })}
+                    className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase outline-none text-white/60 appearance-none max-w-[120px] truncate"
+                  >
+                    <option value="">🌌 Planeta (Geral)</option>
+                    {activeChild?.planets?.map(p => (
+                      <option key={p.id} value={p.id}>{p.icon} {p.title}</option>
+                    ))}
+                  </select>
+                  <select
                     value={customTask.recurrence}
                     onChange={e => setCustomTask({ ...customTask, recurrence: e.target.value as TaskRecurrence })}
                     className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase outline-none text-white/60"
@@ -227,8 +237,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   <button
                     disabled={!customTask.title}
                     onClick={() => {
-                      addTask(customTask.title, customTask.stars, customTask.recurrence);
-                      setCustomTask({ title: '', stars: 5, recurrence: 'daily' });
+                      addTask(customTask.title, customTask.stars, customTask.recurrence, customTask.planetId);
+                      setCustomTask({ title: '', stars: 5, recurrence: 'daily', planetId: '' });
                     }}
                     className="flex-1 py-2 bg-primary text-black rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase"
                   >

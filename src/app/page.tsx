@@ -60,7 +60,7 @@ export default function DesafioEstrelas() {
   const [newChild, setNewChild] = useState<Partial<ChildData>>({ name: "", avatar: "ast1" });
 
   // Estados para Customização
-  const [customTask, setCustomTask] = useState<{ title: string, stars: number, recurrence: TaskRecurrence }>({ title: "", stars: 5, recurrence: 'daily' });
+  const [customTask, setCustomTask] = useState<{ title: string, stars: number, recurrence: TaskRecurrence, planetId?: string }>({ title: "", stars: 5, recurrence: 'daily', planetId: "" });
   const [customReward, setCustomReward] = useState({ title: "", cost: 50 });
 
   const [view, setView] = useState<'child' | 'parent'>('child');
@@ -634,8 +634,8 @@ export default function DesafioEstrelas() {
     }
   };
 
-  const addTask = (title: string, starCount: number, recurrence: TaskRecurrence = 'daily') => {
-    const newTask: Task = { id: Date.now().toString(), title, stars: starCount, recurrence, status: 'available' };
+  const addTask = (title: string, starCount: number, recurrence: TaskRecurrence = 'daily', planetId?: string) => {
+    const newTask: Task = { id: Date.now().toString(), title, stars: starCount, recurrence, status: 'available', planetId };
     updateActiveChild({ tasks: [...tasks, newTask] });
   };
 
@@ -1008,9 +1008,11 @@ export default function DesafioEstrelas() {
         {stage === 'setup_planets' && (
           <motion.div key="setup_planets" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
             <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-4">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Planetas de Destino</h2>
-              <p className="text-white/40 text-sm">Quais os grandes objetivos que o {activeChild?.name} deve alcançar?</p>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
+                <strong>O Destino da Jornada:</strong> É fundamental que a criança saiba onde queremos chegar. Os planetas representam os grandes objetivos <em>(ex: Melhorar notas, Ser mais organizado, Ter mais empatia)</em>. Ter clareza do propósito ajuda a manter a motivação nas missões diárias!
+              </p>
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
@@ -1094,9 +1096,11 @@ export default function DesafioEstrelas() {
         {stage === 'setup_tasks' && (
           <motion.div key="setup_tasks" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
             <button onClick={() => setStage('setup_planets')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-4">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Missões da Jornada</h2>
-              <p className="text-white/40 text-sm">Quais desafios o {activeChild?.name} deve superar para ganhar estrelas?</p>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
+                <strong>O Caminho para as Estrelas:</strong> As missões são as ações diárias necessárias para alcançar os Planetas de Destino. Crie tarefas tangíveis e claras. <em>(Dica: Quebre os grandes objetivos em pequenos passos diários e vincule cada missão ao seu respectivo planeta!)</em>
+              </p>
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
@@ -1120,6 +1124,19 @@ export default function DesafioEstrelas() {
                       className="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary"
                     />
                   </div>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Vincular a qual Planeta?</p>
+                    <select
+                      value={customTask.planetId || ''}
+                      onChange={e => setCustomTask({ ...customTask, planetId: e.target.value })}
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white/80 appearance-none cursor-pointer"
+                    >
+                      <option value="" className="text-black">🌌 Geral (Nenhum Planeta Específico)</option>
+                      {activeChild?.planets?.map(p => (
+                        <option key={p.id} value={p.id} className="text-black">{p.icon} {p.title}</option>
+                      ))}
+                    </select>
+                  </div>
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex bg-white/5 rounded-xl p-1 border border-white/10 flex-wrap gap-1">
                       {['daily', 'weekly', 'monthly', 'once'].map((rec) => (
@@ -1137,7 +1154,7 @@ export default function DesafioEstrelas() {
                     </div>
                     <button
                       disabled={!customTask.title}
-                      onClick={() => { addTask(customTask.title, customTask.stars, customTask.recurrence); setCustomTask({ title: "", stars: 5, recurrence: 'daily' }); }}
+                      onClick={() => { addTask(customTask.title, customTask.stars, customTask.recurrence, customTask.planetId); setCustomTask({ title: "", stars: 5, recurrence: 'daily', planetId: "" }); }}
                       className="flex-1 py-3 bg-primary text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all"
                     >
                       Adicionar Missão

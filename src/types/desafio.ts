@@ -1,5 +1,5 @@
 export type TaskRecurrence = 'daily' | 'weekly' | 'monthly' | 'once';
-export type Task = { id: string; title: string; stars: number; recurrence: TaskRecurrence; status: 'available' | 'pending' | 'done'; lastCompleted?: string; };
+export type Task = { id: string; title: string; stars: number; recurrence: TaskRecurrence; status: 'available' | 'pending' | 'done'; lastCompleted?: string; planetId?: string; };
 export type Reward = { id: string; title: string; cost: number; };
 export type Planet = { id: string; title: string; icon?: string; achieved: boolean; };
 export type ChildData = {
