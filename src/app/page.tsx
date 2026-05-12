@@ -44,7 +44,7 @@ import { AVATARS, StarField, SpaceShipVideo, HeroCharacter } from "@/components/
 import { MissionList } from "@/components/desafio/MissionList";
 import { RewardShop } from "@/components/desafio/RewardShop";
 import { ParentDashboard } from "@/components/desafio/ParentDashboard";
-import type { ChildData, Stage, Task, Reward, TaskRecurrence } from "@/types/desafio";
+import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/types/desafio";
 
 export default function DesafioEstrelas() {
   const [supabase] = useState(() => createClient());
@@ -146,7 +146,8 @@ export default function DesafioEstrelas() {
               tasks: [],
               rewards: [],
               history: [],
-              badges: []
+              badges: [],
+              planets: []
             });
           }
         });
