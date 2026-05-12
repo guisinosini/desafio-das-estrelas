@@ -46,6 +46,12 @@ interface ParentDashboardProps {
   taskPresets: { title: string; stars: number }[];
   rewardPresets: { title: string; cost: number }[];
   fleetChildren: ChildData[];
+  parentPin: string;
+  setParentPin: (pin: string) => void;
+  fleetId: string;
+  setFleetId: (id: string) => void;
+  loadFleetRanking: () => void;
+  handleDeductStars: (stars: number, reason: string) => void;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -76,6 +82,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   taskPresets,
   rewardPresets,
   fleetChildren,
+  parentPin,
+  setParentPin,
+  fleetId,
+  setFleetId,
+  loadFleetRanking,
+  handleDeductStars,
 }) => {
   return (
     <div className="flex flex-col lg:flex-row gap-8 md:gap-12 relative z-10">
@@ -361,7 +373,165 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </div>
           </div>
         )}
-        {/* Additional subviews (fleet, behavior, settings, history) can be added similarly */}
+        {/* Settings */}
+        {parentSubView === 'settings' && (
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Ajustes do Perfil</h2>
+              <p className="text-white/40">Personalize a identidade do herói nesta missão.</p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] space-y-8 backdrop-blur-md">
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Nome do Herói</label>
+                <input
+                  type="text"
+                  value={activeChild?.name}
+                  onChange={e => updateActiveChild({ name: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-black text-xl outline-none focus:border-primary transition-colors"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Escolher Novo Avatar</label>
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-2">
+                  {AVATARS.map((a: any) => (
+                    <button
+                      key={a.id}
+                      onClick={() => updateActiveChild({ avatar: a.id })}
+                      className={clsx(
+                        "w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all border-2",
+                        activeChild?.avatar === a.id ? "bg-primary/20 border-primary scale-110" : "bg-white/5 border-white/10 hover:border-white/30"
+                      )}
+                    >
+                      {a.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10 space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                  <Settings className="w-3 h-3" /> Alterar Código PIN de Acesso
+                </label>
+                <div className="flex gap-4">
+                  <input
+                    type="password"
+                    maxLength={4}
+                    placeholder="Novo PIN (4 dígitos)"
+                    value={parentPin}
+                    onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                      setParentPin(val);
+                    }}
+                    className="w-40 bg-white/5 border border-white/10 rounded-2xl p-4 font-black text-center text-xl outline-none focus:border-primary"
+                  />
+                  <p className="text-[10px] text-white/40 leading-tight flex-1 flex items-center">
+                    Este código será solicitado sempre que você tentar acessar a área de gestão ou validação de missões.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="flex justify-center">
+              <button onClick={() => setView('child')} className="px-10 py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl hover:scale-105 transition-all">Ver Alterações no Dashboard</button>
+            </div>
+          </div>
+        )}
+
+        {/* Fleet */}
+        {parentSubView === 'fleet' && (
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter text-purple-400 flex items-center gap-3">
+                <Zap className="w-8 h-8" /> Aliança Galáctica
+              </h2>
+              <p className="text-white/40">Conecte o universo do {activeChild?.name} com outras frotas (primos e amigos).</p>
+            </div>
+            
+            <div className="p-4 md:p-8 bg-white/5 border border-purple-500/30 rounded-3xl md:rounded-[40px] space-y-6 backdrop-blur-md">
+              <label className="text-xs font-black uppercase tracking-widest text-purple-400 flex items-center gap-2">
+                Código da Aliança Compartilhada
+              </label>
+              <div className="flex flex-col md:flex-row gap-4">
+                <input
+                  type="text"
+                  placeholder="Ex: FAMILIA-SILVA"
+                  value={fleetId}
+                  onChange={e => setFleetId(e.target.value.toUpperCase().replace(/\s/g, '-'))}
+                  className="flex-1 bg-white/10 border border-white/20 rounded-2xl p-4 font-black text-xl md:text-2xl outline-none focus:border-purple-500 transition-all text-white"
+                />
+                <button onClick={() => loadFleetRanking()} className="px-8 py-4 bg-purple-500 text-white font-black uppercase rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                  Sincronizar
+                </button>
+              </div>
+              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex gap-4">
+                <AlertCircle className="w-6 h-6 text-purple-400 shrink-0" />
+                <p className="text-sm text-purple-200/80 leading-relaxed font-medium">
+                  Compartilhe o código acima com os pais dos amigos. Quando eles inserirem o mesmo código nos aplicativos deles, as crianças vão competir no mesmo <strong>Ranking Intergaláctico</strong>!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Behavior */}
+        {parentSubView === 'behavior' && (
+          <div className="space-y-8">
+            <div className="space-y-2"><h2 className="text-3xl font-black uppercase italic tracking-tighter text-red-400">Ponte de Comportamento</h2><p className="text-white/40">Deduza estrelas do {activeChild?.name} para alinhar a rota comportamental.</p></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { label: "Birra / Malcriação", stars: 2 },
+                { label: "Não obedeceu", stars: 3 },
+                { label: "Agressividade", stars: 5 },
+              ].map((punish: any, i: number) => (
+                <button key={i} onClick={() => handleDeductStars(punish.stars, punish.label)} className="p-4 md:p-8 bg-white/5 border border-white/10 rounded-3xl md:rounded-[40px] flex items-center justify-between hover:bg-red-500/10 hover:border-red-500 transition-all group text-left">
+                  <div className="flex items-center gap-3 md:gap-4"><div className="w-10 h-10 md:w-14 md:h-14 bg-red-500/20 rounded-xl md:rounded-2xl flex items-center justify-center"><AlertCircle className="w-5 h-5 md:w-8 md:h-8 text-red-500" /></div><span className="font-black uppercase text-xs md:text-base text-white/80">{punish.label}</span></div>
+                  <span className="text-lg md:text-xl font-black text-red-500">-{punish.stars}⭐</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* History */}
+        {parentSubView === 'history' && (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter flex items-center gap-3">
+              <History className="w-8 h-8 text-white/20" /> Log de Navegação
+            </h2>
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+              {history.map((h: any) => (
+                <div key={h.id} className="p-4 md:p-6 bg-white/5 border border-white/10 rounded-2xl md:rounded-[30px] flex justify-between items-center backdrop-blur-sm group hover:bg-white/10 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className={clsx(
+                      "w-10 h-10 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shadow-lg",
+                      h.type === 'gain' ? "bg-primary/20 text-primary" : h.type === 'redeem' ? "bg-yellow-400/20 text-yellow-400" : "bg-red-500/20 text-red-500"
+                    )}>
+                      {h.type === 'gain' ? <Plus className="w-5 h-5 md:w-6 md:h-6" /> : h.type === 'redeem' ? <Trophy className="w-5 h-5 md:w-6 md:h-6" /> : <AlertCircle className="w-5 h-5 md:w-6 md:h-6" />}
+                    </div>
+                    <div>
+                      <p className="text-sm md:text-lg font-black uppercase italic text-white/80">{h.title}</p>
+                      <p className="text-[8px] md:text-[10px] text-white/20 font-black uppercase tracking-[0.2em]">{h.date}</p>
+                    </div>
+                  </div>
+                  <span className={clsx(
+                    "text-xl md:text-2xl font-black italic drop-shadow-sm",
+                    h.type === 'gain' ? "text-primary" : h.type === 'redeem' ? "text-yellow-400" : "text-red-400"
+                  )}>
+                    {h.type === 'gain' ? `+${h.amount}` : `-${h.amount}`}⭐
+                  </span>
+                </div>
+              ))}
+              {history.length === 0 && (
+                <div className="p-24 border-4 border-dashed border-white/5 rounded-[60px] text-center text-white/10 font-black uppercase italic tracking-widest text-xl">
+                  Sem registros no radar
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
