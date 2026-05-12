@@ -127,21 +127,27 @@ export default function DesafioEstrelas() {
 
     try {
       const { data, error } = await supabase
-        .from('patient_gamification')
-        .select('state')
-        .eq('fleet_id', fleetId);
+        .rpc('get_fleet_ranking', { p_fleet_id: fleetId });
 
       if (error) throw error;
 
       if (data) {
         const allChildren: ChildData[] = [];
         data.forEach((row: any) => {
-          if (row.state?.children) {
-            // Filtra para não duplicar os próprios filhos na lista da frota
-            const isOwnData = row.state.children.some((c: ChildData) => children.some(own => own.id === c.id));
-            if (!isOwnData) {
-              allChildren.push(...row.state.children);
-            }
+          // Filtra para não duplicar os próprios filhos na lista da frota
+          const isOwnData = children.some(own => own.id === row.child_id);
+          if (!isOwnData) {
+            allChildren.push({
+              id: row.child_id,
+              name: row.name,
+              avatar: row.avatar,
+              stars: row.stars,
+              dailyStars: 0,
+              tasks: [],
+              rewards: [],
+              history: [],
+              badges: []
+            });
           }
         });
         setFleetChildren(allChildren);
