@@ -488,11 +488,12 @@ export default function DesafioEstrelas() {
       tasks: [],
       rewards: [],
       badges: [],
-      history: []
+      history: [],
+      planets: []
     };
     setChildren([...children, child]);
     setActiveChildId(id);
-    setStage('setup_tasks');
+    setStage('setup_planets');
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -665,6 +666,24 @@ export default function DesafioEstrelas() {
     { title: "Passeio no Parque", cost: 50 },
     { title: "Brinquedo Novo", cost: 100 },
   ];
+
+  const planetPresets = [
+    { title: "Planeta da Saúde", icon: "🥦" },
+    { title: "Galáxia do Conhecimento", icon: "📚" },
+    { title: "Mundo da Organização", icon: "🧸" },
+    { title: "Órbita da Amizade", icon: "🤝" },
+  ];
+
+  const [customPlanet, setCustomPlanet] = useState({ title: "", icon: "🪐" });
+
+  const addPlanet = (title: string, icon: string) => {
+    const newPlanet: Planet = { id: Date.now().toString(), title, icon, achieved: false };
+    updateActiveChild({ planets: [...(activeChild?.planets || []), newPlanet] });
+  };
+
+  const removePlanet = (id: string) => {
+    updateActiveChild({ planets: (activeChild?.planets || []).filter(p => p.id !== id) });
+  };
 
   return (
     <div className="min-h-screen text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
@@ -984,10 +1003,96 @@ export default function DesafioEstrelas() {
           </motion.div>
         )}
 
+        {/* --- STAGE: SETUP PLANETS --- */}
+        {stage === 'setup_planets' && (
+          <motion.div key="setup_planets" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
+            <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
+            <div className="text-center space-y-2">
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Planetas de Destino</h2>
+              <p className="text-white/40 text-sm">Quais os grandes objetivos que o {activeChild?.name} deve alcançar?</p>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Criar Novo Planeta:</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ex: Melhorar em Matemática"
+                    value={customPlanet.title}
+                    onChange={e => setCustomPlanet({ ...customPlanet, title: e.target.value })}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors"
+                  />
+                  <input
+                    type="text"
+                    value={customPlanet.icon}
+                    onChange={e => setCustomPlanet({ ...customPlanet, icon: e.target.value })}
+                    className="w-16 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary"
+                    placeholder="🪐"
+                  />
+                  <button
+                    onClick={() => {
+                      if (customPlanet.title) {
+                        addPlanet(customPlanet.title, customPlanet.icon || "🪐");
+                        setCustomPlanet({ title: "", icon: "🪐" });
+                      }
+                    }}
+                    disabled={!customPlanet.title}
+                    className="bg-primary/20 text-primary p-3 rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Sugestões (Toque para adicionar):</p>
+                <div className="flex flex-wrap gap-2">
+                  {planetPresets.map(p => (
+                    <button
+                      key={p.title}
+                      onClick={() => addPlanet(p.title, p.icon)}
+                      className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:border-primary/50 transition-colors flex items-center gap-2"
+                    >
+                      <span>{p.icon}</span> {p.title} <Plus className="w-3 h-3 text-white/40" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(activeChild?.planets?.length || 0) > 0 && (
+                <div className="pt-6 border-t border-white/10 space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Planetas Escolhidos:</p>
+                  <div className="space-y-2">
+                    {activeChild?.planets?.map(p => (
+                      <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{p.icon}</span>
+                          <span className="font-bold text-sm">{p.title}</span>
+                        </div>
+                        <button onClick={() => removePlanet(p.id)} className="p-2 text-white/20 hover:text-red-400 transition-colors">
+                          <Trash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => setStage('setup_tasks')}
+                className="w-full py-5 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl mt-4"
+              >
+                Traçar Rota
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* --- STAGE: SETUP TASKS --- */}
         {stage === 'setup_tasks' && (
           <motion.div key="setup_tasks" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
+            <button onClick={() => setStage('setup_planets')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
             <div className="text-center space-y-2">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Missões da Jornada</h2>
               <p className="text-white/40 text-sm">Quais desafios o {activeChild?.name} deve superar para ganhar estrelas?</p>
@@ -1249,9 +1354,30 @@ export default function DesafioEstrelas() {
               </div>
             </header>
 
-            <main className="p-6 max-w-7xl mx-auto pt-10">
+            <main className="p-6 max-w-7xl mx-auto pt-10 relative">
+              {/* PLANETAS DE FUNDO */}
+              {view === 'child' && activeChild?.planets && activeChild.planets.length > 0 && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 flex items-center justify-center opacity-40">
+                  {activeChild.planets.map((p, i) => (
+                    <motion.div
+                      key={p.id}
+                      animate={{ y: [0, -15, 0], rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 8 + i * 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute flex flex-col items-center"
+                      style={{
+                        left: `${15 + (i * 25)}%`,
+                        top: `${10 + (i % 2) * 30}%`
+                      }}
+                    >
+                      <span className="text-6xl md:text-8xl drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] filter saturate-150">{p.icon}</span>
+                      <span className="mt-2 text-[10px] md:text-xs font-black uppercase tracking-widest text-white/50 bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">{p.title}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
               {view === 'child' ? (
-                <div className="flex flex-col lg:flex-row gap-12 items-start">
+                <div className="flex flex-col lg:flex-row gap-12 items-start relative z-10">
 
                   {/* Herói Cartoon Lateral */}
                   <div className="lg:w-1/3 flex flex-col items-center lg:sticky lg:top-40 pt-4 md:pt-10">
