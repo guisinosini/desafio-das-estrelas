@@ -430,7 +430,7 @@ export default function DesafioEstrelas() {
   const [customReward, setCustomReward] = useState({ title: "", cost: 50 });
 
   const [view, setView] = useState<'child' | 'parent'>('child');
-  const [parentSubView, setParentSubView] = useState<'approvals' | 'behavior' | 'history' | 'missions' | 'ranking' | 'settings'>('approvals');
+  const [parentSubView, setParentSubView] = useState<'approvals' | 'behavior' | 'history' | 'missions' | 'ranking' | 'settings' | 'fleet'>('approvals');
   const [parentPin, setParentPin] = useState("1234");
   const [fleetId, setFleetId] = useState("");
   const [fleetChildren, setFleetChildren] = useState<ChildData[]>([]);
@@ -1819,6 +1819,7 @@ export default function DesafioEstrelas() {
                       { id: 'approvals', label: 'Validações', icon: CheckCircle2 },
                       { id: 'missions', label: 'Sala de Controle', icon: Rocket },
                       { id: 'ranking', label: 'Ranking', icon: Trophy },
+                      { id: 'fleet', label: 'Aliança', icon: Zap },
                       { id: 'behavior', label: 'Comportamento', icon: AlertCircle },
                       { id: 'settings', label: 'Ajustes Perfil', icon: Settings },
                       { id: 'history', label: 'Histórico', icon: History },
@@ -2113,28 +2114,45 @@ export default function DesafioEstrelas() {
                             </div>
                           </div>
 
-                          <div className="pt-4 border-t border-white/10 space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-2">
-                              <Zap className="w-3 h-3" /> Aliança Galáctica (Ranking Compartilhado)
-                            </label>
-                            <div className="flex gap-4">
-                              <input
-                                type="text"
-                                placeholder="Código da Aliança (ex: FAMILIA-SILVA)"
-                                value={fleetId}
-                                onChange={e => setFleetId(e.target.value.toUpperCase().replace(/\s/g, '-'))}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 font-black text-xl outline-none focus:border-purple-500"
-                              />
-                              <button onClick={() => loadFleetRanking()} className="px-6 bg-purple-500 text-white font-black uppercase rounded-2xl hover:scale-105 transition-all"><RefreshCw className="w-5 h-5" /></button>
-                            </div>
-                            <p className="text-[10px] text-white/40 leading-tight">
-                              Compartilhe este código com primos e amigos para que eles apareçam no seu ranking. Quem tiver o mesmo código verá os nomes e estrelas uns dos outros.
-                            </p>
-                          </div>
                         </div>
 
                         <div className="flex justify-center">
                           <button onClick={() => setView('child')} className="px-10 py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl hover:scale-105 transition-all">Ver Alterações no Dashboard</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {parentSubView === 'fleet' && (
+                      <div className="space-y-8">
+                        <div className="space-y-2">
+                          <h2 className="text-3xl font-black uppercase italic tracking-tighter text-purple-400 flex items-center gap-3">
+                            <Zap className="w-8 h-8" /> Aliança Galáctica
+                          </h2>
+                          <p className="text-white/40">Conecte o universo do {activeChild?.name} com outras frotas (primos e amigos).</p>
+                        </div>
+                        
+                        <div className="p-4 md:p-8 bg-white/5 border border-purple-500/30 rounded-3xl md:rounded-[40px] space-y-6 backdrop-blur-md">
+                          <label className="text-xs font-black uppercase tracking-widest text-purple-400 flex items-center gap-2">
+                            Código da Aliança Compartilhada
+                          </label>
+                          <div className="flex flex-col md:flex-row gap-4">
+                            <input
+                              type="text"
+                              placeholder="Ex: FAMILIA-SILVA"
+                              value={fleetId}
+                              onChange={e => setFleetId(e.target.value.toUpperCase().replace(/\s/g, '-'))}
+                              className="flex-1 bg-white/10 border border-white/20 rounded-2xl p-4 font-black text-xl md:text-2xl outline-none focus:border-purple-500 transition-all text-white"
+                            />
+                            <button onClick={() => loadFleetRanking()} className="px-8 py-4 bg-purple-500 text-white font-black uppercase rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                              <RefreshCw className="w-5 h-5" /> Sincronizar
+                            </button>
+                          </div>
+                          <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex gap-4">
+                            <AlertCircle className="w-6 h-6 text-purple-400 shrink-0" />
+                            <p className="text-sm text-purple-200/80 leading-relaxed font-medium">
+                              Compartilhe o código acima com os pais dos amigos. Quando eles inserirem o mesmo código nos aplicativos deles, as crianças vão competir no mesmo <strong>Ranking Intergaláctico</strong>!
+                            </p>
+                          </div>
                         </div>
                       </div>
                     )}
