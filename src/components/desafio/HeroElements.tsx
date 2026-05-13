@@ -235,10 +235,15 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
         setTimeout(() => {
           setShipState('center');
           setShowCelebration(true);
+          // Confetti leve — disparado via rAF para não travar o frame de render
           setTimeout(() => {
-            confetti({ particleCount: 120, angle: 60,  spread: 80, origin: { x: 0, y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
-            confetti({ particleCount: 120, angle: 120, spread: 80, origin: { x: 1, y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
-          }, 200);
+            requestAnimationFrame(() => {
+              confetti({ particleCount: 30, angle: 60,  spread: 70, origin: { x: 0, y: 0.7 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'], scalar: 0.9 });
+              requestAnimationFrame(() => {
+                confetti({ particleCount: 30, angle: 120, spread: 70, origin: { x: 1, y: 0.7 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'], scalar: 0.9 });
+              });
+            });
+          }, 300);
           setTimeout(() => { conquestVideoRef.current?.play(); }, 300);
         }, 1200);
       }, 800);
@@ -338,11 +343,13 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                 }
                 onClick={() => setShipState('icon')}
                 whileHover={shipState === 'corner' ? { scale: 1.05 } : {}}
-                className="relative w-14 h-14 md:w-[90px] md:h-[90px] cursor-pointer"
+                className="relative w-28 h-28 md:w-56 md:h-56 cursor-pointer"
               >
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_red]" />
-                <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_8px_blue]" />
-                <div className="w-full h-full rounded-full border-[4px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative">
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
+                <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
+                {/* Círculo da nave — tamanho original */}
+                <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative flex items-center justify-center">
+                  {/* Vídeo ocupa 70% do círculo (−30% do tamanho interno) */}
                   <video
                     ref={shipVideoRef}
                     src="/boa.mp4"
@@ -350,12 +357,12 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                     muted
                     onEnded={handleShipEnded}
                     playsInline
-                    className="w-full h-full object-cover scale-110"
+                    className="w-[70%] h-[70%] object-cover rounded-full"
                   />
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
                 </div>
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-px h-7 bg-zinc-500 rounded-full" />
-                <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full animate-ping" />
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-12 bg-zinc-500 rounded-full" />
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full animate-ping" />
               </motion.div>
             )}
           </AnimatePresence>
