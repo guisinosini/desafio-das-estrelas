@@ -167,7 +167,7 @@ export const SpaceShipVideo = memo(function SpaceShipVideo() {
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
             <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
 
-            <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative flex items-center justify-center">
+            <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-white shadow-2xl overflow-hidden relative flex items-center justify-center">
               <video
                 ref={videoRef}
                 src="/boa.mp4"
@@ -348,7 +348,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
                 <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
                 {/* Círculo da nave — restaurado tamanho original */}
-                <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative flex items-center justify-center">
+                <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-white shadow-2xl overflow-hidden relative flex items-center justify-center">
                   <video
                     ref={shipVideoRef}
                     src="/boa.mp4"
@@ -426,7 +426,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
             >
               <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_12px_red]" />
               <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_12px_blue]" />
-              <div className="w-full h-full rounded-full border-[6px] border-primary/60 bg-zinc-900 shadow-[0_0_60px_rgba(45,212,191,0.7)] overflow-hidden relative">
+              <div className="w-full h-full rounded-full border-[8px] border-primary/60 bg-white shadow-[0_0_80px_rgba(45,212,191,0.7)] overflow-hidden relative flex items-center justify-center">
                 <video
                   ref={conquestVideoRef}
                   src="/Conquista.mp4"
