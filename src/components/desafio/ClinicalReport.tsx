@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   Calendar,
   Sparkles,
-  FileText
+  FileText,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import type { ChildData, Task } from '@/types/desafio';
 
@@ -17,6 +18,9 @@ interface ClinicalReportProps {
 
 export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) => {
   const [mentorNotes, setMentorNotes] = useState('');
+  // Filtros de período
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   if (!activeChild) {
     return (
@@ -57,6 +61,13 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
           <p className="text-xs text-white/60 font-medium mt-1">
             Gere o relatório formatado para o psicólogo ou neuropediatra acompanhar a evolução comportamental em casa.
           </p>
+        </div>
+        {/* Filtro de Período */}
+        <div className="flex gap-2 items-center">
+          <label className="text-xs font-black uppercase text-white/40">De:</label>
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary" />
+          <label className="text-xs font-black uppercase text-white/40">Até:</label>
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary" />
         </div>
         <button
           onClick={handlePrint}
@@ -141,8 +152,14 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
           <div className="grid grid-cols-1 gap-3">
             {planets.map(planet => {
               const planetTasks = tasks.filter(t => t.planetId === planet.id);
-              const completedPlanetTasks = planetTasks.filter(t => t.status === 'done').length;
-              const planetRate = planetTasks.length > 0 ? Math.round((completedPlanetTasks / planetTasks.length) * 100) : 0;
+              const completedCounts: Record<string, number> = {};
+              planetTasks.forEach(t => {
+                if (t.status === 'done') {
+                  completedCounts[t.title] = (completedCounts[t.title] || 0) + 1;
+                }
+              });
+              const totalCompleted = Object.values(completedCounts).reduce((a, b) => a + b, 0);
+              const planetRate = planetTasks.length > 0 ? Math.round((totalCompleted / planetTasks.length) * 100) : 0;
               return (
                 <div key={planet.id} className="p-4 bg-white/5 print:bg-zinc-50 rounded-xl border border-white/5 print:border-zinc-200 flex flex-col gap-3">
                   <div className="flex justify-between items-start gap-2">
@@ -157,13 +174,22 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black print:text-zinc-700">
-                        {completedPlanetTasks}/{planetTasks.length} ({planetRate}%)
+                        {totalCompleted}/{planetTasks.length} ({planetRate}%)
                       </span>
-                      {completedPlanetTasks === planetTasks.length && planetTasks.length > 0 && (
+                      {totalCompleted === planetTasks.length && planetTasks.length > 0 && (
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       )}
                     </div>
                   </div>
+
+                  {/* Lista de tarefas concluídas por planeta */}
+                  <ul className="list-disc list-inside text-xs text-white/60">
+                    {Object.entries(completedCounts).map(([title, cnt]) => (
+                      <li key={title}>
+                        {title}: {cnt} vez(es) concluída(s)
+                      </li>
+                    ))}
+                  </ul>
 
                   {/* Barra Gráfica de Progresso do Objetivo */}
                   <div className="w-full h-1.5 bg-white/5 print:bg-zinc-200 rounded-full overflow-hidden relative">
