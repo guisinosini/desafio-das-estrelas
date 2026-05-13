@@ -51,7 +51,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
   };
 
   return (
-    <div className="space-y-8 clinical-report-container">
+    <div className="space-y-8 clinical-report-container" style={{ background: 'transparent' }}>
       {/* Barra superior de Ação (Escondida na impressão) */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-primary/10 border border-primary/20 p-6 rounded-3xl backdrop-blur-md print:hidden">
         <div>
@@ -69,12 +69,25 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
           <label className="text-xs font-black uppercase text-white/40">Até:</label>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary" />
         </div>
+        {/* Botão WhatsApp */}
+        <button
+          onClick={() => {
+            const reportText = `Relatório de ${activeChild.name} - ${new Date().toLocaleDateString('pt-BR')}`;
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(reportText)}`;
+            window.open(url, '_blank');
+          }}
+          className="px-6 py-3 bg-green-500 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg hover:scale-105 transition-all flex items-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h18M9 9h6M9 13h6M9 17h6" /></svg>
+          Enviar por WhatsApp
+        </button>
         <button
           onClick={handlePrint}
           className="px-6 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center gap-2 shrink-0"
         >
           <Printer className="w-4 h-4" /> Exportar PDF / Imprimir
         </button>
+      </div>
       </div>
 
       {/* --- PÁGINA DO RELATÓRIO (Visível na tela e formatada na impressão) --- */}
@@ -108,8 +121,33 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
           </div>
         </div>
 
-        {/* Resumo Executivo / Termômetro */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Gráfico de Barras - Missões Realizadas */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" /> Missões Realizadas
+          </h3>
+          <div className="grid gap-2">
+            {(() => {
+              const counts: Record<string, number> = {};
+              tasks.forEach(t => {
+                if (t.status === 'done') {
+                  counts[t.title] = (counts[t.title] || 0) + 1;
+                }
+              });
+              const max = Math.max(...Object.values(counts), 1);
+              return Object.entries(counts).map(([title, cnt]) => (
+                <div key={title} className="flex items-center gap-2">
+                  <span className="w-32 text-xs text-white/60">{title}</span>
+                  <div className="flex-1 h-4 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary" style={{ width: `${(cnt / max) * 100}%` }}></div>
+                  </div>
+                  <span className="text-xs text-white/80 w-12 text-right">{cnt}</span>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+
           <div className="p-6 bg-white/5 print:bg-zinc-50 border border-white/5 print:border-zinc-200 rounded-2xl space-y-2">
             <div className="flex items-center gap-2 text-emerald-400 print:text-emerald-700">
               <TrendingUp className="w-5 h-5" />
@@ -209,8 +247,32 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
           </div>
         </div>
 
-        {/* Extrato de Comportamentos Críticos */}
-        {behaviorDeductions.length > 0 && (
+        {/* Gráfico de Barras - Punições Sofridas */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-red-400 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" /> Punições Sofridas
+          </h3>
+          <div className="grid gap-2">
+            {(() => {
+              const counts: Record<string, number> = {};
+              behaviorDeductions.forEach(b => {
+                const label = b.title;
+                counts[label] = (counts[label] || 0) + 1;
+              });
+              const max = Math.max(...Object.values(counts), 1);
+              return Object.entries(counts).map(([label, cnt]) => (
+                <div key={label} className="flex items-center gap-2">
+                  <span className="w-32 text-xs text-white/60">{label}</span>
+                  <div className="flex-1 h-4 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500" style={{ width: `${(cnt / max) * 100}%` }}></div>
+                  </div>
+                  <span className="text-xs text-white/80 w-12 text-right">{cnt}</span>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+
           <div className="space-y-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-red-400 print:text-red-800 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" /> Detalhamento de Atritos Comportamentais
