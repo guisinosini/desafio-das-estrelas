@@ -107,7 +107,14 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
             <div className="text-3xl font-black italic tracking-tighter print:text-black">
               {taskCompletionRate}%
             </div>
-            <p className="text-[10px] text-white/40 print:text-zinc-600 leading-relaxed">
+            {/* Medidor Gráfico Linear */}
+            <div className="w-full h-2 bg-white/10 print:bg-zinc-200 rounded-full overflow-hidden relative mt-2">
+              <div 
+                className="h-full bg-emerald-400 print:bg-emerald-500 rounded-full transition-all duration-1000" 
+                style={{ width: `${taskCompletionRate}%` }} 
+              />
+            </div>
+            <p className="text-[10px] text-white/40 print:text-zinc-600 leading-relaxed pt-1">
               Taxa de conclusão de missões cadastradas ({doneTasks} de {totalTasks} tarefas concluídas na iteração atual). Reflete o engajamento e a constância na rotina visual.
             </p>
           </div>
@@ -135,24 +142,35 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
             {planets.map(planet => {
               const planetTasks = tasks.filter(t => t.planetId === planet.id);
               const completedPlanetTasks = planetTasks.filter(t => t.status === 'done').length;
+              const planetRate = planetTasks.length > 0 ? Math.round((completedPlanetTasks / planetTasks.length) * 100) : 0;
               return (
-                <div key={planet.id} className="p-4 bg-white/5 print:bg-zinc-50 rounded-xl border border-white/5 print:border-zinc-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{planet.icon || "🪐"}</span>
-                    <div>
-                      <h4 className="text-sm font-bold print:text-black">{planet.title}</h4>
-                      <p className="text-[10px] text-white/40 print:text-zinc-500">
-                        {planetTasks.length} missão(ões) vinculada(s)
-                      </p>
+                <div key={planet.id} className="p-4 bg-white/5 print:bg-zinc-50 rounded-xl border border-white/5 print:border-zinc-200 flex flex-col gap-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{planet.icon || "🪐"}</span>
+                      <div>
+                        <h4 className="text-sm font-bold print:text-black">{planet.title}</h4>
+                        <p className="text-[10px] text-white/40 print:text-zinc-500">
+                          {planetTasks.length} missão(ões) vinculada(s)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black print:text-zinc-700">
+                        {completedPlanetTasks}/{planetTasks.length} ({planetRate}%)
+                      </span>
+                      {completedPlanetTasks === planetTasks.length && planetTasks.length > 0 && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 self-end sm:self-auto">
-                    <span className="text-xs font-black print:text-zinc-700">
-                      {completedPlanetTasks}/{planetTasks.length} concluídas
-                    </span>
-                    {completedPlanetTasks === planetTasks.length && planetTasks.length > 0 && (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    )}
+
+                  {/* Barra Gráfica de Progresso do Objetivo */}
+                  <div className="w-full h-1.5 bg-white/5 print:bg-zinc-200 rounded-full overflow-hidden relative">
+                    <div 
+                      className="h-full bg-primary print:bg-primary rounded-full transition-all duration-1000" 
+                      style={{ width: `${planetRate}%` }} 
+                    />
                   </div>
                 </div>
               );
