@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rocket } from "lucide-react";
 import clsx from "clsx";
@@ -27,7 +27,7 @@ export const AVATARS = [
   { id: 'mer1', emoji: '🧜', label: 'Sereia' },
 ];
 
-export const StarField = () => (
+export const StarField = memo(() => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#0f172a]">
     <div className="absolute inset-0 opacity-30" style={{
       backgroundImage: 'radial-gradient(white 1px, transparent 0)',
@@ -119,9 +119,10 @@ export const StarField = () => (
       />
     ))}
   </div>
-);
+));
+StarField.displayName = 'StarField';
 
-export function SpaceShipVideo() {
+export const SpaceShipVideo = memo(function SpaceShipVideo() {
   const [videoState, setVideoState] = useState<'expanded' | 'icon'>('expanded');
   const [playCount, setPlayCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -195,9 +196,9 @@ export function SpaceShipVideo() {
       </AnimatePresence>
     </div>
   );
-}
+});
 
-export function HeroCharacter({ avatar, name, isCelebrating = false, isSad = false, isFiring = false }: { avatar: string, name: string, isCelebrating?: boolean, isSad?: boolean, isFiring?: boolean }) {
+export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCelebrating = false, isSad = false, isFiring = false }: { avatar: string, name: string, isCelebrating?: boolean, isSad?: boolean, isFiring?: boolean }) {
   const selectedAvatar = AVATARS.find(a => a.id === avatar) || AVATARS[0];
   const [isFlying, setIsFlying] = useState(false);
 
@@ -329,4 +330,4 @@ export function HeroCharacter({ avatar, name, isCelebrating = false, isSad = fal
       </div>
     </motion.div>
   );
-}
+});

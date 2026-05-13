@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star,
@@ -45,6 +45,27 @@ import { MissionList } from "@/components/desafio/MissionList";
 import { RewardShop } from "@/components/desafio/RewardShop";
 import { ParentDashboard } from "@/components/desafio/ParentDashboard";
 import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/types/desafio";
+
+const ClockDisplay = memo(() => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="hidden md:flex flex-col items-end">
+      <div className="text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-4 py-1 rounded-full border border-white/10 mb-1">
+        {currentTime.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+      </div>
+      <div className="text-xl font-black italic tracking-tighter text-white">
+        {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+      </div>
+    </div>
+  );
+});
+ClockDisplay.displayName = 'ClockDisplay';
 
 export default function DesafioEstrelas() {
   const [supabase] = useState(() => createClient());
@@ -237,12 +258,7 @@ export default function DesafioEstrelas() {
   const stars = activeChild?.stars || 0;
   const history = activeChild?.history || [];
 
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // O relógio em tempo real foi isolado no componente ClockDisplay para evitar re-renderizações a cada segundo.
 
   useEffect(() => {
     const initData = async () => {
@@ -1327,15 +1343,8 @@ export default function DesafioEstrelas() {
 
 
               <div className="flex gap-6 items-center">
-                {/* Relógio e Data */}
-                <div className="hidden md:flex flex-col items-end">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-4 py-1 rounded-full border border-white/10 mb-1">
-                    {currentTime.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </div>
-                  <div className="text-xl font-black italic tracking-tighter text-white">
-                    {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
+                {/* Relógio e Data Isolados */}
+                <ClockDisplay />
 
                 <div className="flex gap-2 relative">
                   <motion.div
