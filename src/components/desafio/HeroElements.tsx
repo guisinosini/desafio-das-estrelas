@@ -356,7 +356,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                     muted
                     onEnded={handleShipEnded}
                     playsInline
-                    className="w-[70%] h-[70%] object-contain"
+                    className="w-[100%] h-[100%] object-contain"
                   />
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
                 </div>
