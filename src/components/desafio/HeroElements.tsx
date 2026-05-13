@@ -206,41 +206,50 @@ export const SpaceShipVideo = memo(function SpaceShipVideo() {
 export const DailyConquestCelebration = memo(function DailyConquestCelebration({ tasks }: { tasks: Task[] }) {
   const [shipState, setShipState] = useState<'corner' | 'flying' | 'center' | 'icon'>('corner');
   const [showCelebration, setShowCelebration] = useState(false);
-  const [shipVideoState, setShipVideoState] = useState<'expanded' | 'icon'>('expanded');
   const [shipPlayCount, setShipPlayCount] = useState(0);
   const shipVideoRef = useRef<HTMLVideoElement>(null);
   const conquestVideoRef = useRef<HTMLVideoElement>(null);
   const celebratedRef = useRef(false);
+
+  // Guards para não disparar a celebração no mount (missões já concluídas de antes)
+  const isMountedRef = useRef(false);
+  const prevAllDailyDoneRef = useRef(false);
 
   // Detecta quando TODAS as missões diárias são concluídas
   const dailyTasks = tasks.filter(t => t.recurrence === 'daily');
   const allDailyDone = dailyTasks.length > 0 && dailyTasks.every(t => t.status === 'done');
 
   useEffect(() => {
-    if (allDailyDone && !celebratedRef.current) {
+    // Na primeira renderização apenas registra o estado inicial — não celebra
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      prevAllDailyDoneRef.current = allDailyDone;
+      return;
+    }
+
+    // Só celebra se houve TRANSIÇÃO de false → true nesta sessão
+    if (allDailyDone && !prevAllDailyDoneRef.current && !celebratedRef.current) {
       celebratedRef.current = true;
-      // Aguarda 800ms para dar feedback visual antes de animar
       setTimeout(() => {
         setShipState('flying');
-        // Após a animação de voo (1.2s), mostra o vídeo centralizado
         setTimeout(() => {
           setShipState('center');
           setShowCelebration(true);
-          // Burst duplo de confetti — canhões esquerdo e direito
           setTimeout(() => {
-            confetti({ particleCount: 120, angle: 60,  spread: 80, origin: { x: 0,   y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
-            confetti({ particleCount: 120, angle: 120, spread: 80, origin: { x: 1,   y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
+            confetti({ particleCount: 120, angle: 60,  spread: 80, origin: { x: 0, y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
+            confetti({ particleCount: 120, angle: 120, spread: 80, origin: { x: 1, y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
           }, 200);
-          setTimeout(() => {
-            conquestVideoRef.current?.play();
-          }, 300);
+          setTimeout(() => { conquestVideoRef.current?.play(); }, 300);
         }, 1200);
       }, 800);
     }
-    // Reseta se alguma missão for desfeita (novo ciclo)
+
+    // Reseta quando missões voltam a available (novo ciclo do dia seguinte)
     if (!allDailyDone) {
       celebratedRef.current = false;
     }
+
+    prevAllDailyDoneRef.current = allDailyDone;
   }, [allDailyDone]);
 
   const closeCelebration = () => {
@@ -252,14 +261,14 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
     }
   };
 
-  // Handlers da nave (video boa.mp4)
+  // Handlers da nave (boa.mp4) — só mostra a nave de canto quando NÃO está em celebração
   const handleShipEnded = () => {
     const next = shipPlayCount + 1;
-    if (next >= 2) { setShipVideoState('icon'); setShipPlayCount(0); }
+    if (next >= 2) { setShipState('icon'); setShipPlayCount(0); }
     else { setShipPlayCount(next); shipVideoRef.current?.play(); }
   };
   const handleIconClick = () => {
-    setShipVideoState('expanded');
+    setShipState('corner');
     setShipPlayCount(0);
     setTimeout(() => {
       if (shipVideoRef.current) { shipVideoRef.current.muted = false; shipVideoRef.current.play(); }
@@ -305,13 +314,13 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                     ? { duration: 1.2, ease: [0.22, 1, 0.36, 1] }
                     : { duration: 0.4 }
                 }
-                onClick={() => setShipVideoState('icon')}
+                onClick={() => setShipState('icon')}
                 whileHover={shipState === 'corner' ? { scale: 1.05 } : {}}
-                className="relative w-20 h-20 md:w-32 md:h-32 cursor-pointer"
+                className="relative w-14 h-14 md:w-[90px] md:h-[90px] cursor-pointer"
               >
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_red]" />
-                <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_10px_blue]" />
-                <div className="w-full h-full rounded-full border-[6px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_red]" />
+                <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_8px_blue]" />
+                <div className="w-full h-full rounded-full border-[4px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative">
                   <video
                     ref={shipVideoRef}
                     src="/boa.mp4"
@@ -323,8 +332,8 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                   />
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
                 </div>
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-9 bg-zinc-500 rounded-full" />
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-primary rounded-full animate-ping" />
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-px h-7 bg-zinc-500 rounded-full" />
+                <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full animate-ping" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -384,12 +393,12 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               initial={{ scale: 0.3, y: 100, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-56 h-56 md:w-72 md:h-72 cursor-pointer"
+              className="relative w-40 h-40 md:w-52 md:h-52 cursor-pointer"
               onClick={closeCelebration}
             >
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
-              <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
-              <div className="w-full h-full rounded-full border-[8px] border-primary/60 bg-zinc-900 shadow-[0_0_80px_rgba(45,212,191,0.7)] overflow-hidden relative">
+              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_12px_red]" />
+              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_12px_blue]" />
+              <div className="w-full h-full rounded-full border-[6px] border-primary/60 bg-zinc-900 shadow-[0_0_60px_rgba(45,212,191,0.7)] overflow-hidden relative">
                 <video
                   ref={conquestVideoRef}
                   src="/Conquista.mp4"
@@ -399,10 +408,10 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
               </div>
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-12 bg-zinc-500 rounded-full" />
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full animate-ping" />
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-1 h-8 bg-zinc-500 rounded-full" />
+              <div className="absolute -top-9 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-primary rounded-full animate-ping" />
               {/* Dica de toque */}
-              <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-white/30 whitespace-nowrap">
+              <p className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-white/30 whitespace-nowrap">
                 Toque para fechar
               </p>
             </motion.div>
