@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import {
@@ -96,6 +96,41 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 }) => {
   const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
+
+  // Função placeholder para envio de e‑mail (substituir por serviço real)
+  const sendEmail = async (to: string, subject: string, body: string) => {
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, body }),
+      });
+    } catch (e) {
+      console.error('Falha ao enviar e‑mail de lembrete:', e);
+    }
+  };
+
+  // Verifica missões atrasadas (≥ 3 dias sem conclusão) e envia alerta ao mentor
+  useEffect(() => {
+    if (!activeChild) return;
+    const now = new Date();
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    tasks.forEach((t) => {
+      // Ignora missões já concluídas
+      if (t.status === 'done') return;
+      // Se nunca foi completada, use a data de criação (assumida como lastCompleted undefined)
+      const last = t.lastCompleted ? new Date(t.lastCompleted) : null;
+      if (last) {
+        if (now.getTime() - last.getTime() >= threeDays) {
+          const subject = `Lembrete: missão "${t.title}" está pendente há 3+ dias`;
+          const body = `Olá mentor,\n\nA missão "${t.title}" da criança ${activeChild.name} não foi concluída há mais de 3 dias. Por favor, incentive a retomada da atividade.\n\nAtenciosamente,\nDesafio das Estrelas`; 
+          // Placeholder: usar e‑mail do mentor armazenado na aplicação (ex.: parentPin ou outro campo)
+          const mentorEmail = (activeChild as any).mentorEmail || '';
+          if (mentorEmail) sendEmail(mentorEmail, subject, body);
+        }
+      }
+    });
+  }, [activeChild?.id, tasks]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 md:gap-12 relative z-10">
