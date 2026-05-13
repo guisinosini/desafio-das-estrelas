@@ -1498,6 +1498,7 @@ export default function DesafioEstrelas() {
                       tasks={tasks}
                       activeChildAvatar={activeChild?.avatar || 'ast1'}
                       handleCompleteTask={handleCompleteTask}
+                      planets={activeChild?.planets || []}
                     />
                     <RewardShop
                       rewards={rewards}

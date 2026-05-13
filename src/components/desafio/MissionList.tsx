@@ -1,16 +1,17 @@
 import { motion } from "framer-motion";
 import { Star, CheckCircle2, RefreshCw, Rocket, Clock, Zap } from "lucide-react";
 import clsx from "clsx";
-import type { Task } from "@/types/desafio";
+import type { Task, Planet } from "@/types/desafio";
 import { AVATARS } from "./HeroElements";
 
 interface MissionListProps {
   tasks: Task[];
   activeChildAvatar: string;
   handleCompleteTask: (task: Task, e: any) => void;
+  planets?: Planet[];
 }
 
-export function MissionList({ tasks, activeChildAvatar, handleCompleteTask }: MissionListProps) {
+export function MissionList({ tasks, activeChildAvatar, handleCompleteTask, planets = [] }: MissionListProps) {
   const groups = [
     { title: '📍 Missões do Dia', key: 'daily', icon: Rocket, color: 'text-primary' },
     { title: '🗓️ Missões da Semana', key: 'weekly', icon: Clock, color: 'text-purple-400' },
@@ -62,15 +63,29 @@ export function MissionList({ tasks, activeChildAvatar, handleCompleteTask }: Mi
                     {task.title}
                   </h3>
 
+                  {(() => {
+                    const planet = planets?.find(p => p.id === task.planetId);
+                    if (!planet) return null;
+                    return (
+                      <div 
+                        className="absolute top-2 left-2 px-1.5 py-0.5 bg-black/40 backdrop-blur-md rounded-md border border-white/10 flex items-center gap-1 shadow-sm z-10"
+                        title={`Objetivo: ${planet.title}`}
+                      >
+                        <span className="text-xs">{planet.icon || "🪐"}</span>
+                        <span className="text-[6px] font-black uppercase text-white/60 tracking-tighter truncate max-w-[40px] hidden sm:inline">{planet.title}</span>
+                      </div>
+                    );
+                  })()}
+
                   {task.status === 'pending' && (
-                    <div className="absolute inset-0 bg-[#16213e]/90 backdrop-blur-md flex flex-col items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-[#16213e]/90 backdrop-blur-md flex flex-col items-center justify-center p-4 z-20">
                       <RefreshCw className="w-5 h-5 text-primary animate-spin mb-1" />
                       <p className="text-[7px] font-black uppercase tracking-widest">Validando...</p>
                     </div>
                   )}
 
                   {task.status === 'done' && (
-                    <div className="absolute top-2 right-4">
+                    <div className="absolute top-2 right-4 z-10">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
                     </div>
                   )}
