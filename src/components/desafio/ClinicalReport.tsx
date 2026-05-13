@@ -88,7 +88,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
           <Printer className="w-4 h-4" /> Exportar PDF / Imprimir
         </button>
       </div>
-      </div>
+
 
       {/* --- PÁGINA DO RELATÓRIO (Visível na tela e formatada na impressão) --- */}
       <div className="bg-white/5 border border-white/10 rounded-[40px] p-6 sm:p-10 backdrop-blur-xl print:bg-white print:text-black print:border-none print:p-0 print:shadow-none space-y-8 text-white">
