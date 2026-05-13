@@ -1398,27 +1398,6 @@ export default function DesafioEstrelas() {
             </header>
 
             <main className="p-6 max-w-7xl mx-auto pt-10 relative">
-              {/* PLANETAS DE FUNDO */}
-              {view === 'child' && activeChild?.planets && activeChild.planets.length > 0 && (
-                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 flex items-center justify-center opacity-40">
-                  {activeChild.planets.map((p, i) => (
-                    <motion.div
-                      key={p.id}
-                      animate={{ y: [0, -15, 0], rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 8 + i * 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="absolute flex flex-col items-center"
-                      style={{
-                        left: `${15 + (i * 25)}%`,
-                        top: `${10 + (i % 2) * 30}%`
-                      }}
-                    >
-                      <span className="text-6xl md:text-8xl drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] filter saturate-150">{p.icon}</span>
-                      <span className="mt-2 text-[10px] md:text-xs font-black uppercase tracking-widest text-white/50 bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">{p.title}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-
               {view === 'child' ? (
                 <div className="flex flex-col lg:flex-row gap-12 items-start relative z-10">
 
