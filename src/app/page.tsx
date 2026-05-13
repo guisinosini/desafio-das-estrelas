@@ -1302,30 +1302,6 @@ export default function DesafioEstrelas() {
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
           <DailyConquestCelebration tasks={tasks} />
 
-            {/* Banner da Aliança Galáctica */}
-            {fleetId && (
-              <div className="w-full bg-primary/20 backdrop-blur-md border-b border-primary/30 py-2 md:py-3 flex flex-col md:flex-row justify-center items-center gap-1 md:gap-12 overflow-hidden relative">
-                <motion.div
-                  animate={{ x: [-100, 100, -100] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent pointer-events-none"
-                />
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-primary rounded-full animate-pulse" />
-                  <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Frota Galáctica</span>
-                  <div className="md:hidden w-1 h-1 bg-primary rounded-full animate-pulse" />
-                </div>
-                <h2 className="text-xl md:text-4xl font-black uppercase italic tracking-[0.15em] md:tracking-[0.25em] text-white drop-shadow-[0_0_20px_rgba(45,212,191,0.8)] relative z-10 px-4 text-center">
-                  {fleetId}
-                </h2>
-                <div className="flex items-center gap-2">
-                  <div className="md:hidden w-1 h-1 bg-primary rounded-full animate-pulse" />
-                  <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Setor Ativo</span>
-                  <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-primary rounded-full animate-pulse" />
-                </div>
-              </div>
-            )}
-
             <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-4 md:p-6 flex justify-between items-center shadow-2xl">
               <div className="flex items-center gap-4">
                 <div onClick={() => {
@@ -1403,6 +1379,30 @@ export default function DesafioEstrelas() {
                 </div>
               </div>
             </header>
+
+            {/* Banner da Aliança Galáctica — Estilo Lilás */}
+            {fleetId && (
+              <div className="w-full bg-purple-500/10 backdrop-blur-md border-b border-purple-500/20 py-2 md:py-3 flex flex-col md:flex-row justify-center items-center gap-1 md:gap-12 overflow-hidden relative shadow-lg">
+                <motion.div
+                  animate={{ x: [-100, 100, -100] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent pointer-events-none"
+                />
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-purple-400 rounded-full animate-pulse" />
+                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-purple-400/60">Frota Galáctica</span>
+                  <div className="md:hidden w-1 h-1 bg-purple-400 rounded-full animate-pulse" />
+                </div>
+                <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-[0.15em] md:tracking-[0.25em] text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.6)] relative z-10 px-4 text-center">
+                  {fleetId}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <div className="md:hidden w-1 h-1 bg-purple-400 rounded-full animate-pulse" />
+                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-purple-400/60">Setor Ativo</span>
+                  <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-purple-400 rounded-full animate-pulse" />
+                </div>
+              </div>
+            )}
 
             <main className="p-6 max-w-7xl mx-auto pt-10 relative">
               {view === 'child' ? (
