@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import {
@@ -94,6 +94,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   handleDeductStars,
   removeChild,
 }) => {
+  const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
+  const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
+
   return (
     <div className="flex flex-col lg:flex-row gap-8 md:gap-12 relative z-10">
       {/* Navigation Buttons */}
@@ -496,7 +499,59 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         {/* Behavior */}
         {parentSubView === 'behavior' && (
           <div className="space-y-8">
-            <div className="space-y-2"><h2 className="text-3xl font-black uppercase italic tracking-tighter text-red-400">Ponte de Comportamento</h2><p className="text-white/40">Deduza estrelas do {activeChild?.name} para alinhar a rota comportamental.</p></div>
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter text-red-400">
+                Ponte de Comportamento
+              </h2>
+              <p className="text-white/40">
+                Deduza estrelas do {activeChild?.name} para alinhar a rota comportamental.
+              </p>
+            </div>
+
+            {/* Breve Explicação Educacional */}
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex gap-4 backdrop-blur-md">
+              <AlertCircle className="w-6 h-6 text-red-400 shrink-0" />
+              <p className="text-xs sm:text-sm text-red-200/80 leading-relaxed font-medium">
+                Sinalize imediatamente quando combinados importantes forem desrespeitados. A dedução visual atua como um limite compreensível, auxiliando a criança a entender causa e efeito na regulação de suas emoções no ambiente familiar.
+              </p>
+            </div>
+
+            {/* Input para Comportamentos Customizados */}
+            <div className="p-4 bg-white/5 border border-dashed border-red-500/30 rounded-2xl space-y-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-red-400">
+                Registrar Outro Comportamento Negativo:
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  placeholder="Descreva o atrito (ex: Deixou os brinquedos espalhados)..."
+                  value={customBehaviorLabel}
+                  onChange={e => setCustomBehaviorLabel(e.target.value)}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-red-500 text-white"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/40 font-black uppercase">Penalidade:</span>
+                  <input
+                    type="number"
+                    value={customBehaviorStars}
+                    onChange={e => setCustomBehaviorStars(parseInt(e.target.value) || 0)}
+                    className="w-16 bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-xs font-bold text-center outline-none text-red-400"
+                  />
+                  <button
+                    disabled={!customBehaviorLabel}
+                    onClick={() => {
+                      handleDeductStars(customBehaviorStars, customBehaviorLabel);
+                      setCustomBehaviorLabel('');
+                      setCustomBehaviorStars(2);
+                    }}
+                    className="px-6 py-3 bg-red-500 text-white rounded-xl hover:scale-105 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-40"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
                 { label: "Birra / Malcriação", stars: 2 },
