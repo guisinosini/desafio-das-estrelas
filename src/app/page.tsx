@@ -346,6 +346,20 @@ export default function DesafioEstrelas() {
     setChildren((prev: ChildData[]) => prev.map(c => c.id === activeChildId ? { ...c, ...updates } : c));
   };
 
+  const removeChild = (id: string) => {
+    const remaining = children.filter(c => c.id !== id);
+    setChildren(remaining);
+    if (activeChildId === id) {
+      if (remaining.length > 0) {
+        setActiveChildId(remaining[0].id);
+        setView('child');
+      } else {
+        setActiveChildId(null);
+        setStage('select_child');
+      }
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("🚀 Iniciando handleAuth...");
@@ -1531,6 +1545,7 @@ export default function DesafioEstrelas() {
                   setFleetId={setFleetId}
                   loadFleetRanking={loadFleetRanking}
                   handleDeductStars={handleDeductStars}
+                  removeChild={removeChild}
                 />
               )}
             </main>

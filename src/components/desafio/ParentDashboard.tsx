@@ -53,6 +53,7 @@ interface ParentDashboardProps {
   setFleetId: (id: string) => void;
   loadFleetRanking: () => void;
   handleDeductStars: (stars: number, reason: string) => void;
+  removeChild: (id: string) => void;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -89,6 +90,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   setFleetId,
   loadFleetRanking,
   handleDeductStars,
+  removeChild,
 }) => {
   return (
     <div className="flex flex-col lg:flex-row gap-8 md:gap-12 relative z-10">
@@ -123,8 +125,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         <button
           onClick={() => {
             if (confirm(`Tem certeza que deseja excluir o perfil de ${activeChild?.name}?`)) {
-              const remaining = children.filter(c => c.id !== activeChildId);
-              // Note: parent component will handle resetting stage if needed
+              if (activeChildId) {
+                removeChild(activeChildId);
+              }
             }
           }}
           className="w-full flex items-center gap-3 px-8 py-5 mt-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all"
