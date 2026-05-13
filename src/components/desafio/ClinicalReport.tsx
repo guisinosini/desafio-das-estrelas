@@ -226,7 +226,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
                       <li key={title}>
                         {title}: {cnt} vez(es) concluída(s)
                       </li>
-                    ))}
+                    </div>))}
                   </ul>
 
                   {/* Barra Gráfica de Progresso do Objetivo */}
