@@ -293,9 +293,9 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                   shipState === 'flying'
                     ? {
                         opacity: 1,
-                        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 112 : 300,
-                        y: typeof window !== 'undefined' ? -(window.innerHeight / 2 - 112) : -300,
-                        scale: 1.6,
+                        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 64 : 300,
+                        y: typeof window !== 'undefined' ? -(window.innerHeight / 2 - 64) : -300,
+                        scale: 1.4,
                         rotate: [0, -15, 15, -10, 0],
                       }
                     : { opacity: 1, x: 0, scale: 1 }
@@ -306,12 +306,12 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                     : { duration: 0.4 }
                 }
                 onClick={() => setShipVideoState('icon')}
-                whileHover={shipState === 'corner' ? { scale: 1.02 } : {}}
-                className="relative w-28 h-28 md:w-56 md:h-56 cursor-pointer"
+                whileHover={shipState === 'corner' ? { scale: 1.05 } : {}}
+                className="relative w-20 h-20 md:w-32 md:h-32 cursor-pointer"
               >
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
-                <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
-                <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative">
+                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_red]" />
+                <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_10px_blue]" />
+                <div className="w-full h-full rounded-full border-[6px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative">
                   <video
                     ref={shipVideoRef}
                     src="/boa.mp4"
@@ -323,15 +323,15 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                   />
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
                 </div>
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-12 bg-zinc-500 rounded-full" />
-                <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full animate-ping" />
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-9 bg-zinc-500 rounded-full" />
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-primary rounded-full animate-ping" />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       )}
 
-      {/* Modal de Celebração — Nave centralizada + Conquista.mp4 */}
+      {/* Modal de Celebração — Conquista.mp4 toca COM ÁUDIO dentro da nave */}
       <AnimatePresence>
         {showCelebration && (
           <motion.div
@@ -356,8 +356,8 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                 animate={{
                   opacity: [0, 1, 0],
                   scale: [0, 1.5, 0],
-                  x: (Math.cos((i / 20) * Math.PI * 2) * 200) + (Math.random() * 100 - 50),
-                  y: (Math.sin((i / 20) * Math.PI * 2) * 200) + (Math.random() * 100 - 50),
+                  x: (Math.cos((i / 20) * Math.PI * 2) * 180) + (Math.random() * 80 - 40),
+                  y: (Math.sin((i / 20) * Math.PI * 2) * 180) + (Math.random() * 80 - 40),
                 }}
                 transition={{ duration: 1.5, delay: i * 0.06, ease: 'easeOut' }}
                 className="absolute text-2xl pointer-events-none select-none"
@@ -366,59 +366,45 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               </motion.div>
             ))}
 
-            {/* Nave centralizada animada */}
-            <motion.div
-              initial={{ scale: 0.3, y: 200, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-36 h-36 md:w-52 md:h-52 mb-8 cursor-pointer"
-              onClick={closeCelebration}
-            >
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
-              <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
-              <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-[0_0_80px_rgba(45,212,191,0.6)] overflow-hidden relative">
-                <video
-                  src="/boa.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
-              </div>
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-12 bg-zinc-500 rounded-full" />
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full animate-ping" />
-            </motion.div>
-
             {/* Título */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
               className="text-center mb-6 px-4"
             >
               <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary mb-2">🚀 MISSÃO CUMPRIDA!</p>
-              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(45,212,191,0.6)]">
+              <h2 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(45,212,191,0.6)]">
                 Todas as Missões Concluídas!
               </h2>
             </motion.div>
 
-            {/* Vídeo Conquista.mp4 */}
+            {/* Nave centralizada — toca Conquista.mp4 COM ÁUDIO dentro do círculo */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="relative rounded-[32px] overflow-hidden border-4 border-primary/40 shadow-[0_0_60px_rgba(45,212,191,0.3)] max-w-sm w-full mx-4"
+              initial={{ scale: 0.3, y: 100, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-56 h-56 md:w-72 md:h-72 cursor-pointer"
+              onClick={closeCelebration}
             >
-              <video
-                ref={conquestVideoRef}
-                src="/Conquista.mp4"
-                playsInline
-                controls
-                onEnded={closeCelebration}
-                className="w-full rounded-[28px]"
-              />
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
+              <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
+              <div className="w-full h-full rounded-full border-[8px] border-primary/60 bg-zinc-900 shadow-[0_0_80px_rgba(45,212,191,0.7)] overflow-hidden relative">
+                <video
+                  ref={conquestVideoRef}
+                  src="/Conquista.mp4"
+                  playsInline
+                  onEnded={closeCelebration}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+              </div>
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-12 bg-zinc-500 rounded-full" />
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full animate-ping" />
+              {/* Dica de toque */}
+              <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-white/30 whitespace-nowrap">
+                Toque para fechar
+              </p>
             </motion.div>
 
             <motion.button
@@ -426,7 +412,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 0.4 }}
               onClick={closeCelebration}
-              className="mt-6 px-10 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-sm"
+              className="mt-14 px-10 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-sm"
             >
               Continuar a Missão 🚀
             </motion.button>
@@ -435,6 +421,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
       </AnimatePresence>
     </>
   );
+
 });
 DailyConquestCelebration.displayName = 'DailyConquestCelebration';
 
