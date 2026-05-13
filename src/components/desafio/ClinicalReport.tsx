@@ -1,0 +1,214 @@
+import React, { useState } from 'react';
+import {
+  Brain,
+  Printer,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  Calendar,
+  Sparkles,
+  FileText
+} from 'lucide-react';
+import type { ChildData, Task } from '@/types/desafio';
+
+interface ClinicalReportProps {
+  activeChild?: ChildData | null;
+}
+
+export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) => {
+  const [mentorNotes, setMentorNotes] = useState('');
+
+  if (!activeChild) {
+    return (
+      <div className="p-12 text-center text-white/40 font-black uppercase italic tracking-widest">
+        Selecione um Herói para visualizar os relatórios clínicos.
+      </div>
+    );
+  }
+
+  const tasks = activeChild.tasks || [];
+  const history = activeChild.history || [];
+  const planets = activeChild.planets || [];
+
+  // Cálculos do período
+  const totalTasks = tasks.length;
+  const doneTasks = tasks.filter(t => t.status === 'done').length;
+  const taskCompletionRate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+  // Deduções de estrelas (Atritos de comportamento)
+  const behaviorDeductions = history.filter(h => h.type === 'loss' || h.amount < 0 || h.title.includes('Birra') || h.title.includes('obedeceu') || h.title.includes('Agressividade'));
+  const totalDeductionsCount = behaviorDeductions.length;
+
+  // Ganhos de estrelas (Reforço positivo)
+  const starGains = history.filter(h => h.type === 'gain' && h.amount > 0);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="space-y-8 clinical-report-container">
+      {/* Barra superior de Ação (Escondida na impressão) */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-primary/10 border border-primary/20 p-6 rounded-3xl backdrop-blur-md print:hidden">
+        <div>
+          <h2 className="text-xl font-black uppercase italic tracking-tighter text-primary flex items-center gap-2">
+            <Brain className="w-6 h-6" /> Integração Terapêutica
+          </h2>
+          <p className="text-xs text-white/60 font-medium mt-1">
+            Gere o relatório formatado para o psicólogo ou neuropediatra acompanhar a evolução comportamental em casa.
+          </p>
+        </div>
+        <button
+          onClick={handlePrint}
+          className="px-6 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center gap-2 shrink-0"
+        >
+          <Printer className="w-4 h-4" /> Exportar PDF / Imprimir
+        </button>
+      </div>
+
+      {/* --- PÁGINA DO RELATÓRIO (Visível na tela e formatada na impressão) --- */}
+      <div className="bg-white/5 border border-white/10 rounded-[40px] p-6 sm:p-10 backdrop-blur-xl print:bg-white print:text-black print:border-none print:p-0 print:shadow-none space-y-8 text-white">
+        
+        {/* Cabeçalho do Documento */}
+        <div className="border-b border-white/10 print:border-zinc-300 pb-6 flex justify-between items-start">
+          <div>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary print:text-zinc-500 block">
+              Relatório de Acompanhamento Comportamental
+            </span>
+            <h1 className="text-3xl font-black uppercase italic tracking-tighter mt-1 print:text-black">
+              {activeChild.name}
+            </h1>
+            <p className="text-xs text-white/40 print:text-zinc-600 font-medium mt-1 flex items-center gap-1">
+              <Calendar className="w-3 h-3" /> Emitido em: {new Date().toLocaleDateString('pt-BR')}
+            </p>
+          </div>
+          <div className="text-right">
+            <span className="text-2xl font-black text-yellow-400 print:text-zinc-800 block">
+              {activeChild.stars}⭐
+            </span>
+            <span className="text-[9px] font-bold uppercase text-white/40 print:text-zinc-500 block">
+              Estrelas Atuais
+            </span>
+            {activeChild.badges && activeChild.badges.length > 0 && (
+              <span className="text-[9px] font-bold uppercase text-primary print:text-zinc-600 block mt-1">
+                🏆 {activeChild.badges.length} Medalhas
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Resumo Executivo / Termômetro */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 bg-white/5 print:bg-zinc-50 border border-white/5 print:border-zinc-200 rounded-2xl space-y-2">
+            <div className="flex items-center gap-2 text-emerald-400 print:text-emerald-700">
+              <TrendingUp className="w-5 h-5" />
+              <span className="text-xs font-black uppercase tracking-widest">Adesão a Hábitos</span>
+            </div>
+            <div className="text-3xl font-black italic tracking-tighter print:text-black">
+              {taskCompletionRate}%
+            </div>
+            <p className="text-[10px] text-white/40 print:text-zinc-600 leading-relaxed">
+              Taxa de conclusão de missões cadastradas ({doneTasks} de {totalTasks} tarefas concluídas na iteração atual). Reflete o engajamento e a constância na rotina visual.
+            </p>
+          </div>
+
+          <div className="p-6 bg-white/5 print:bg-zinc-50 border border-white/5 print:border-zinc-200 rounded-2xl space-y-2">
+            <div className="flex items-center gap-2 text-red-400 print:text-red-700">
+              <AlertTriangle className="w-5 h-5" />
+              <span className="text-xs font-black uppercase tracking-widest">Registros de Atrito</span>
+            </div>
+            <div className="text-3xl font-black italic tracking-tighter print:text-black">
+              {totalDeductionsCount}
+            </div>
+            <p className="text-[10px] text-white/40 print:text-zinc-600 leading-relaxed">
+              Episódios de desregulação ou quebra de combinados pontuados na Ponte de Comportamento. Indicador valioso para mapear gatilhos no ambiente familiar.
+            </p>
+          </div>
+        </div>
+
+        {/* Evolução por Grande Objetivo (Planetas) */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-primary print:text-zinc-800 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> Engajamento por Objetivo Terapêutico (Planetas)
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+            {planets.map(planet => {
+              const planetTasks = tasks.filter(t => t.planetId === planet.id);
+              const completedPlanetTasks = planetTasks.filter(t => t.status === 'done').length;
+              return (
+                <div key={planet.id} className="p-4 bg-white/5 print:bg-zinc-50 rounded-xl border border-white/5 print:border-zinc-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{planet.icon || "🪐"}</span>
+                    <div>
+                      <h4 className="text-sm font-bold print:text-black">{planet.title}</h4>
+                      <p className="text-[10px] text-white/40 print:text-zinc-500">
+                        {planetTasks.length} missão(ões) vinculada(s)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <span className="text-xs font-black print:text-zinc-700">
+                      {completedPlanetTasks}/{planetTasks.length} concluídas
+                    </span>
+                    {completedPlanetTasks === planetTasks.length && planetTasks.length > 0 && (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {planets.length === 0 && (
+              <p className="text-xs text-white/40 print:text-zinc-500 italic">
+                Nenhum Planeta (Objetivo Maior) mapeado no momento. Use a aba "Sala de Controle" para vincular tarefas a grandes metas.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Extrato de Comportamentos Críticos */}
+        {behaviorDeductions.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-black uppercase tracking-widest text-red-400 print:text-red-800 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" /> Detalhamento de Atritos Comportamentais
+            </h3>
+            <div className="space-y-2">
+              {behaviorDeductions.slice(0, 5).map((item, idx) => (
+                <div key={idx} className="p-3 bg-red-500/5 print:bg-white print:border-b print:border-zinc-200 rounded-lg flex justify-between items-center text-xs">
+                  <span className="font-bold text-white/80 print:text-zinc-800">{item.title}</span>
+                  <span className="text-[10px] text-white/40 print:text-zinc-500">{item.date}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Diário de Bordo / Observações dos Pais */}
+        <div className="space-y-3 print:pt-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-white/60 print:text-zinc-800 flex items-center gap-2">
+            <FileText className="w-4 h-4" /> Observações da Família (Diário de Bordo)
+          </h3>
+          
+          {/* TextArea editável na tela, renderizado como parágrafo limpo na impressão */}
+          <div className="print:hidden">
+            <textarea
+              value={mentorNotes}
+              onChange={e => setMentorNotes(e.target.value)}
+              placeholder="Escreva aqui observações sobre o sono, humor, adaptação escolar ou fatos relevantes da semana para o terapeuta ler..."
+              className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary resize-none"
+            />
+          </div>
+          
+          <div className="hidden print:block text-xs text-zinc-800 whitespace-pre-wrap leading-relaxed border-l-2 border-zinc-400 pl-4 py-1">
+            {mentorNotes || "Nenhuma observação adicional preenchida pelo mentor neste período."}
+          </div>
+        </div>
+
+        {/* Rodapé Clínico na Impressão */}
+        <div className="hidden print:block pt-12 border-t border-zinc-300 text-center text-[9px] text-zinc-500 uppercase tracking-widest">
+          Documento gerado através do sistema Desafio das Estrelas • Gamificação & Acompanhamento de Desenvolvimento Infantil
+        </div>
+
+      </div>
+    </div>
+  );
+};

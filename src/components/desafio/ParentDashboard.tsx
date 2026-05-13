@@ -15,9 +15,11 @@ import {
   Check,
   X,
   Gift,
+  Brain,
 } from 'lucide-react';
 import type { Task, Reward, ChildData, TaskRecurrence } from '@/types/desafio';
 import { AVATARS } from '@/components/desafio/HeroElements';
+import { ClinicalReport } from './ClinicalReport';
 
 interface ParentDashboardProps {
   parentSubView: string;
@@ -95,7 +97,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   return (
     <div className="flex flex-col lg:flex-row gap-8 md:gap-12 relative z-10">
       {/* Navigation Buttons */}
-      <div className="lg:w-64 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 scrollbar-hide snap-x">
+      <div className="lg:w-64 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 scrollbar-hide snap-x print:hidden">
         {[
           { id: 'approvals', label: 'Validações', icon: CheckCircle2 },
           { id: 'missions', label: 'Sala de Controle', icon: Rocket },
@@ -104,6 +106,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           { id: 'behavior', label: 'Comportamento', icon: AlertCircle },
           { id: 'settings', label: 'Ajustes Perfil', icon: Settings },
           { id: 'history', label: 'Histórico', icon: History },
+          { id: 'reports', label: 'Relatórios', icon: Brain },
         ].map(item => (
           <button
             key={item.id}
@@ -544,6 +547,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {parentSubView === 'reports' && (
+          <div className="space-y-8">
+            <ClinicalReport activeChild={activeChild} />
           </div>
         )}
       </div>
