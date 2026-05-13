@@ -432,7 +432,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                   src="/Conquista.mp4"
                   playsInline
                   onEnded={closeCelebration}
-                  className="w-full h-full object-cover"
+                  className="w-[100%] h-[100%] object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
               </div>
