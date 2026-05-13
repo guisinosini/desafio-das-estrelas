@@ -1,5 +1,15 @@
 export type TaskRecurrence = 'daily' | 'weekly' | 'monthly' | 'once';
-export type Task = { id: string; title: string; stars: number; recurrence: TaskRecurrence; status: 'available' | 'pending' | 'done'; lastCompleted?: string; planetId?: string; };
+export type Task = {
+  id: string;
+  title: string;
+  stars: number;
+  recurrence: TaskRecurrence;
+  status: 'available' | 'pending' | 'done';
+  lastCompleted?: string;
+  planetId?: string;
+  /** Histórico de todos os timestamps ISO de conclusão aprovada. Usado pelo relatório clínico para filtrar por período com precisão. */
+  completionLog?: string[];
+};
 export type Reward = { id: string; title: string; cost: number; };
 export type Planet = { id: string; title: string; icon?: string; achieved: boolean; };
 export type ChildData = {

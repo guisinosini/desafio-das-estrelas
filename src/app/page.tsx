@@ -583,6 +583,12 @@ export default function DesafioEstrelas() {
     if (task && activeChild) {
       const newStars = activeChild.stars + task.stars;
       const newHistory = [{ id: Date.now().toString(), title: task.title, type: 'gain' as const, amount: task.stars, date: new Date().toLocaleString() }, ...history].slice(0, 20);
+      const completedAt = new Date().toISOString();
+
+      // Acumula o log de conclusões (mantém histórico entre ciclos de tarefas recorrentes)
+      const updatedTask = (t: Task) => t.id === taskId
+        ? { ...t, status: 'done' as const, lastCompleted: completedAt, completionLog: [...(t.completionLog || []), completedAt] }
+        : t;
 
       // Checar Badges
       const currentBadges = activeChild.badges || [];
@@ -593,7 +599,7 @@ export default function DesafioEstrelas() {
         updateActiveChild({
           stars: newStars,
           dailyStars: activeChild.dailyStars + task.stars,
-          tasks: tasks.map((t: Task) => t.id === taskId ? { ...t, status: 'done', lastCompleted: new Date().toISOString() } : t),
+          tasks: tasks.map(updatedTask),
           history: newHistory,
           badges: [...currentBadges, ...unlockedNow.map(b => b.id)]
         });
@@ -601,7 +607,7 @@ export default function DesafioEstrelas() {
         updateActiveChild({
           stars: newStars,
           dailyStars: activeChild.dailyStars + task.stars,
-          tasks: tasks.map((t: Task) => t.id === taskId ? { ...t, status: 'done', lastCompleted: new Date().toISOString() } : t),
+          tasks: tasks.map(updatedTask),
           history: newHistory
         });
       }
@@ -610,6 +616,7 @@ export default function DesafioEstrelas() {
       setTimeout(() => setIsCelebrating(false), 2000);
     }
   };
+
 
   const handleDeductStars = (amount: number, reason: string) => {
     if (stars === 0 || !activeChild) return;

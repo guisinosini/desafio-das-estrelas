@@ -32,52 +32,81 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild }) =
   const history = activeChild.history || [];
   const planets = activeChild.planets || [];
 
-  // Filtro de período
-  const filterByDate = (dateStr: string) => {
-    if (!startDate && !endDate) return true;
-    const d = new Date(dateStr);
-    if (startDate && d < new Date(startDate)) return false;
-    if (endDate && d > new Date(endDate + 'T23:59:59')) return false;
+  // ─── Datas de filtro calculadas uma única vez ────────────────────────────
+  const startTs = startDate ? new Date(startDate).getTime() : null;
+  const endTs   = endDate   ? new Date(endDate + 'T23:59:59').getTime() : null;
+
+  const isInRange = (isoStr: string): boolean => {
+    if (!startTs && !endTs) return true;
+    const t = new Date(isoStr).getTime();
+    if (startTs && t < startTs) return false;
+    if (endTs   && t > endTs)   return false;
     return true;
   };
 
-  const totalTasks = tasks.length;
-  const doneTasks = tasks.filter(t => t.status === 'done').length;
-  const taskCompletionRate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-
-  const behaviorDeductions = history.filter(
-    h =>
-      (h.type === 'loss' || h.amount < 0 ||
-        h.title.includes('Birra') ||
-        h.title.includes('obedeceu') ||
-        h.title.includes('Agressividade')) &&
-      filterByDate(h.date)
-  );
-  const totalDeductionsCount = behaviorDeductions.length;
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // Gráfico de barras - Missões realizadas (com filtro de data)
+  // ─── Missões concluídas no período (usa completionLog para precisão total) ─
+  // Cada entrada no log representa uma conclusão aprovada com timestamp ISO.
+  // Tarefas recorrentes acumulam entradas a cada ciclo, então o filtro é exato.
   const missionCounts: Record<string, number> = {};
   tasks.forEach(t => {
-    if (t.status === 'done') {
-      // Usa lastCompleted para filtrar por período; se não houver data, inclui sempre
-      const withinRange = t.lastCompleted ? filterByDate(t.lastCompleted) : (!startDate && !endDate);
-      if (withinRange) {
+    if (t.completionLog && t.completionLog.length > 0) {
+      // Conta apenas os timestamps que caem no período selecionado
+      const countInRange = t.completionLog.filter(isInRange).length;
+      if (countInRange > 0) {
+        missionCounts[t.title] = (missionCounts[t.title] || 0) + countInRange;
+      }
+    } else if (t.status === 'done' && t.lastCompleted) {
+      // Fallback para tarefas antigas (sem completionLog ainda)
+      if (isInRange(t.lastCompleted)) {
         missionCounts[t.title] = (missionCounts[t.title] || 0) + 1;
       }
     }
   });
   const missionMax = Math.max(...Object.values(missionCounts), 1);
 
-  // Gráfico de barras - Punições
+  // ─── Total de missões concluídas no período (para as métricas de adesão) ─
+  const totalMissionsInPeriod = Object.values(missionCounts).reduce((a, b) => a + b, 0);
+  // Taxa de adesão: missões no período / total de tarefas configuradas
+  const totalTasks = tasks.length;
+  const taskCompletionRate = totalTasks > 0 ? Math.round((totalMissionsInPeriod / totalTasks) * 100) : 0;
+
+  // ─── Punições (filtradas pelo history) ───────────────────────────────────
+  const behaviorDeductions = history.filter(h =>
+    (h.type === 'loss' || h.amount < 0 ||
+      h.title.includes('Birra') ||
+      h.title.includes('obedeceu') ||
+      h.title.includes('Agressividade')) &&
+    isInRange(h.date)
+  );
+  const totalDeductionsCount = behaviorDeductions.length;
+
+  // ─── Punições agrupadas para o gráfico ───────────────────────────────────
   const punishCounts: Record<string, number> = {};
   behaviorDeductions.forEach(b => {
     punishCounts[b.title] = (punishCounts[b.title] || 0) + 1;
   });
   const punishMax = Math.max(...Object.values(punishCounts), 1);
+
+  // ─── Engajamento por Planeta (filtrado pelo completionLog) ───────────────
+  const getPlanetStats = (planetId: string) => {
+    const planetTasks = tasks.filter(t => t.planetId === planetId);
+    const completedCounts: Record<string, number> = {};
+    planetTasks.forEach(t => {
+      let count = 0;
+      if (t.completionLog && t.completionLog.length > 0) {
+        count = t.completionLog.filter(isInRange).length;
+      } else if (t.status === 'done' && t.lastCompleted && isInRange(t.lastCompleted)) {
+        count = 1;
+      }
+      if (count > 0) completedCounts[t.title] = (completedCounts[t.title] || 0) + count;
+    });
+    const totalCompleted = Object.values(completedCounts).reduce((a, b) => a + b, 0);
+    const planetRate = planetTasks.length > 0 ? Math.round((totalCompleted / planetTasks.length) * 100) : 0;
+    return { planetTasks, completedCounts, totalCompleted, planetRate };
+  };
+
+  const handlePrint = () => window.print();
+
 
   return (
     <div className="space-y-8 clinical-report-container" style={{ background: 'transparent' }}>
@@ -229,7 +258,7 @@ _Gerado pelo sistema Desafio das Estrelas | Instituto Kamaleon_`;
               />
             </div>
             <p className="text-[10px] text-white/40 print:text-zinc-600 leading-relaxed pt-1">
-              Taxa de conclusão: {doneTasks} de {totalTasks} tarefas concluídas.
+              Taxa de conclusão: {totalMissionsInPeriod} missão(ões) concluída(s) de {totalTasks} tarefa(s) configurada(s){startTs || endTs ? ' no período' : ''}.
             </p>
           </div>
 
@@ -281,18 +310,7 @@ _Gerado pelo sistema Desafio das Estrelas | Instituto Kamaleon_`;
               </p>
             ) : (
               planets.map(planet => {
-                const planetTasks = tasks.filter(t => t.planetId === planet.id);
-                const completedCounts: Record<string, number> = {};
-                planetTasks.forEach(t => {
-                  if (t.status === 'done') {
-                    completedCounts[t.title] = (completedCounts[t.title] || 0) + 1;
-                  }
-                });
-                const totalCompleted = Object.values(completedCounts).reduce((a, b) => a + b, 0);
-                const planetRate = planetTasks.length > 0
-                  ? Math.round((totalCompleted / planetTasks.length) * 100)
-                  : 0;
-
+                const { planetTasks, completedCounts, totalCompleted, planetRate } = getPlanetStats(planet.id);
                 return (
                   <div key={planet.id} className="p-4 bg-white/5 print:bg-zinc-50 rounded-xl border border-white/5 print:border-zinc-200 flex flex-col gap-3">
                     <div className="flex justify-between items-start gap-2">
@@ -307,9 +325,9 @@ _Gerado pelo sistema Desafio das Estrelas | Instituto Kamaleon_`;
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-black print:text-zinc-700">
-                          {totalCompleted}/{planetTasks.length} ({planetRate}%)
+                          {totalCompleted} conclusão(ões) ({planetRate}%)
                         </span>
-                        {totalCompleted === planetTasks.length && planetTasks.length > 0 && (
+                        {planetRate >= 100 && planetTasks.length > 0 && (
                           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                         )}
                       </div>
@@ -319,9 +337,7 @@ _Gerado pelo sistema Desafio das Estrelas | Instituto Kamaleon_`;
                     {Object.keys(completedCounts).length > 0 && (
                       <ul className="list-disc list-inside text-xs text-white/60 print:text-zinc-600">
                         {Object.entries(completedCounts).map(([title, cnt]) => (
-                          <li key={title}>
-                            {title}: {cnt} vez(es) concluída(s)
-                          </li>
+                          <li key={title}>{title}: {cnt} vez(es){startTs || endTs ? ' no período' : ''}</li>
                         ))}
                       </ul>
                     )}
@@ -330,7 +346,7 @@ _Gerado pelo sistema Desafio das Estrelas | Instituto Kamaleon_`;
                     <div className="w-full h-1.5 bg-white/5 print:bg-zinc-200 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full transition-all duration-1000"
-                        style={{ width: `${planetRate}%` }}
+                        style={{ width: `${Math.min(planetRate, 100)}%` }}
                       />
                     </div>
                   </div>
