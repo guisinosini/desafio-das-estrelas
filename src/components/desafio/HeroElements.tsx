@@ -167,14 +167,14 @@ export const SpaceShipVideo = memo(function SpaceShipVideo() {
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
             <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
 
-            <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative">
+            <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative flex items-center justify-center">
               <video
                 ref={videoRef}
                 src="/boa.mp4"
                 autoPlay
                 onEnded={handleEnded}
                 playsInline
-                className="w-full h-full object-cover scale-110"
+                className="w-[70%] h-[70%] object-contain"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
             </div>
@@ -329,8 +329,8 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                   shipState === 'flying'
                     ? {
                         opacity: 1,
-                        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 64 : 300,
-                        y: typeof window !== 'undefined' ? -(window.innerHeight / 2 - 64) : -300,
+                        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 112 : 300,
+                        y: typeof window !== 'undefined' ? -(window.innerHeight / 2 - 112) : -300,
                         scale: 1.4,
                         rotate: [0, -15, 15, -10, 0],
                       }
@@ -347,9 +347,8 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               >
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
                 <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
-                {/* Círculo da nave — tamanho original */}
+                {/* Círculo da nave — restaurado tamanho original */}
                 <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative flex items-center justify-center">
-                  {/* Vídeo ocupa 70% do círculo (−30% do tamanho interno) */}
                   <video
                     ref={shipVideoRef}
                     src="/boa.mp4"
@@ -357,7 +356,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                     muted
                     onEnded={handleShipEnded}
                     playsInline
-                    className="w-[70%] h-[70%] object-cover rounded-full"
+                    className="w-[70%] h-[70%] object-contain"
                   />
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
                 </div>
