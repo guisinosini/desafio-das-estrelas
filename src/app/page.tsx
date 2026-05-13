@@ -40,7 +40,7 @@ import { createClient } from "@/lib/supabase/client";
 import confetti from "canvas-confetti";
 import clsx from "clsx";
 
-import { AVATARS, StarField, SpaceShipVideo, HeroCharacter } from "@/components/desafio/HeroElements";
+import { AVATARS, StarField, SpaceShipVideo, HeroCharacter, DailyConquestCelebration } from "@/components/desafio/HeroElements";
 import { MissionList } from "@/components/desafio/MissionList";
 import { RewardShop } from "@/components/desafio/RewardShop";
 import { ParentDashboard } from "@/components/desafio/ParentDashboard";
@@ -1300,7 +1300,7 @@ export default function DesafioEstrelas() {
         {/* --- DASHBOARD ADVENTURE --- */}
         {stage === 'adventure' && (
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
-            <SpaceShipVideo />
+          <DailyConquestCelebration tasks={tasks} />
 
             {/* Banner da Aliança Galáctica */}
             {fleetId && (

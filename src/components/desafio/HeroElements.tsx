@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useRef, memo } from "react";
+import { useState, useRef, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Rocket } from "lucide-react";
+import { Rocket, X } from "lucide-react";
 import clsx from "clsx";
+import type { Task } from "@/types/desafio";
+import confetti from "canvas-confetti";
 
 // --- Constantes ---
 export const AVATARS = [
@@ -197,6 +199,244 @@ export const SpaceShipVideo = memo(function SpaceShipVideo() {
     </div>
   );
 });
+
+// ─── DailyConquestCelebration ──────────────────────────────────────────────
+// Monitora as missões diárias. Quando todas ficam 'done', anima a nave
+// voando para o centro da tela e reproduz o vídeo Conquista.mp4.
+export const DailyConquestCelebration = memo(function DailyConquestCelebration({ tasks }: { tasks: Task[] }) {
+  const [shipState, setShipState] = useState<'corner' | 'flying' | 'center' | 'icon'>('corner');
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [shipVideoState, setShipVideoState] = useState<'expanded' | 'icon'>('expanded');
+  const [shipPlayCount, setShipPlayCount] = useState(0);
+  const shipVideoRef = useRef<HTMLVideoElement>(null);
+  const conquestVideoRef = useRef<HTMLVideoElement>(null);
+  const celebratedRef = useRef(false);
+
+  // Detecta quando TODAS as missões diárias são concluídas
+  const dailyTasks = tasks.filter(t => t.recurrence === 'daily');
+  const allDailyDone = dailyTasks.length > 0 && dailyTasks.every(t => t.status === 'done');
+
+  useEffect(() => {
+    if (allDailyDone && !celebratedRef.current) {
+      celebratedRef.current = true;
+      // Aguarda 800ms para dar feedback visual antes de animar
+      setTimeout(() => {
+        setShipState('flying');
+        // Após a animação de voo (1.2s), mostra o vídeo centralizado
+        setTimeout(() => {
+          setShipState('center');
+          setShowCelebration(true);
+          // Burst duplo de confetti — canhões esquerdo e direito
+          setTimeout(() => {
+            confetti({ particleCount: 120, angle: 60,  spread: 80, origin: { x: 0,   y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
+            confetti({ particleCount: 120, angle: 120, spread: 80, origin: { x: 1,   y: 0.6 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'] });
+          }, 200);
+          setTimeout(() => {
+            conquestVideoRef.current?.play();
+          }, 300);
+        }, 1200);
+      }, 800);
+    }
+    // Reseta se alguma missão for desfeita (novo ciclo)
+    if (!allDailyDone) {
+      celebratedRef.current = false;
+    }
+  }, [allDailyDone]);
+
+  const closeCelebration = () => {
+    setShowCelebration(false);
+    setShipState('icon');
+    if (conquestVideoRef.current) {
+      conquestVideoRef.current.pause();
+      conquestVideoRef.current.currentTime = 0;
+    }
+  };
+
+  // Handlers da nave (video boa.mp4)
+  const handleShipEnded = () => {
+    const next = shipPlayCount + 1;
+    if (next >= 2) { setShipVideoState('icon'); setShipPlayCount(0); }
+    else { setShipPlayCount(next); shipVideoRef.current?.play(); }
+  };
+  const handleIconClick = () => {
+    setShipVideoState('expanded');
+    setShipPlayCount(0);
+    setTimeout(() => {
+      if (shipVideoRef.current) { shipVideoRef.current.muted = false; shipVideoRef.current.play(); }
+    }, 100);
+  };
+
+
+  return (
+    <>
+      {/* Nave no canto inferior esquerdo */}
+      {shipState !== 'center' && (
+        <div className="fixed bottom-4 md:bottom-10 left-4 md:left-10 z-[100]">
+          <AnimatePresence mode="wait">
+            {shipState === 'icon' ? (
+              <motion.button
+                key="icon"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleIconClick}
+                className="w-16 h-16 bg-primary text-black rounded-full flex items-center justify-center shadow-2xl shadow-primary/40 border-4 border-white/20 animate-bounce"
+              >
+                <Rocket className="w-8 h-8" />
+              </motion.button>
+            ) : (
+              <motion.div
+                key="ship"
+                initial={{ opacity: 0, x: -100, scale: 0.5 }}
+                animate={
+                  shipState === 'flying'
+                    ? {
+                        opacity: 1,
+                        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 112 : 300,
+                        y: typeof window !== 'undefined' ? -(window.innerHeight / 2 - 112) : -300,
+                        scale: 1.6,
+                        rotate: [0, -15, 15, -10, 0],
+                      }
+                    : { opacity: 1, x: 0, scale: 1 }
+                }
+                transition={
+                  shipState === 'flying'
+                    ? { duration: 1.2, ease: [0.22, 1, 0.36, 1] }
+                    : { duration: 0.4 }
+                }
+                onClick={() => setShipVideoState('icon')}
+                whileHover={shipState === 'corner' ? { scale: 1.02 } : {}}
+                className="relative w-28 h-28 md:w-56 md:h-56 cursor-pointer"
+              >
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
+                <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
+                <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-2xl overflow-hidden relative">
+                  <video
+                    ref={shipVideoRef}
+                    src="/boa.mp4"
+                    autoPlay
+                    muted
+                    onEnded={handleShipEnded}
+                    playsInline
+                    className="w-full h-full object-cover scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
+                </div>
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-12 bg-zinc-500 rounded-full" />
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full animate-ping" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Modal de Celebração — Nave centralizada + Conquista.mp4 */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-black/85 backdrop-blur-xl"
+          >
+            {/* Botão fechar */}
+            <button
+              onClick={closeCelebration}
+              className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center transition-all z-10"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+
+            {/* Partículas de estrelas */}
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0, 1.5, 0],
+                  x: (Math.cos((i / 20) * Math.PI * 2) * 200) + (Math.random() * 100 - 50),
+                  y: (Math.sin((i / 20) * Math.PI * 2) * 200) + (Math.random() * 100 - 50),
+                }}
+                transition={{ duration: 1.5, delay: i * 0.06, ease: 'easeOut' }}
+                className="absolute text-2xl pointer-events-none select-none"
+              >
+                {['⭐', '✨', '🌟', '💫'][i % 4]}
+              </motion.div>
+            ))}
+
+            {/* Nave centralizada animada */}
+            <motion.div
+              initial={{ scale: 0.3, y: 200, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-36 h-36 md:w-52 md:h-52 mb-8 cursor-pointer"
+              onClick={closeCelebration}
+            >
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_15px_red]" />
+              <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_15px_blue]" />
+              <div className="w-full h-full rounded-full border-[8px] border-zinc-400 bg-zinc-900 shadow-[0_0_80px_rgba(45,212,191,0.6)] overflow-hidden relative">
+                <video
+                  src="/boa.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
+              </div>
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-1 h-12 bg-zinc-500 rounded-full" />
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full animate-ping" />
+            </motion.div>
+
+            {/* Título */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-center mb-6 px-4"
+            >
+              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary mb-2">🚀 MISSÃO CUMPRIDA!</p>
+              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(45,212,191,0.6)]">
+                Todas as Missões Concluídas!
+              </h2>
+            </motion.div>
+
+            {/* Vídeo Conquista.mp4 */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="relative rounded-[32px] overflow-hidden border-4 border-primary/40 shadow-[0_0_60px_rgba(45,212,191,0.3)] max-w-sm w-full mx-4"
+            >
+              <video
+                ref={conquestVideoRef}
+                src="/Conquista.mp4"
+                playsInline
+                controls
+                onEnded={closeCelebration}
+                className="w-full rounded-[28px]"
+              />
+            </motion.div>
+
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.4 }}
+              onClick={closeCelebration}
+              className="mt-6 px-10 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-sm"
+            >
+              Continuar a Missão 🚀
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+});
+DailyConquestCelebration.displayName = 'DailyConquestCelebration';
 
 export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCelebrating = false, isSad = false, isFiring = false }: { avatar: string, name: string, isCelebrating?: boolean, isSad?: boolean, isFiring?: boolean }) {
   const selectedAvatar = AVATARS.find(a => a.id === avatar) || AVATARS[0];
