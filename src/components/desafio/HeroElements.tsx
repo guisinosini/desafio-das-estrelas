@@ -261,6 +261,28 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
     }
   };
 
+  // Desmuta o boa.mp4 automaticamente após a primeira interação do usuário
+  // (necessário: navegadores bloqueiam autoplay com som antes de qualquer interação)
+  useEffect(() => {
+    const unmute = () => {
+      if (shipVideoRef.current) {
+        shipVideoRef.current.muted = false;
+        // Se estiver pausado (bloqueado pelo browser), retenta o play com som
+        if (shipVideoRef.current.paused) {
+          shipVideoRef.current.play().catch(() => {});
+        }
+      }
+      document.removeEventListener('click', unmute);
+      document.removeEventListener('touchstart', unmute);
+    };
+    document.addEventListener('click', unmute);
+    document.addEventListener('touchstart', unmute);
+    return () => {
+      document.removeEventListener('click', unmute);
+      document.removeEventListener('touchstart', unmute);
+    };
+  }, []);
+
   // Handlers da nave (boa.mp4) — só mostra a nave de canto quando NÃO está em celebração
   const handleShipEnded = () => {
     const next = shipPlayCount + 1;
