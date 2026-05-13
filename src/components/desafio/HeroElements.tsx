@@ -238,7 +238,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
           // Confetti leve — disparado via rAF para não travar o frame de render
           setTimeout(() => {
             requestAnimationFrame(() => {
-              confetti({ particleCount: 30, angle: 60,  spread: 70, origin: { x: 0, y: 0.7 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'], scalar: 0.9 });
+              confetti({ particleCount: 30, angle: 60, spread: 70, origin: { x: 0, y: 0.7 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'], scalar: 0.9 });
               requestAnimationFrame(() => {
                 confetti({ particleCount: 30, angle: 120, spread: 70, origin: { x: 1, y: 0.7 }, colors: ['#2dd4bf', '#fbbf24', '#a78bfa', '#ffffff'], scalar: 0.9 });
               });
@@ -274,7 +274,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
         shipVideoRef.current.muted = false;
         // Se estiver pausado (bloqueado pelo browser), retenta o play com som
         if (shipVideoRef.current.paused) {
-          shipVideoRef.current.play().catch(() => {});
+          shipVideoRef.current.play().catch(() => { });
         }
       }
       document.removeEventListener('click', unmute);
@@ -328,12 +328,12 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
                 animate={
                   shipState === 'flying'
                     ? {
-                        opacity: 1,
-                        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 112 : 300,
-                        y: typeof window !== 'undefined' ? -(window.innerHeight / 2 - 112) : -300,
-                        scale: 1.4,
-                        rotate: [0, -15, 15, -10, 0],
-                      }
+                      opacity: 1,
+                      x: typeof window !== 'undefined' ? window.innerWidth / 2 - 112 : 300,
+                      y: typeof window !== 'undefined' ? -(window.innerHeight / 2 - 112) : -300,
+                      scale: 1.4,
+                      rotate: [0, -15, 15, -10, 0],
+                    }
                     : { opacity: 1, x: 0, scale: 1 }
                 }
                 transition={
