@@ -31,10 +31,11 @@ interface LandingPageProps {
 
 const FadeInWhenVisible = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 15 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.2 }}
-    transition={{ duration: 0.6, delay, ease: "easeOut" }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.5, delay, ease: "easeOut" }}
+    style={{ position: 'relative', zIndex: 20 }}
   >
     {children}
   </motion.div>
@@ -174,7 +175,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       </section>
 
       {/* Pain Points Section */}
-      <section className="py-32 bg-white/[0.02] relative border-y border-white/5">
+      <section className="py-32 bg-white/[0.02] relative border-y border-white/5 z-20">
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 items-center">
           <FadeInWhenVisible>
             <div className="relative group">
@@ -225,7 +226,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       </section>
 
       {/* The Method / How it Works */}
-      <section className="py-32 px-6">
+      <section className="py-32 px-6 relative z-20">
         <div className="max-w-5xl mx-auto text-center space-y-10 mb-32">
           <FadeInWhenVisible>
             <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mx-auto mb-10 border border-primary/30 rotate-12">
@@ -264,7 +265,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       </section>
 
       {/* Journey Ecosystem Section */}
-      <section className="py-32 px-6 relative bg-[#020617]">
+      <section className="py-32 px-6 relative bg-[#020617] z-20">
         <div className="max-w-7xl mx-auto">
           <FadeInWhenVisible>
             <div className="text-center mb-24 space-y-4">
