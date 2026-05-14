@@ -49,7 +49,7 @@ import { translations, type Language } from "@/lib/translations";
 import AuthStage from "@/components/auth/AuthStage";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
 
-const ClockDisplay = memo(() => {
+const ClockDisplay = memo(({ language }: { language: string }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -60,10 +60,10 @@ const ClockDisplay = memo(() => {
   return (
     <div className="hidden md:flex flex-col items-end">
       <div className="text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-4 py-1 rounded-full border border-white/10 mb-1">
-        {currentTime.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        {currentTime.toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })}
       </div>
       <div className="text-xl font-black italic tracking-tighter text-white">
-        {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+        {currentTime.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}
       </div>
     </div>
   );
@@ -1266,7 +1266,7 @@ export default function DesafioEstrelas() {
         {/* --- DASHBOARD ADVENTURE --- */}
         {stage === 'adventure' && (
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
-          <DailyConquestCelebration tasks={tasks} />
+          <DailyConquestCelebration tasks={tasks} t={t} />
 
             <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-4 md:p-6 flex justify-between items-center shadow-2xl">
               <div className="flex items-center gap-4">
@@ -1286,14 +1286,14 @@ export default function DesafioEstrelas() {
                 </div>
                 <div className="cursor-pointer" onClick={() => setStage('select_child')}>
                   <h1 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2">{activeChild?.name} <RefreshCw className="w-3 h-3" /></h1>
-                  <p className="text-sm md:text-lg font-black italic uppercase tracking-tighter text-white">{view === 'child' ? "Estação de Comando" : "Modo Mentor"}</p>
+                  <p className="text-sm md:text-lg font-black italic uppercase tracking-tighter text-white">{view === 'child' ? t.commandStation : t.controlRoom}</p>
                 </div>
               </div>
 
 
               <div className="flex gap-6 items-center">
                 {/* Relógio e Data Isolados */}
-                <ClockDisplay />
+                <ClockDisplay language={language} />
 
                 <div className="flex gap-2 relative">
                   <motion.div
@@ -1356,7 +1356,7 @@ export default function DesafioEstrelas() {
                 />
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-purple-400 rounded-full animate-pulse" />
-                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-purple-400/60">Frota Galáctica</span>
+                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-purple-400/60">{t.galacticFleet}</span>
                   <div className="md:hidden w-1 h-1 bg-purple-400 rounded-full animate-pulse" />
                 </div>
                 <h2 className="text-xl md:text-3xl font-black uppercase italic tracking-[0.15em] md:tracking-[0.25em] text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.6)] relative z-10 px-4 text-center">
@@ -1364,7 +1364,7 @@ export default function DesafioEstrelas() {
                 </h2>
                 <div className="flex items-center gap-2">
                   <div className="md:hidden w-1 h-1 bg-purple-400 rounded-full animate-pulse" />
-                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-purple-400/60">Setor Ativo</span>
+                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-purple-400/60">{t.activeSector}</span>
                   <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-purple-400 rounded-full animate-pulse" />
                 </div>
               </div>
@@ -1379,16 +1379,15 @@ export default function DesafioEstrelas() {
                     <HeroCharacter
                       avatar={activeChild?.avatar || 'ast1'}
                       name={activeChild?.name || ''}
-                      isCelebrating={isCelebrating}
-                      isSad={isSad}
                       isFiring={!!laserTarget}
+                      t={t}
                     />
 
                     <div className="mt-8 w-full max-w-xs space-y-6">
                       {/* Seção de Medalhas */}
                       <div className="space-y-3">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center flex items-center justify-center gap-2">
-                          <Trophy className="w-3 h-3" /> Medalhas de Honra
+                          <Trophy className="w-3 h-3" /> {t.honorMedals}
                         </p>
                         <div className="flex flex-wrap justify-center gap-2">
                           {BADGES.map((badge: any) => {
@@ -1414,7 +1413,7 @@ export default function DesafioEstrelas() {
                       </div>
 
                       <div className="space-y-2">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center">Últimas Conquistas</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center">{t.latestAchievements}</p>
                         {history.slice(0, 2).map((h: any) => (
                           <div key={h.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl backdrop-blur-md">
                             <span className="text-[10px] font-bold text-white/60 truncate max-w-[120px]">{h.title}</span>
@@ -1428,7 +1427,7 @@ export default function DesafioEstrelas() {
 
                     {(children.length > 1 || fleetChildren.length > 0) && (
                       <div className="space-y-3 pt-6 border-t border-white/5">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center">Ranking da Aliança (Top 3)</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center">{t.allianceRanking}</p>
                         <div className="flex justify-center gap-2">
                           {[...children, ...fleetChildren].sort((a, b) => b.stars - a.stars).slice(0, 3).map((c: ChildData, idx: number) => (
                             <div key={c.id} className={clsx(
@@ -1451,11 +1450,13 @@ export default function DesafioEstrelas() {
                       activeChildAvatar={activeChild?.avatar || 'ast1'}
                       handleCompleteTask={handleCompleteTask}
                       planets={activeChild?.planets || []}
+                      t={t}
                     />
                     <RewardShop
                       rewards={rewards}
                       stars={stars}
                       handleRedeemReward={handleRedeemReward}
+                      t={t}
                     />
                   </div>
                 </div>
@@ -1485,7 +1486,12 @@ export default function DesafioEstrelas() {
                   history={history}
                   setStage={setStage}
                   setView={setView}
-                  handleLogout={() => { localStorage.clear(); window.location.reload(); }}
+                  handleLogout={() => { 
+                    const lang = localStorage.getItem('app_language');
+                    localStorage.clear(); 
+                    if (lang) localStorage.setItem('app_language', lang);
+                    window.location.reload(); 
+                  }}
                   setNewChild={setNewChild}
                   setStageSetupChild={() => { setStage('setup_child'); setNewChild({ name: "", avatar: "ast1" }); }}
                   handleApprove={handleApprove}

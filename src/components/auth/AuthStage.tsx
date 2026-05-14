@@ -47,35 +47,41 @@ const AuthStage = memo(({
     <motion.div key="auth" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
       <button onClick={() => setStage('welcome')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
       
-      <div className="flex justify-between items-end">
-        <div className="space-y-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{t.login}</span>
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.mentorIdentification}</h2>
-        </div>
-        <div className="flex flex-wrap gap-2 mb-1 justify-end max-w-[200px]">
-          {(['pt-BR', 'pt-PT', 'en', 'es', 'fr', 'it', 'zh'] as Language[]).map(lang => (
-            <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              title={lang}
-              className={clsx(
-                "w-10 h-10 rounded-xl flex items-center justify-center text-2xl border transition-all shadow-lg",
-                language === lang ? "bg-primary border-primary scale-110 rotate-3" : "bg-white/5 border-white/10 hover:bg-white/10 hover:scale-105"
-              )}
-            >
-              {lang === 'pt-BR' ? '🇧🇷' : 
-               lang === 'pt-PT' ? '🇵🇹' : 
-               lang === 'en' ? '🇺🇸' : 
-               lang === 'es' ? '🇪🇸' : 
-               lang === 'fr' ? '🇫🇷' : 
-               lang === 'it' ? '🇮🇹' : '🇨🇳'}
-            </button>
-          ))}
-        </div>
+      <div className="space-y-2">
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{t.login}</span>
+        <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.mentorIdentification}</h2>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[50px] space-y-6 shadow-2xl">
-        <form onSubmit={handleAuth} className="space-y-4">
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-[40px] md:rounded-[50px] space-y-8 shadow-2xl relative overflow-hidden">
+        {/* Glow de fundo sutil */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
+        
+        <div className="space-y-4 relative z-10">
+          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2">
+             <RefreshCw className="w-3 h-3 text-primary" /> {t.systemLanguage || 'Escolha seu Idioma'}
+          </label>
+          <div className="flex flex-wrap gap-2.5">
+            {(['pt-BR', 'pt-PT', 'en', 'es', 'fr', 'it', 'zh'] as Language[]).map(lang => (
+              <button
+                key={lang}
+                onClick={() => setLanguage(lang)}
+                className={clsx(
+                  "w-11 h-11 rounded-2xl flex items-center justify-center text-2xl border transition-all shadow-xl",
+                  language === lang ? "bg-primary border-primary scale-110 rotate-2 shadow-primary/20" : "bg-white/5 border-white/10 hover:bg-white/10"
+                )}
+              >
+                {lang === 'pt-BR' ? '🇧🇷' : 
+                 lang === 'pt-PT' ? '🇵🇹' : 
+                 lang === 'en' ? '🇺🇸' : 
+                 lang === 'es' ? '🇪🇸' : 
+                 lang === 'fr' ? '🇫🇷' : 
+                 lang === 'it' ? '🇮🇹' : '🇨🇳'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <form onSubmit={handleAuth} className="space-y-5 relative z-10">
           {authError && <div className="p-4 bg-red-500/20 text-red-200 text-[10px] font-bold rounded-2xl border border-red-500/30 text-center">{authError}</div>}
           {authSuccess && <div className="p-4 bg-emerald-500/20 text-emerald-200 text-[10px] font-bold rounded-2xl border border-emerald-500/30 text-center">{authSuccess}</div>}
           
@@ -125,7 +131,7 @@ const AuthStage = memo(({
         
         <button 
           onClick={() => setIsLogin(!isLogin)} 
-          className="w-full text-center text-[10px] font-black uppercase text-white/30"
+          className="w-full text-center text-[10px] font-black uppercase text-white/30 hover:text-white transition-colors"
         >
           {isLogin ? "Criar nova tripulação" : "Já tenho acesso"}
         </button>

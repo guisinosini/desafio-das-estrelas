@@ -203,7 +203,7 @@ export const SpaceShipVideo = memo(function SpaceShipVideo() {
 // ─── DailyConquestCelebration ──────────────────────────────────────────────
 // Monitora as missões diárias. Quando todas ficam 'done', anima a nave
 // voando para o centro da tela e reproduz o vídeo Conquista.mp4.
-export const DailyConquestCelebration = memo(function DailyConquestCelebration({ tasks }: { tasks: Task[] }) {
+export const DailyConquestCelebration = memo(function DailyConquestCelebration({ tasks, t }: { tasks: Task[], t: any }) {
   const [shipState, setShipState] = useState<'corner' | 'flying' | 'center' | 'icon'>('corner');
   const [showCelebration, setShowCelebration] = useState(false);
   const [shipPlayCount, setShipPlayCount] = useState(0);
@@ -410,9 +410,9 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               transition={{ delay: 0.3, duration: 0.5 }}
               className="text-center mb-6 px-4"
             >
-              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary mb-2">🚀 MISSÃO CUMPRIDA!</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary mb-2">🚀 {t.missionAccomplished}</p>
               <h2 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_0_20px_rgba(45,212,191,0.6)]">
-                Todas as Missões Concluídas!
+                {t.allMissionsDone}
               </h2>
             </motion.div>
 
@@ -440,7 +440,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               <div className="absolute -top-9 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-primary rounded-full animate-ping" />
               {/* Dica de toque */}
               <p className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-white/30 whitespace-nowrap">
-                Toque para fechar
+                {t.tapToClose || 'Toque para fechar'}
               </p>
             </motion.div>
 
@@ -451,7 +451,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               onClick={closeCelebration}
               className="mt-14 px-10 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-sm"
             >
-              Continuar a Missão 🚀
+              {t.continue || 'Continuar a Missão'} 🚀
             </motion.button>
           </motion.div>
         )}
@@ -462,7 +462,7 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
 });
 DailyConquestCelebration.displayName = 'DailyConquestCelebration';
 
-export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCelebrating = false, isSad = false, isFiring = false }: { avatar: string, name: string, isCelebrating?: boolean, isSad?: boolean, isFiring?: boolean }) {
+export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCelebrating = false, isSad = false, isFiring = false, t }: { avatar: string, name: string, isCelebrating?: boolean, isSad?: boolean, isFiring?: boolean, t: any }) {
   const selectedAvatar = AVATARS.find(a => a.id === avatar) || AVATARS[0];
   const [isFlying, setIsFlying] = useState(false);
 
@@ -511,7 +511,7 @@ export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCeleb
         className="absolute -top-14 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-2xl shadow-xl z-20 pointer-events-none"
       >
         <p className="text-[8px] md:text-[10px] font-black uppercase italic tracking-tighter text-white">
-          {isFlying ? "UHUUUUUU!" : isFiring ? "FOGO NO ALVO!" : isSad ? "Houston, temos um problema..." : isCelebrating ? "MISSÃO CUMPRIDA!" : `Pronto, ${name}?`}
+          {isFlying ? "UHUUUUUU!" : isFiring ? t.fireOnTarget : isSad ? t.houstonProblem : isCelebrating ? t.missionAccomplished : t.readyHero.replace('{name}', name)}
         </p>
         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#16213e] border-r border-b border-white/20 rotate-45" />
       </motion.div>

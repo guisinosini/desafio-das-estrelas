@@ -143,14 +143,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
       {/* Navigation Buttons */}
       <div className="lg:w-64 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 scrollbar-hide snap-x print:hidden">
         {[
-          { id: 'approvals', label: 'Validações', icon: CheckCircle2 },
-          { id: 'missions', label: 'Sala de Controle', icon: Rocket },
-          { id: 'ranking', label: 'Ranking', icon: Trophy },
-          { id: 'fleet', label: 'Aliança', icon: Zap },
-          { id: 'behavior', label: 'Comportamento', icon: AlertCircle },
-          { id: 'settings', label: 'Ajustes Perfil', icon: Settings },
-          { id: 'history', label: 'Histórico', icon: History },
-          { id: 'reports', label: 'Relatórios', icon: Brain },
+          { id: 'approvals', label: t.approvals, icon: CheckCircle2 },
+          { id: 'missions', label: t.controlRoom, icon: Rocket },
+          { id: 'ranking', label: t.ranking, icon: Trophy },
+          { id: 'fleet', label: t.alliance, icon: Zap },
+          { id: 'behavior', label: t.behavior, icon: AlertCircle },
+          { id: 'settings', label: t.profileSettings, icon: Settings },
+          { id: 'history', label: t.history, icon: History },
+          { id: 'reports', label: t.reports, icon: Brain },
         ].map(item => (
           <button
             key={item.id}
@@ -167,7 +167,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           onClick={() => { setStage('setup_child'); setNewChild({ name: '', avatar: 'ast1' }); }}
           className="flex-none lg:w-full flex items-center gap-3 px-6 lg:px-8 py-4 lg:py-5 rounded-2xl lg:rounded-[28px] text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all snap-center"
         >
-          <Plus className="w-4 h-4" /> Novo Herói
+          <Plus className="w-4 h-4" /> {t.newHero}
         </button>
         <button
           onClick={() => {
@@ -179,13 +179,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           }}
           className="w-full flex items-center gap-3 px-8 py-5 mt-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all"
         >
-          <Trash className="w-4 h-4" /> Excluir Perfil
+          <Trash className="w-4 h-4" /> {t.deleteProfile}
         </button>
         <button
           onClick={() => { localStorage.clear(); window.location.reload(); }}
           className="w-full flex items-center gap-3 px-8 py-5 mt-8 md:mt-20 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
         >
-          <LogOut className="w-4 h-4" /> Resetar Tudo
+          <LogOut className="w-4 h-4" /> {t.resetEverything}
         </button>
       </div>
 
@@ -194,7 +194,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         {/* Approvals */}
         {parentSubView === 'approvals' && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-black uppercase italic tracking-tighter">Relatórios Pendentes</h2>
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t.approvals} Pendentes</h2>
             <div className="grid grid-cols-1 gap-4">
               {tasks.filter((t: Task) => t.status === 'pending').map((t: Task) => (
                 <div
@@ -207,7 +207,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     </div>
                     <div>
                       <p className="text-lg md:text-xl font-black uppercase italic text-white">{t.title}</p>
-                      <p className="text-xs md:text-sm text-primary font-black uppercase">{t.stars} estrelas em jogo</p>
+                      <p className="text-xs md:text-sm text-primary font-black uppercase">{t.stars} {t.starsToEarn}</p>
                     </div>
                   </div>
                   <div className="flex gap-3 w-full sm:w-auto">
@@ -228,7 +228,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               ))}
               {tasks.filter(t => t.status === 'pending').length === 0 && (
                 <div className="p-24 border-4 border-dashed border-white/5 rounded-[60px] text-center text-white/10 font-black uppercase italic tracking-widest text-xl">
-                  Tudo em Órbita!
+                  {t.allInOrbit}
                 </div>
               )}
             </div>
@@ -240,13 +240,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           <div className="space-y-8">
             <div className="flex justify-between items-end">
               <div className="space-y-2">
-                <h2 className="text-3xl font-black uppercase italic tracking-tighter">Sala de Controle</h2>
-                <p className="text-white/40">Edite as missões e recompensas do universo.</p>
+                <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t.controlRoom}</h2>
+                <p className="text-white/40">{t.missionControlDesc}</p>
               </div>
             </div>
             {/* Manual Task Input */}
             <div className="p-4 bg-white/5 border border-dashed border-white/10 rounded-2xl space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Lançar Nova Missão:</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.launchNewMission}:</p>
               <div className="flex flex-col gap-2">
                 <div className="flex gap-2">
                   <input
@@ -330,7 +330,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               </h3>
               {/* Input Manual Reward */}
               <div className="p-4 bg-white/5 border border-dashed border-white/10 rounded-2xl space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Criar Novo Tesouro:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createNewTreasure}:</p>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -568,7 +568,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 Ponte de Comportamento
               </h2>
               <p className="text-white/40">
-                Deduza estrelas do {activeChild?.name} para alinhar a rota comportamental.
+                {t.deductStars}
               </p>
             </div>
 
@@ -662,7 +662,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               ))}
               {history.length === 0 && (
                 <div className="p-24 border-4 border-dashed border-white/5 rounded-[60px] text-center text-white/10 font-black uppercase italic tracking-widest text-xl">
-                  Sem registros no radar
+                  {t.radarEmpty}
                 </div>
               )}
             </div>

@@ -7,13 +7,14 @@ interface RewardShopProps {
   rewards: Reward[];
   stars: number;
   handleRedeemReward: (reward: Reward) => void;
+  t: any;
 }
 
-export function RewardShop({ rewards, stars, handleRedeemReward }: RewardShopProps) {
+export function RewardShop({ rewards, stars, handleRedeemReward, t }: RewardShopProps) {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-        <ShoppingBag className="w-5 h-5 text-[#f59e0b]" /> Loja Galáctica
+        <ShoppingBag className="w-5 h-5 text-[#f59e0b]" /> {t.galacticShop}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
         {rewards.map((reward: Reward) => {
@@ -52,11 +53,11 @@ export function RewardShop({ rewards, stars, handleRedeemReward }: RewardShopPro
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-white/40">
-                    {canRedeem ? "VOCÊ CONSEGUIU!" : `FALTAM ${reward.cost - stars} ESTRELAS`}
+                    {canRedeem ? t.youGotIt : t.missingStars.replace('{count}', (reward.cost - stars).toString())}
                   </p>
                   {canRedeem && (
                     <span className="bg-primary text-black px-3 py-1 rounded-full text-[8px] font-black uppercase animate-bounce">
-                      Resgatar Agora
+                      {t.redeemNow}
                     </span>
                   )}
                 </div>

@@ -9,13 +9,14 @@ interface MissionListProps {
   activeChildAvatar: string;
   handleCompleteTask: (task: Task, e: any) => void;
   planets?: Planet[];
+  t: any;
 }
 
-export function MissionList({ tasks, activeChildAvatar, handleCompleteTask, planets = [] }: MissionListProps) {
+export function MissionList({ tasks, activeChildAvatar, handleCompleteTask, planets = [], t }: MissionListProps) {
   const groups = [
-    { title: '📍 Missões do Dia', key: 'daily', icon: Rocket, color: 'text-primary' },
-    { title: '🗓️ Missões da Semana', key: 'weekly', icon: Clock, color: 'text-purple-400' },
-    { title: '🪐 Grandes Objetivos', key: ['monthly', 'once'], icon: Zap, color: 'text-yellow-400' }
+    { title: `📍 ${t.dailyMissions}`, key: 'daily', icon: Rocket, color: 'text-primary' },
+    { title: `🗓️ ${t.weeklyMissions}`, key: 'weekly', icon: Clock, color: 'text-purple-400' },
+    { title: `🪐 ${t.grandObjectives}`, key: ['monthly', 'once'], icon: Zap, color: 'text-yellow-400' }
   ];
 
   return (
@@ -80,7 +81,7 @@ export function MissionList({ tasks, activeChildAvatar, handleCompleteTask, plan
                   {task.status === 'pending' && (
                     <div className="absolute inset-0 bg-[#16213e]/90 backdrop-blur-md flex flex-col items-center justify-center p-4 z-20">
                       <RefreshCw className="w-5 h-5 text-primary animate-spin mb-1" />
-                      <p className="text-[7px] font-black uppercase tracking-widest">Validando...</p>
+                      <p className="text-[7px] font-black uppercase tracking-widest">{t.validating}</p>
                     </div>
                   )}
 
