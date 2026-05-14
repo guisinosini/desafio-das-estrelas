@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef, memo, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star,
@@ -175,6 +175,7 @@ export default function DesafioEstrelas() {
               avatar: row.avatar,
               stars: row.stars,
               dailyStars: 0,
+              gender: 'boy', // Default para ranking de frota se não houver no banco
               tasks: [],
               rewards: [],
               history: [],
