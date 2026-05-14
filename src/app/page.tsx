@@ -1508,6 +1508,9 @@ export default function DesafioEstrelas() {
                   loadFleetRanking={loadFleetRanking}
                   handleDeductStars={handleDeductStars}
                   removeChild={removeChild}
+                  language={language}
+                  setLanguage={setLanguage}
+                  t={t}
                 />
               )}
             </main>

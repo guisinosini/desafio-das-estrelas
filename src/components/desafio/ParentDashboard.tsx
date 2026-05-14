@@ -56,6 +56,9 @@ interface ParentDashboardProps {
   loadFleetRanking: () => void;
   handleDeductStars: (stars: number, reason: string) => void;
   removeChild: (id: string) => void;
+  language: any;
+  setLanguage: (lang: any) => void;
+  t: any;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -93,6 +96,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   loadFleetRanking,
   handleDeductStars,
   removeChild,
+  language,
+  setLanguage,
+  t,
 }) => {
   const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
@@ -460,6 +466,29 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       )}
                     >
                       {a.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10 space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.systemLanguage}</label>
+                <div className="flex flex-wrap gap-3">
+                  {(['pt-BR', 'pt-PT', 'en', 'es', 'fr', 'it', 'zh'] as any[]).map(lang => (
+                    <button
+                      key={lang}
+                      onClick={() => setLanguage(lang)}
+                      className={clsx(
+                        "w-12 h-12 rounded-2xl flex items-center justify-center text-2xl border transition-all shadow-xl",
+                        language === lang ? "bg-primary border-primary scale-110 rotate-3" : "bg-white/5 border-white/10 hover:bg-white/10"
+                      )}
+                    >
+                      {lang === 'pt-BR' ? '🇧🇷' : 
+                       lang === 'pt-PT' ? '🇵🇹' : 
+                       lang === 'en' ? '🇺🇸' : 
+                       lang === 'es' ? '🇪🇸' : 
+                       lang === 'fr' ? '🇫🇷' : 
+                       lang === 'it' ? '🇮🇹' : '🇨🇳'}
                     </button>
                   ))}
                 </div>

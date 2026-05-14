@@ -50,19 +50,25 @@ const AuthStage = memo(({
       <div className="flex justify-between items-end">
         <div className="space-y-2">
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{t.login}</span>
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.mentorName}</h2>
+          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.mentorIdentification}</h2>
         </div>
-        <div className="flex gap-2 mb-1">
-          {(['pt-BR', 'en', 'es'] as Language[]).map(lang => (
+        <div className="flex flex-wrap gap-2 mb-1 justify-end max-w-[200px]">
+          {(['pt-BR', 'pt-PT', 'en', 'es', 'fr', 'it', 'zh'] as Language[]).map(lang => (
             <button
               key={lang}
               onClick={() => setLanguage(lang)}
+              title={lang}
               className={clsx(
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm border transition-all",
-                language === lang ? "bg-primary border-primary text-black scale-110" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                "w-10 h-10 rounded-xl flex items-center justify-center text-2xl border transition-all shadow-lg",
+                language === lang ? "bg-primary border-primary scale-110 rotate-3" : "bg-white/5 border-white/10 hover:bg-white/10 hover:scale-105"
               )}
             >
-              {lang === 'pt-BR' ? '🇧🇷' : lang === 'en' ? '🇺🇸' : '🇪🇸'}
+              {lang === 'pt-BR' ? '🇧🇷' : 
+               lang === 'pt-PT' ? '🇵🇹' : 
+               lang === 'en' ? '🇺🇸' : 
+               lang === 'es' ? '🇪🇸' : 
+               lang === 'fr' ? '🇫🇷' : 
+               lang === 'it' ? '🇮🇹' : '🇨🇳'}
             </button>
           ))}
         </div>
