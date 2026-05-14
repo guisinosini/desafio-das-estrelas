@@ -70,7 +70,7 @@ export function MissionList({ tasks, activeChildAvatar, handleCompleteTask, plan
                     return (
                       <div 
                         className="absolute top-2 left-2 px-1.5 py-0.5 bg-black/40 backdrop-blur-md rounded-md border border-white/10 flex items-center gap-1 shadow-sm z-10"
-                        title={`Objetivo: ${planet.title}`}
+                        title={`${t.missionGoal}: ${planet.title}`}
                       >
                         <span className="text-xs">{planet.icon || "🪐"}</span>
                         <span className="text-[6px] font-black uppercase text-white/60 tracking-tighter truncate max-w-[40px] hidden sm:inline">{planet.title}</span>

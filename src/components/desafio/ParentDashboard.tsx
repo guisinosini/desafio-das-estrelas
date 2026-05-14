@@ -196,7 +196,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         {/* Approvals */}
         {parentSubView === 'approvals' && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t.approvals} Pendentes</h2>
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t.approvals} {t.pending}</h2>
             <div className="grid grid-cols-1 gap-4">
               {tasks.filter((t: Task) => t.status === 'pending').map((t: Task) => (
                 <div
@@ -253,7 +253,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Nome..."
+                    placeholder={t.namePlaceholder}
                     value={customTask.title}
                     onChange={e => setCustomTask({ ...customTask, title: e.target.value })}
                     className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-primary"
@@ -271,7 +271,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     onChange={e => setCustomTask({ ...customTask, planetId: e.target.value })}
                     className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase outline-none text-white/60 appearance-none max-w-[120px] truncate"
                   >
-                    <option value="">🌌 Planeta (Geral)</option>
+                    <option value="">{t.generalPlanet}</option>
                     {activeChild?.planets?.map(p => (
                       <option key={p.id} value={p.id}>{p.icon} {p.title}</option>
                     ))}
@@ -281,10 +281,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     onChange={e => setCustomTask({ ...customTask, recurrence: e.target.value as TaskRecurrence })}
                     className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-black uppercase outline-none text-white/60"
                   >
-                    <option value="daily">Diária</option>
-                    <option value="weekly">Semanal</option>
-                    <option value="monthly">Mensal</option>
-                    <option value="once">Única</option>
+                    <option value="daily">{t.daily}</option>
+                    <option value="weekly">{t.weekly}</option>
+                    <option value="monthly">{t.monthly}</option>
+                    <option value="once">{t.once}</option>
                   </select>
                   <button
                     disabled={!customTask.title}
@@ -294,7 +294,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     }}
                     className="flex-1 py-2 bg-primary text-black rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase"
                   >
-                    <Plus className="w-3 h-3" /> Adicionar
+                    <Plus className="w-3 h-3" /> {t.add}
                   </button>
                 </div>
               </div>
@@ -314,7 +314,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 </div>
               ))}
               <div className="p-2 border border-dashed border-white/10 rounded-2xl opacity-40 hover:opacity-100 transition-opacity">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-2 px-2">Sugestões:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-2 px-2">{t.quickSuggestions}:</p>
                 <div className="flex flex-wrap gap-1">
                   {taskPresets.map(p => (
                     <button key={p.title} onClick={() => addTask(p.title, p.stars)} className="px-2 py-1 bg-white/5 rounded-md text-[8px] font-bold uppercase hover:bg-primary hover:text-black transition-all">
@@ -328,7 +328,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             {/* Rewards Section */}
             <div className="space-y-6">
               <h3 className="text-sm font-black uppercase tracking-widest text-yellow-400 flex items-center gap-2">
-                <Gift className="w-4 h-4" /> Recompensas Ativas
+                <Gift className="w-4 h-4" /> {t.activeRewards}
               </h3>
               {/* Input Manual Reward */}
               <div className="p-4 bg-white/5 border border-dashed border-white/10 rounded-2xl space-y-4">
@@ -336,7 +336,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Nome..."
+                    placeholder={t.namePlaceholder}
                     value={customReward.title}
                     onChange={e => setCustomReward({ ...customReward, title: e.target.value })}
                     className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-yellow-400"
@@ -371,7 +371,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   </div>
                 ))}
                 <div className="p-2 border border-dashed border-white/10 rounded-2xl opacity-40 hover:opacity-100 transition-opacity">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-2 px-2">Sugestões:</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-2 px-2">{t.quickSuggestions}:</p>
                   <div className="flex flex-wrap gap-1">
                     {rewardPresets.map(p => (
                       <button key={p.title} onClick={() => addReward(p.title, p.cost)} className="px-2 py-1 bg-white/5 rounded-md text-[8px] font-bold uppercase hover:bg-yellow-400 hover:text-black transition-all">
@@ -389,8 +389,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         {parentSubView === 'ranking' && (
           <div className="space-y-8">
             <div className="space-y-2">
-              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Ranking Galáctico</h2>
-              <p className="text-white/40">Classificação dos heróis por total de estrelas.</p>
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t.galacticRanking}</h2>
+              <p className="text-white/40">{t.rankingDesc}</p>
             </div>
             <div className="space-y-4">
               {[...children, ...fleetChildren].sort((a, b) => b.stars - a.stars).map((c: ChildData, idx: number) => {
@@ -425,7 +425,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       </div>
                       <div>
                         <h3 className="text-xl font-black uppercase italic tracking-tighter">
-                          {c.name} {!isOwn && <span className="text-[10px] lowercase text-white/20">(aliado)</span>}
+                          {c.name} {!isOwn && <span className="text-[10px] lowercase text-white/20">{t.aliado}</span>}
                         </h3>
                         <p className="text-sm font-black uppercase text-primary">{c.stars}⭐</p>
                       </div>
@@ -440,13 +440,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         {parentSubView === 'settings' && (
           <div className="space-y-8">
             <div className="space-y-2">
-              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Ajustes do Perfil</h2>
-              <p className="text-white/40">Personalize a identidade do herói nesta missão.</p>
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t.profileSettings}</h2>
+              <p className="text-white/40">{t.profileSettingsDesc}</p>
             </div>
 
             <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] space-y-8 backdrop-blur-md">
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Nome do Herói</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.heroName}</label>
                 <input
                   type="text"
                   value={activeChild?.name}
@@ -456,7 +456,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               </div>
 
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Escolher Novo Avatar</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.chooseAvatar}</label>
                 <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-2">
                   {AVATARS.map((a: any) => (
                     <button
@@ -498,13 +498,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 
               <div className="pt-4 border-t border-white/10 space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                  <Settings className="w-3 h-3" /> Alterar Código PIN de Acesso
+                  <Settings className="w-3 h-3" /> {t.changePin}
                 </label>
                 <div className="flex gap-4">
                   <input
                     type="password"
                     maxLength={4}
-                    placeholder="Novo PIN (4 dígitos)"
+                    placeholder={t.newPinPlaceholder}
                     value={parentPin}
                     onChange={e => {
                       const val = e.target.value.replace(/\D/g, '').slice(0, 4);
@@ -513,7 +513,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     className="w-40 bg-white/5 border border-white/10 rounded-2xl p-4 font-black text-center text-xl outline-none focus:border-primary"
                   />
                   <p className="text-[10px] text-white/40 leading-tight flex-1 flex items-center">
-                    Este código será solicitado sempre que você tentar acessar a área de gestão ou validação de missões.
+                    {t.pinNotice}
                   </p>
                 </div>
               </div>
@@ -521,7 +521,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </div>
 
             <div className="flex justify-center">
-              <button onClick={() => setView('child')} className="px-10 py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl hover:scale-105 transition-all">Ver Alterações no Dashboard</button>
+              <button onClick={() => setView('child')} className="px-10 py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl hover:scale-105 transition-all">{t.viewDashboardChanges}</button>
             </div>
           </div>
         )}
@@ -531,14 +531,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           <div className="space-y-8">
             <div className="space-y-2">
               <h2 className="text-3xl font-black uppercase italic tracking-tighter text-purple-400 flex items-center gap-3">
-                <Zap className="w-8 h-8" /> Aliança Galáctica
+                <Zap className="w-8 h-8" /> {t.alliance}
               </h2>
-              <p className="text-white/40">Conecte o universo do {activeChild?.name} com outras frotas (primos e amigos).</p>
+              <p className="text-white/40">{t.allianceDesc}</p>
             </div>
             
             <div className="p-4 md:p-8 bg-white/5 border border-purple-500/30 rounded-3xl md:rounded-[40px] space-y-6 backdrop-blur-md">
               <label className="text-xs font-black uppercase tracking-widest text-purple-400 flex items-center gap-2">
-                Código da Aliança Compartilhada
+                {t.sharedAllianceCode}
               </label>
               <div className="flex flex-col md:flex-row gap-4">
                 <input
@@ -549,13 +549,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   className="flex-1 bg-white/10 border border-white/20 rounded-2xl p-4 font-black text-xl md:text-2xl outline-none focus:border-purple-500 transition-all text-white"
                 />
                 <button onClick={() => loadFleetRanking()} className="px-8 py-4 bg-purple-500 text-white font-black uppercase rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                  Sincronizar
+                  {t.sync}
                 </button>
               </div>
               <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex gap-4">
                 <AlertCircle className="w-6 h-6 text-purple-400 shrink-0" />
                 <p className="text-sm text-purple-200/80 leading-relaxed font-medium">
-                  Compartilhe o código acima com os pais dos amigos. Quando eles inserirem o mesmo código nos aplicativos deles, as crianças vão competir no mesmo <strong>Ranking Intergaláctico</strong>!
+                  {t.fleetNotice}
                 </p>
               </div>
             </div>
@@ -567,7 +567,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           <div className="space-y-8">
             <div className="space-y-2">
               <h2 className="text-3xl font-black uppercase italic tracking-tighter text-red-400">
-                Ponte de Comportamento
+                {t.behaviorBridge}
               </h2>
               <p className="text-white/40">
                 {t.deductStars}
@@ -578,25 +578,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex gap-4 backdrop-blur-md">
               <AlertCircle className="w-6 h-6 text-red-400 shrink-0" />
               <p className="text-xs sm:text-sm text-red-200/80 leading-relaxed font-medium">
-                Sinalize imediatamente quando combinados importantes forem desrespeitados. A dedução visual atua como um limite compreensível, auxiliando a criança a entender causa e efeito na regulação de suas emoções no ambiente familiar.
+                {t.behaviorNotice}
               </p>
             </div>
 
             {/* Input para Comportamentos Customizados */}
             <div className="p-4 bg-white/5 border border-dashed border-red-500/30 rounded-2xl space-y-4">
               <p className="text-[10px] font-black uppercase tracking-widest text-red-400">
-                Registrar Outro Comportamento Negativo:
+                {t.registerNegativeBehavior}
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
-                  placeholder="Descreva o atrito (ex: Deixou os brinquedos espalhados)..."
+                  placeholder={t.behaviorPlaceholder}
                   value={customBehaviorLabel}
                   onChange={e => setCustomBehaviorLabel(e.target.value)}
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-red-500 text-white"
                 />
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-white/40 font-black uppercase">Penalidade:</span>
+                  <span className="text-xs text-white/40 font-black uppercase">{t.penalty}</span>
                   <input
                     type="number"
                     value={customBehaviorStars}
@@ -612,18 +612,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     }}
                     className="px-6 py-3 bg-red-500 text-white rounded-xl hover:scale-105 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-40"
                   >
-                    Aplicar
+                    {t.apply}
                   </button>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { label: "Birra / Malcriação", stars: 2 },
-                { label: "Não obedeceu", stars: 3 },
-                { label: "Agressividade", stars: 5 },
-              ].map((punish: any, i: number) => (
+              {t.punishPresets.map((punish: any, i: number) => (
                 <button key={i} onClick={() => handleDeductStars(punish.stars, punish.label)} className="p-4 md:p-8 bg-white/5 border border-white/10 rounded-3xl md:rounded-[40px] flex items-center justify-between hover:bg-red-500/10 hover:border-red-500 transition-all group text-left">
                   <div className="flex items-center gap-3 md:gap-4"><div className="w-10 h-10 md:w-14 md:h-14 bg-red-500/20 rounded-xl md:rounded-2xl flex items-center justify-center"><AlertCircle className="w-5 h-5 md:w-8 md:h-8 text-red-500" /></div><span className="font-black uppercase text-xs md:text-base text-white/80">{punish.label}</span></div>
                   <span className="text-lg md:text-xl font-black text-red-500">-{punish.stars}⭐</span>
@@ -637,7 +633,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         {parentSubView === 'history' && (
           <div className="space-y-6">
             <h2 className="text-3xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-              <History className="w-8 h-8 text-white/20" /> Log de Navegação
+              <History className="w-8 h-8 text-white/20" /> {t.logNavigation}
             </h2>
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
               {history.map((h: any) => (

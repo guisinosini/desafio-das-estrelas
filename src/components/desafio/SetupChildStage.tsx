@@ -107,7 +107,7 @@ const SetupChildStage = memo(({
         <div className="space-y-4">
           <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block text-center">{t.schoolGrade}</label>
           <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-            {["Pré I", "Pré II", "1º Ano", "2º Ano", "3º Ano", "4º Ano", "5º Ano", "6º Ano", "7º Ano", "8º Ano", "9º Ano", "Ensino Médio"].map(grade => (
+            {t.grades.map((grade: string) => (
               <button
                 key={grade}
                 onClick={() => setNewChild({ ...newChild, schoolGrade: grade })}

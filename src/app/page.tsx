@@ -710,28 +710,9 @@ export default function DesafioEstrelas() {
     updateActiveChild({ rewards: rewards.filter(r => r.id !== id) });
   };
 
-  const taskPresets = [
-    { title: "Escovar os dentes", stars: 1 },
-    { title: "Arrumar a cama", stars: 2 },
-    { title: "Comer vegetais", stars: 2 },
-    { title: "Lição de casa", stars: 3 },
-    { title: "Guardar brinquedos", stars: 2 },
-  ];
-
-  const rewardPresets = [
-    { title: "Escolher o filme", cost: 10 },
-    { title: "30 min de Game", cost: 15 },
-    { title: "Sobremesa Especial", cost: 20 },
-    { title: "Passeio no Parque", cost: 50 },
-    { title: "Brinquedo Novo", cost: 100 },
-  ];
-
-  const planetPresets = [
-    { title: "Planeta da Saúde", icon: "🥦" },
-    { title: "Galáxia do Conhecimento", icon: "📚" },
-    { title: "Mundo da Organização", icon: "🧸" },
-    { title: "Órbita da Amizade", icon: "🤝" },
-  ];
+  const taskPresets = t.taskPresets;
+  const rewardPresets = t.rewardPresets;
+  const planetPresets = t.planetPresets;
 
   const [customPlanet, setCustomPlanet] = useState({ title: "", icon: "🪐" });
 
@@ -821,7 +802,7 @@ export default function DesafioEstrelas() {
 
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <button onClick={() => setStage('auth')} className="group px-16 py-8 bg-primary text-black font-black uppercase tracking-widest rounded-[32px] hover:scale-105 transition-all flex items-center gap-4 text-xl shadow-[0_20px_50px_rgba(45,212,191,0.3)]">
-                Decolar Agora <Rocket className="w-6 h-6 group-hover:-translate-y-2 group-hover:translate-x-2 transition-transform" />
+                {t.startChallenge.replace('!', '')} <Rocket className="w-6 h-6 group-hover:-translate-y-2 group-hover:translate-x-2 transition-transform" />
               </button>
 
               {deferredPrompt && (
@@ -861,8 +842,8 @@ export default function DesafioEstrelas() {
             <button onClick={() => setStage('auth')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
             <div className="space-y-2 text-center">
               <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Código de Acesso</h2>
-              <p className="text-white/40 text-xs font-bold uppercase tracking-widest text-center">Digite o código de 6 dígitos enviado para <br/> <span className="text-white">{email}</span></p>
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.authCodeTitle}</h2>
+              <p className="text-white/40 text-xs font-bold uppercase tracking-widest text-center">{t.authCodeInstruction} <br/> <span className="text-white">{email}</span></p>
             </div>
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[50px] space-y-6 shadow-2xl">
               <form onSubmit={handleVerifyCode} className="space-y-4">
@@ -878,7 +859,7 @@ export default function DesafioEstrelas() {
                     placeholder="000000"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-center text-3xl md:text-4xl font-black tracking-[0.2em] md:tracking-[0.5em] outline-none focus:border-primary transition-all"
                   />
-                  <p className="text-[9px] text-center text-white/20 font-bold uppercase italic">Digite os dígitos enviados para o seu e-mail.</p>
+                  <p className="text-[9px] text-center text-white/20 font-bold uppercase italic">{t.authCodeFooter}</p>
                 </div>
                 <button
                   type="submit"
@@ -888,7 +869,7 @@ export default function DesafioEstrelas() {
                     authLoading ? "bg-zinc-700 text-zinc-400 cursor-not-allowed" : "bg-primary text-black hover:scale-[1.02] active:scale-[0.98]"
                   )}
                 >
-                  {authLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : "Validar Código"}
+                  {authLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : t.validateCode}
                 </button>
               </form>
             </div>
@@ -900,16 +881,16 @@ export default function DesafioEstrelas() {
           <motion.div key="reset_password" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
             <div className="space-y-2 text-center">
               <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Nova Senha</h2>
-              <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Defina sua nova credencial de acesso</p>
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.newPassword}</h2>
+              <p className="text-white/40 text-xs font-bold uppercase tracking-widest">{t.newPasswordDesc}</p>
             </div>
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[50px] space-y-6 shadow-2xl">
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 {authError && <div className="p-4 bg-red-500/20 text-red-200 text-[10px] font-bold rounded-2xl border border-red-500/30 text-center">{authError}</div>}
                 {authSuccess && <div className="p-4 bg-emerald-500/20 text-emerald-200 text-[10px] font-bold rounded-2xl border border-emerald-500/30 text-center">{authSuccess}</div>}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Nova Senha Galáctica</label>
-                  <input required type="password" value={resetPassword} onChange={e => setResetPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors text-center text-2xl" />
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.newPasswordLabel}</label>
+                  <input required type="password" value={resetPassword} onChange={e => setResetPassword(e.target.value)} placeholder={t.minChars} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors text-center text-2xl" />
                 </div>
                 <button
                   type="submit"
@@ -919,7 +900,7 @@ export default function DesafioEstrelas() {
                     authLoading ? "bg-zinc-700 text-zinc-400 cursor-not-allowed" : "bg-primary text-black hover:scale-[1.02] active:scale-[0.98]"
                   )}
                 >
-                  {authLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : "Atualizar Senha"}
+                  {authLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : t.updatePassword}
                 </button>
               </form>
             </div>
@@ -936,8 +917,8 @@ export default function DesafioEstrelas() {
             </div>
 
             <div className="text-center space-y-4">
-              <h2 className="text-5xl font-black italic uppercase tracking-tighter">Quem vai viajar hoje?</h2>
-              <p className="text-white/40 font-bold uppercase tracking-widest text-sm">Selecione seu perfil de astronauta</p>
+              <h2 className="text-5xl font-black italic uppercase tracking-tighter">{t.whoIsTraveling}</h2>
+              <p className="text-white/40 font-bold uppercase tracking-widest text-sm">{t.selectProfile}</p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -970,7 +951,7 @@ export default function DesafioEstrelas() {
                 <div className="w-32 h-32 rounded-full border-4 border-dashed border-white/20 flex items-center justify-center text-white/20 group-hover:border-primary group-hover:text-primary transition-all">
                   <Plus className="w-12 h-12" />
                 </div>
-                <span className="text-xl font-black uppercase italic text-white/20 group-hover:text-primary">Novo Herói</span>
+                <span className="text-xl font-black uppercase italic text-white/20 group-hover:text-primary">{t.newHero}</span>
               </motion.button>
             </div>
           </motion.div>
@@ -990,8 +971,8 @@ export default function DesafioEstrelas() {
         {/* --- STAGE: SETUP AVATAR --- */}
         {stage === 'setup_avatar' && (
           <motion.div key="setup_avatar" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 text-center">
-            <button onClick={() => setStage('setup_child')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
-            <h2 className="text-4xl font-black italic uppercase tracking-tighter">Escolha seu Avatar</h2>
+            <button onClick={() => setStage('setup_child')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
+            <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.chooseAvatar}</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-6 bg-white/5 backdrop-blur-xl border border-white/10 p-4 md:p-10 rounded-3xl md:rounded-[50px] shadow-2xl overflow-y-auto max-h-[50vh] md:max-h-none">
               {AVATARS.map(a => (
                 <button
@@ -1006,24 +987,22 @@ export default function DesafioEstrelas() {
                 </button>
               ))}
             </div>
-            <button onClick={handleCreateChild} className="w-full py-6 bg-primary text-black font-black uppercase rounded-[28px] shadow-lg shadow-primary/20">Confirmar Herói</button>
+            <button onClick={handleCreateChild} className="w-full py-6 bg-primary text-black font-black uppercase rounded-[28px] shadow-lg shadow-primary/20">{t.confirmHero}</button>
           </motion.div>
         )}
 
         {/* --- STAGE: SETUP PLANETS --- */}
         {stage === 'setup_planets' && (
           <motion.div key="setup_planets" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
+            <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
             <div className="text-center space-y-4">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Planetas de Destino</h2>
-              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
-                <strong>Ancoragem Cognitiva:</strong> Do ponto de vista psicológico, crianças precisam de metas tangíveis e previsibilidade. Os "Planetas" funcionam como grandes objetivos visuais <em>(ex: Melhorar o foco, Ser mais organizado, Ter mais empatia)</em> que ativam o senso de propósito e estimulam a constância a longo prazo.
-              </p>
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.destinyPlanets}</h2>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.planetExplainer }} />
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Criar Novo Planeta:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createPlanet}</p>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -1055,7 +1034,7 @@ export default function DesafioEstrelas() {
               </div>
 
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Sugestões (Toque para adicionar):</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
                 <div className="flex flex-wrap gap-2">
                   {planetPresets.map(p => (
                     <button
@@ -1071,7 +1050,7 @@ export default function DesafioEstrelas() {
 
               {(activeChild?.planets?.length || 0) > 0 && (
                 <div className="pt-6 border-t border-white/10 space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Planetas Escolhidos:</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.chosenPlanets}</p>
                   <div className="space-y-2">
                     {activeChild?.planets?.map(p => (
                       <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
@@ -1092,7 +1071,7 @@ export default function DesafioEstrelas() {
                 onClick={() => setStage('setup_tasks')}
                 className="w-full py-5 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl mt-4"
               >
-                Traçar Rota
+                {t.traceRoute}
               </button>
             </div>
           </motion.div>
@@ -1101,17 +1080,15 @@ export default function DesafioEstrelas() {
         {/* --- STAGE: SETUP TASKS --- */}
         {stage === 'setup_tasks' && (
           <motion.div key="setup_tasks" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('setup_planets')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
+            <button onClick={() => setStage('setup_planets')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
             <div className="text-center space-y-4">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Missões da Jornada</h2>
-              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
-                <strong>Construção de Hábitos:</strong> O cérebro infantil constrói rotinas através da repetição e do reforço. As missões dividem os grandes objetivos (Planetas) em passos diários e acessíveis. Cada tarefa concluída libera dopamina, criando um sistema de motivação que transforma obrigações em conquistas naturais!
-              </p>
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.taskExplainer }} />
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Criar Nova Missão:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createMission}:</p>
                 <div className="flex flex-col gap-4">
                   <div className="flex gap-2">
                     <input
@@ -1131,13 +1108,13 @@ export default function DesafioEstrelas() {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Vincular a qual Planeta?</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.linkPlanet}</p>
                     <select
                       value={customTask.planetId || ''}
                       onChange={e => setCustomTask({ ...customTask, planetId: e.target.value })}
                       className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white/80 appearance-none cursor-pointer"
                     >
-                      <option value="" className="text-black">🌌 Geral (Nenhum Planeta Específico)</option>
+                      <option value="" className="text-black">{t.generalPlanetOption}</option>
                       {activeChild?.planets?.map(p => (
                         <option key={p.id} value={p.id} className="text-black">{p.icon} {p.title}</option>
                       ))}
@@ -1154,7 +1131,7 @@ export default function DesafioEstrelas() {
                             customTask.recurrence === rec ? "bg-primary text-black" : "text-white/40 hover:text-white"
                           )}
                         >
-                          {rec === 'daily' ? 'Diária' : rec === 'weekly' ? 'Semanal' : rec === 'monthly' ? 'Mensal' : 'Única'}
+                          {rec === 'daily' ? t.daily : rec === 'weekly' ? t.weekly : rec === 'monthly' ? t.monthly : t.once}
                         </button>
                       ))}
                     </div>
@@ -1163,14 +1140,14 @@ export default function DesafioEstrelas() {
                       onClick={() => { addTask(customTask.title, customTask.stars, customTask.recurrence, customTask.planetId); setCustomTask({ title: "", stars: 5, recurrence: 'daily', planetId: "" }); }}
                       className="flex-1 py-3 bg-primary text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all"
                     >
-                      Adicionar Missão
+                      {t.addMissionBtn}
                     </button>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Sugestões Rápidas:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
                 <div className="flex flex-wrap gap-2">
                   {taskPresets.map(p => (
                     <button key={p.title} onClick={() => addTask(p.title, p.stars)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all">
@@ -1190,10 +1167,10 @@ export default function DesafioEstrelas() {
                     <button onClick={() => removeTask(t.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
                   </div>
                 ))}
-                {tasks.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">Nenhuma missão adicionada</p>}
+                {tasks.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.radarEmpty}</p>}
               </div>
 
-              <button disabled={tasks.length === 0} onClick={() => setStage('setup_rewards')} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">Configurar Prêmios</button>
+              <button disabled={tasks.length === 0} onClick={() => setStage('setup_rewards')} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">{t.continue}</button>
             </div>
           </motion.div>
         )}
@@ -1201,17 +1178,15 @@ export default function DesafioEstrelas() {
         {/* --- STAGE: SETUP REWARDS --- */}
         {stage === 'setup_rewards' && (
           <motion.div key="setup_rewards" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('setup_tasks')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
+            <button onClick={() => setStage('setup_tasks')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
             <div className="text-center space-y-4">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Tesouros Galácticos</h2>
-              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left">
-                <strong>Reforço Positivo:</strong> O cérebro aprende mais rápido quando o esforço é validado. Os prêmios não são "subornos", mas celebradores do esforço. Eles tangibilizam a dedicação da criança e consolidam caminhos neurais saudáveis. <em>(Dica: Misture recompensas materiais com tempo de qualidade em família!)</em>
-              </p>
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.rewardExplainer }} />
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Criar Novo Tesouro:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createTreasure}:</p>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -1232,7 +1207,7 @@ export default function DesafioEstrelas() {
                     onClick={() => { addReward(customReward.title, customReward.cost); setCustomReward({ title: "", cost: 50 }); }}
                     className="px-6 bg-yellow-400 text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all shadow-lg shadow-yellow-400/20"
                   >
-                    Adicionar
+                    {t.add}
                   </button>
                 </div>
               </div>
@@ -1258,10 +1233,10 @@ export default function DesafioEstrelas() {
                     <button onClick={() => removeReward(r.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
                   </div>
                 ))}
-                {rewards.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">Nenhum prêmio adicionado</p>}
+                {rewards.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.noRewardsAdded}</p>}
               </div>
 
-              <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">Começar Desafio!</button>
+              <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">{t.startChallenge}</button>
             </div>
           </motion.div>
         )}
@@ -1344,7 +1319,7 @@ export default function DesafioEstrelas() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg" title="Sair do Desafio">
+                  <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg" title={t.exitChallenge}>
                     <LogOut className="w-5 h-5" />
                   </button>
                 </div>
@@ -1546,8 +1521,8 @@ export default function DesafioEstrelas() {
                       <div className="flex items-center gap-3">
                         <Trophy className="w-8 h-8 text-yellow-400" />
                         <div>
-                          <h2 className="text-2xl font-black uppercase italic tracking-tighter">Hall da Fama</h2>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Os Maiores Heróis da Aliança</p>
+                          <h2 className="text-2xl font-black uppercase italic tracking-tighter">{t.hallOfFame}</h2>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.heroesAllianceDesc}</p>
                         </div>
                       </div>
                       <button onClick={() => setShowRankingModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all">
@@ -1575,7 +1550,7 @@ export default function DesafioEstrelas() {
                               </div>
                               <div>
                                 <h3 className={clsx("text-sm font-black uppercase italic", isMe ? "text-primary" : "text-white")}>{c.name}</h3>
-                                <p className="text-[8px] font-black uppercase tracking-widest text-white/20">{isMe ? "Você!" : "Herói Aliado"}</p>
+                                <p className="text-[8px] font-black uppercase tracking-widest text-white/20">{isMe ? t.you : t.allyHero}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -1587,7 +1562,7 @@ export default function DesafioEstrelas() {
                       })}
                     </div>
                     <div className="p-6 bg-zinc-900/50">
-                      <button onClick={() => setShowRankingModal(false)} className="w-full py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl hover:scale-[1.02] transition-all">Voltar para a Missão</button>
+                      <button onClick={() => setShowRankingModal(false)} className="w-full py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl hover:scale-[1.02] transition-all">{t.backToMission}</button>
                     </div>
                   </motion.div>
                 </motion.div>
@@ -1644,7 +1619,7 @@ export default function DesafioEstrelas() {
                 <button onClick={() => setShowPin(!showPin)} className="w-20 h-20 rounded-[30px] flex items-center justify-center shadow-2xl transition-all border-2 bg-white/5 text-white/40 border-white/10 backdrop-blur-md">
                   <Lock className="w-8 h-8" />
                 </button>
-                <AnimatePresence>{showPin && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="absolute bottom-24 right-0 bg-[#16213e] border border-white/20 p-8 rounded-[40px] shadow-2xl w-72"><h3 className="text-[10px] font-black uppercase tracking-widest mb-6 text-center text-white/40">Código de Autorização</h3><form onSubmit={handlePinSubmit} className="space-y-6"><input autoFocus type="password" value={pin} onChange={e => setPin(e.target.value)} placeholder="PIN" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-center text-3xl font-black tracking-[0.5em] outline-none focus:border-primary" /><button type="submit" className="w-full py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl">Confirmar</button></form></motion.div>}</AnimatePresence>
+                <AnimatePresence>{showPin && <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="absolute bottom-24 right-0 bg-[#16213e] border border-white/20 p-8 rounded-[40px] shadow-2xl w-72"><h3 className="text-[10px] font-black uppercase tracking-widest mb-6 text-center text-white/40">{t.authCode}</h3><form onSubmit={handlePinSubmit} className="space-y-6"><input autoFocus type="password" value={pin} onChange={e => setPin(e.target.value)} placeholder="PIN" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-center text-3xl font-black tracking-[0.5em] outline-none focus:border-primary" /><button type="submit" className="w-full py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl">{t.confirm}</button></form></motion.div>}</AnimatePresence>
               </div>
             )}
           </motion.div>

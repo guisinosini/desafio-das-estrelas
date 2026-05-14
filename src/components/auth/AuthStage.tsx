@@ -123,7 +123,7 @@ const AuthStage = memo(({
                 onClick={handleForgotPassword}
                 className="text-[9px] font-black uppercase text-primary/60 hover:text-primary transition-colors mt-1 ml-2"
               >
-                Esqueci minha senha
+                {t.forgotPassword}
               </button>
             )}
           </div>
@@ -138,7 +138,7 @@ const AuthStage = memo(({
           >
             {authLoading ? (
               <>
-                <RefreshCw className="w-5 h-5 animate-spin" /> Processando...
+                <RefreshCw className="w-5 h-5 animate-spin" /> {t.processing}
               </>
             ) : (
               t.continue
@@ -150,7 +150,7 @@ const AuthStage = memo(({
           onClick={() => setIsLogin(!isLogin)} 
           className="w-full text-center text-[10px] font-black uppercase text-white/30 hover:text-white transition-colors"
         >
-          {isLogin ? "Criar nova tripulação" : "Já tenho acesso"}
+          {isLogin ? t.createAccount : t.alreadyHaveAccount}
         </button>
       </div>
     </motion.div>
