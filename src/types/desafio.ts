@@ -16,6 +16,10 @@ export type ChildData = {
   id: string;
   name: string;
   avatar: string;
+  gender: 'boy' | 'girl' | 'other';
+  birthDate?: string;
+  age?: number;
+  schoolGrade?: string;
   stars: number;
   dailyStars: number;
   planets: Planet[];

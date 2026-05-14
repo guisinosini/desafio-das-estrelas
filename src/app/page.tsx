@@ -45,6 +45,9 @@ import { MissionList } from "@/components/desafio/MissionList";
 import { RewardShop } from "@/components/desafio/RewardShop";
 import { ParentDashboard } from "@/components/desafio/ParentDashboard";
 import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/types/desafio";
+import { translations, type Language } from "@/lib/translations";
+import AuthStage from "@/components/auth/AuthStage";
+import SetupChildStage from "@/components/desafio/SetupChildStage";
 
 const ClockDisplay = memo(() => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -72,13 +75,21 @@ export default function DesafioEstrelas() {
   const [stage, setStage] = useState<Stage>('welcome');
   const [resetPassword, setResetPassword] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
+  const [language, setLanguage] = useState<Language>('pt-BR');
+  const t = useMemo(() => translations[language], [language]);
 
   // Novos Estados para Múltiplas Crianças
   const [children, setChildren] = useState<ChildData[]>([]);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
 
   // Estado Temporário para Criação
-  const [newChild, setNewChild] = useState<Partial<ChildData>>({ name: "", avatar: "ast1" });
+  const [newChild, setNewChild] = useState<Partial<ChildData>>({ 
+    name: "", 
+    avatar: "ast1",
+    gender: 'boy',
+    age: 7,
+    schoolGrade: "1º Ano"
+  });
 
   // Estados para Customização
   const [customTask, setCustomTask] = useState<{ title: string, stars: number, recurrence: TaskRecurrence, planetId?: string }>({ title: "", stars: 5, recurrence: 'daily', planetId: "" });
@@ -277,6 +288,7 @@ export default function DesafioEstrelas() {
 
       if (finalData) {
         const savedChildren: ChildData[] = finalData.children || [];
+        if (finalData.language) setLanguage(finalData.language);
 
         const now = new Date();
         const todayStr = now.toLocaleDateString();
@@ -332,8 +344,8 @@ export default function DesafioEstrelas() {
         if (cloudData && cloudData.children) {
           setChildren(cloudData.children);
           setActiveChildId(cloudData.activeChildId || null);
-          if (cloudData.parentPin) setParentPin(cloudData.parentPin);
           if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+          if (cloudData.language) setLanguage(cloudData.language);
         }
       }
     });
@@ -347,7 +359,7 @@ export default function DesafioEstrelas() {
   }, []);
 
   useEffect(() => {
-    const dataToSave = { children, activeChildId, stage, parentPin, fleetId };
+    const dataToSave = { children, activeChildId, stage, parentPin, fleetId, language };
     localStorage.setItem('desafio_estrelas_v2', JSON.stringify(dataToSave));
 
     // Debounce cloud sync
@@ -356,7 +368,7 @@ export default function DesafioEstrelas() {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [children, activeChildId, stage]);
+  }, [children, activeChildId, stage, parentPin, fleetId, language]);
 
   const updateActiveChild = (updates: Partial<ChildData>) => {
     setChildren((prev: ChildData[]) => prev.map(c => c.id === activeChildId ? { ...c, ...updates } : c));
@@ -444,6 +456,7 @@ export default function DesafioEstrelas() {
           setActiveChildId(cloudData.activeChildId || null);
           if (cloudData.parentPin) setParentPin(cloudData.parentPin);
           if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+          if (cloudData.language) setLanguage(cloudData.language);
 
           const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
           setStage(nextStage);
@@ -514,6 +527,10 @@ export default function DesafioEstrelas() {
       id,
       name: newChild.name || "Herói",
       avatar: newChild.avatar || "ast1",
+      gender: (newChild.gender as any) || 'boy',
+      age: newChild.age,
+      birthDate: newChild.birthDate,
+      schoolGrade: newChild.schoolGrade,
       stars: 10,
       dailyStars: 0,
       tasks: [],
@@ -812,61 +829,26 @@ export default function DesafioEstrelas() {
           </motion.div>
         )}
 
-        {/* --- STAGE: AUTH (Lead) --- */}
         {stage === 'auth' && (
-          <motion.div key="auth" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('welcome')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
-            <div className="space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Estação de Login</span>
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Identificação do Mentor</h2>
-            </div>
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[50px] space-y-6 shadow-2xl">
-              <form onSubmit={handleAuth} className="space-y-4">
-                {authError && <div className="p-4 bg-red-500/20 text-red-200 text-[10px] font-bold rounded-2xl border border-red-500/30 text-center">{authError}</div>}
-                {authSuccess && <div className="p-4 bg-emerald-500/20 text-emerald-200 text-[10px] font-bold rounded-2xl border border-emerald-500/30 text-center">{authSuccess}</div>}
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Nome Completo</label>
-                    <input required type="text" value={parentName} onChange={e => setParentName(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors" />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">E-mail</label>
-                  <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Senha Especial</label>
-                  <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors" />
-                  {isLogin && (
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
-                      className="text-[9px] font-black uppercase text-primary/60 hover:text-primary transition-colors mt-1 ml-2"
-                    >
-                      Esqueci minha senha
-                    </button>
-                  )}
-                </div>
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className={clsx(
-                    "w-full py-5 font-black uppercase tracking-widest rounded-2xl shadow-xl mt-4 transition-all flex items-center justify-center gap-3",
-                    authLoading ? "bg-zinc-700 text-zinc-400 cursor-not-allowed" : "bg-primary text-black hover:scale-[1.02] active:scale-[0.98]"
-                  )}
-                >
-                  {authLoading ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 animate-spin" /> Processando...
-                    </>
-                  ) : (
-                    "Continuar Viagem"
-                  )}
-                </button>
-              </form>
-              <button onClick={() => setIsLogin(!isLogin)} className="w-full text-center text-[10px] font-black uppercase text-white/30">{isLogin ? "Criar nova tripulação" : "Já tenho acesso"}</button>
-            </div>
-          </motion.div>
+          <AuthStage
+            t={t}
+            language={language}
+            setLanguage={setLanguage}
+            setStage={setStage}
+            isLogin={isLogin}
+            setIsLogin={setIsLogin}
+            handleAuth={handleAuth}
+            authLoading={authLoading}
+            authError={authError}
+            authSuccess={authSuccess}
+            parentName={parentName}
+            setParentName={setParentName}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            handleForgotPassword={handleForgotPassword}
+          />
         )}
 
         {/* --- STAGE: ENTER CODE (OTP) --- */}
@@ -990,32 +972,15 @@ export default function DesafioEstrelas() {
           </motion.div>
         )}
 
-        {/* --- STAGE: SETUP CHILD --- */}
         {stage === 'setup_child' && (
-          <motion.div key="setup_child" className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage(children.length > 0 ? 'select_child' : 'auth')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
-            <h2 className="text-4xl font-black italic uppercase tracking-tighter text-center">Quem é o Heroi da Missão?</h2>
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[50px] space-y-8 shadow-2xl">
-              <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto border-2 border-primary/20 animate-pulse">
-                <Baby className="w-16 h-16 text-primary" />
-              </div>
-              <input
-                autoFocus
-                value={newChild.name}
-                onChange={e => setNewChild({ ...newChild, name: e.target.value })}
-                type="text"
-                placeholder="Nome do Pequeno Herói..."
-                className="w-full bg-transparent border-b-2 border-white/20 p-5 text-3xl font-black text-center outline-none focus:border-primary transition-colors"
-              />
-              <button
-                disabled={!newChild.name}
-                onClick={() => setStage('setup_avatar')}
-                className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-[28px] shadow-lg shadow-primary/20"
-              >
-                Próximo Passo
-              </button>
-            </div>
-          </motion.div>
+          <SetupChildStage
+            newChild={newChild}
+            setNewChild={setNewChild}
+            setStage={setStage}
+            handleCreateChild={handleCreateChild}
+            hasChildren={children.length > 0}
+            t={t}
+          />
         )}
 
         {/* --- STAGE: SETUP AVATAR --- */}
