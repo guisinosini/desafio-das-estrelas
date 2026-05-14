@@ -104,7 +104,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             <div className="absolute -inset-10 bg-primary/20 blur-[120px] rounded-full animate-pulse" />
             <div className="relative rounded-[40px] overflow-hidden border border-white/10 shadow-2xl">
               <img 
-                src="/images/hero.png" 
+                src="https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1200" 
+                onError={(e) => { e.currentTarget.src = "/images/hero.png" }}
                 alt="Herói Estelar"
                 className="w-full h-full object-cover"
               />
@@ -124,7 +125,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
           >
             <div className="rounded-[40px] overflow-hidden border border-white/10 shadow-2xl grayscale-[0.5] hover:grayscale-0 transition-all duration-700">
               <img 
-                src="/images/pain.png" 
+                src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=1200" 
+                onError={(e) => { e.currentTarget.src = "/images/pain.png" }}
                 alt="Desafios Diários"
                 className="w-full h-full object-cover"
               />
