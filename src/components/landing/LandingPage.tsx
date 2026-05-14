@@ -18,7 +18,9 @@ import {
   LayoutDashboard,
   X,
   Globe,
-  Clock
+  Clock,
+  Users,
+  Brain
 } from 'lucide-react';
 import { Language, translations } from '../../lib/translations';
 import { StarField } from '../desafio/HeroElements';
@@ -376,6 +378,111 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </div>
             </div>
           </FadeInWhenVisible>
+        </div>
+      </section>
+
+      {/* Galactic Alliance Section */}
+      <section className="py-32 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+          <FadeInWhenVisible>
+            <div className="space-y-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px] font-black uppercase tracking-widest">
+                <Users className="w-3.5 h-3.5" /> {t.lp_alliance_sub}
+              </div>
+              <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                {t.lp_alliance_title}
+              </h2>
+              <p className="text-xl md:text-2xl text-white/50 leading-relaxed">
+                {t.lp_alliance_desc}
+              </p>
+              <div className="space-y-4">
+                {[t.lp_alliance_feat1, t.lp_alliance_feat2, t.lp_alliance_feat3].map((feat, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                    <span className="font-bold text-white/80">{feat}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeInWhenVisible>
+
+          <FadeInWhenVisible delay={0.2}>
+            <div className="relative">
+              <div className="absolute -inset-10 bg-purple-500/20 blur-[100px] rounded-full opacity-30" />
+              <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-[56px] p-8 border border-white/10 shadow-2xl relative overflow-hidden">
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center pb-4 border-b border-white/5">
+                    <span className="text-xs font-black uppercase tracking-widest text-white/40">{t.allianceRanking}</span>
+                    <Trophy className="w-5 h-5 text-yellow-500" />
+                  </div>
+                  {[
+                    { name: "Leo (Você)", stars: 1250, color: "text-primary" },
+                    { name: "Dudu (Primo)", stars: 1100, color: "text-white/60" },
+                    { name: "Bia (Amiga)", stars: 950, color: "text-white/60" }
+                  ].map((player, i) => (
+                    <div key={i} className="flex justify-between items-center group">
+                      <div className="flex items-center gap-4">
+                        <span className="text-lg font-black italic text-white/20">0{i+1}</span>
+                        <span className={`font-bold ${player.color}`}>{player.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="font-black tracking-tighter">{player.stars}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30 italic">Validação Social Ativada</p>
+                </div>
+              </div>
+            </div>
+          </FadeInWhenVisible>
+        </div>
+      </section>
+
+      {/* Clinical Bridge Section */}
+      <section className="py-32 px-6 bg-white/[0.01] border-y border-white/5 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+          <FadeInWhenVisible>
+            <div className="relative group rounded-[56px] overflow-hidden border border-white/10 shadow-2xl">
+              <div className="absolute inset-0 bg-blue-500/10 pointer-events-none" />
+              <img 
+                src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1200" 
+                alt="Profissional de Saúde"
+                className="w-full aspect-square object-cover"
+              />
+              <div className="absolute top-8 left-8 p-6 bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl">
+                <FileText className="w-8 h-8 text-primary mb-2" />
+                <p className="text-xs font-black uppercase tracking-widest">Relatórios Clínicos</p>
+                <p className="text-lg font-bold">Baseados em Dados Reais</p>
+              </div>
+            </div>
+          </FadeInWhenVisible>
+
+          <div className="space-y-10">
+            <FadeInWhenVisible delay={0.2}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-black uppercase tracking-widest">
+                <Brain className="w-3.5 h-3.5" /> {t.lp_pro_sub}
+              </div>
+              <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                {t.lp_pro_title}
+              </h2>
+              <p className="text-xl md:text-2xl text-white/50 leading-relaxed">
+                {t.lp_pro_desc}
+              </p>
+              <div className="grid gap-6">
+                {[t.lp_pro_feat1, t.lp_pro_feat2, t.lp_pro_feat3].map((feat, i) => (
+                  <div key={i} className="flex items-center gap-4 group">
+                    <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 group-hover:bg-primary/20 transition-all">
+                      <TrendingUp className="w-5 h-5 text-primary" />
+                    </div>
+                    <span className="text-lg font-bold text-white/80">{feat}</span>
+                  </div>
+                ))}
+              </div>
+            </FadeInWhenVisible>
+          </div>
         </div>
       </section>
 
