@@ -202,6 +202,7 @@ export const translations: Record<Language, any> = {
     lp_plan_annual: 'Plano Comandante',
     lp_save_30: 'Economize 30%',
     lp_subscribe: 'Assinar Agora',
+    lp_impact_quote: 'Onde a ciência do comportamento encontra a diversão da descoberta: Educando para a autonomia, uma estrela de cada vez.',
   },
   'pt-PT': {
     welcome: 'Bem-vindo',
@@ -421,6 +422,7 @@ export const translations: Record<Language, any> = {
     activeSector: 'Active Sector',
     honorMedals: 'Honor Medals',
     latestAchievements: 'Latest Achievements',
+    lp_impact_quote: 'Where behavioral science meets the fun of discovery: Educating for autonomy, one star at a time.',
     allianceRanking: 'Alliance Ranking',
     approvals: 'Approvals',
     controlRoom: 'Control Room',

@@ -476,6 +476,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         </div>
       </section>
 
+      {/* Impact Quote Section */}
+      <section className="py-20 md:py-32 px-6 relative overflow-hidden z-20">
+        <div className="max-w-4xl mx-auto text-center">
+          <FadeInWhenVisible>
+            <div className="inline-block p-4 md:p-6 bg-primary/5 rounded-[40px] border border-primary/10 relative">
+              <Sparkles className="absolute -top-6 -left-6 w-12 h-12 text-primary/20 animate-pulse" />
+              <p className="text-2xl md:text-4xl lg:text-5xl font-black italic uppercase tracking-tighter leading-tight md:leading-tight">
+                "{t.lp_impact_quote}"
+              </p>
+              <Sparkles className="absolute -bottom-6 -right-6 w-12 h-12 text-primary/20 animate-pulse" />
+            </div>
+          </FadeInWhenVisible>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section className="py-24 md:py-40 px-6 relative z-20" id="pricing">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -599,7 +614,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </span>
             </div>
             <p className="text-[10px] md:text-xs text-white/20 leading-relaxed max-w-xs mx-auto md:mx-0 font-medium">
-                Uma iniciativa do Instituto Kamaleon para transformar a educação infantil através da tecnologia e psicologia positiva.
+                Uma iniciativa do Instituto Kamaleon para transformar a educação infantil através da tecnologia e psicologia comportamental.
             </p>
           </div>
           
