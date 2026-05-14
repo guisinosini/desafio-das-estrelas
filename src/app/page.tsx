@@ -48,6 +48,7 @@ import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/t
 import { translations, type Language } from "@/lib/translations";
 import AuthStage from "@/components/auth/AuthStage";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
+import { LandingPage } from "@/components/landing/LandingPage";
 
 const ClockDisplay = memo(({ language }: { language: string }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -72,7 +73,7 @@ ClockDisplay.displayName = 'ClockDisplay';
 
 export default function DesafioEstrelas() {
   const [supabase] = useState(() => createClient());
-  const [stage, setStage] = useState<Stage>('welcome');
+  const [stage, setStage] = useState<Stage>('landing');
   const [resetPassword, setResetPassword] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
   const [language, setLanguage] = useState<Language>('pt-BR');
@@ -730,6 +731,15 @@ export default function DesafioEstrelas() {
       <StarField />
 
       <AnimatePresence mode="wait">
+
+        {/* --- STAGE: LANDING --- */}
+        {stage === 'landing' && (
+          <LandingPage 
+            language={language} 
+            onLanguageChange={setLanguage} 
+            onStart={() => setStage('auth')} 
+          />
+        )}
 
         {/* --- STAGE: WELCOME --- */}
         {stage === 'welcome' && (

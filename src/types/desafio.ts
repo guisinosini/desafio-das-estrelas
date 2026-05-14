@@ -28,4 +28,4 @@ export type ChildData = {
   badges: string[];
   history: { id: string, title: string, type: 'gain' | 'loss' | 'redeem', amount: number, date: string }[];
 };
-export type Stage = 'welcome' | 'auth' | 'enter_code' | 'reset_password' | 'select_child' | 'setup_child' | 'setup_avatar' | 'setup_planets' | 'setup_tasks' | 'setup_rewards' | 'adventure';
+export type Stage = 'landing' | 'welcome' | 'auth' | 'enter_code' | 'reset_password' | 'select_child' | 'setup_child' | 'setup_avatar' | 'setup_planets' | 'setup_tasks' | 'setup_rewards' | 'adventure';
