@@ -359,20 +359,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             <div className="relative">
                 <div className="absolute -inset-10 bg-primary/30 blur-[120px] rounded-full opacity-30 animate-pulse" />
                 <div className="bg-[#1e293b] rounded-[48px] p-4 border border-white/10 shadow-2xl overflow-hidden">
-                    <div className="bg-[#020617] rounded-[36px] aspect-square lg:aspect-[4/3] relative flex items-center justify-center">
+                    <div className="bg-[#020617] rounded-[36px] aspect-square lg:aspect-[4/3] relative overflow-hidden flex items-center justify-center">
+                        <img 
+                          src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200" 
+                          onError={(e) => { e.currentTarget.src = "/images/dashboard.png" }}
+                          alt="Mentor Dashboard"
+                          className="w-full h-full object-cover opacity-80"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
                         <motion.div 
                             animate={{ 
-                                scale: [1, 1.05, 1],
-                                rotate: [0, 1, 0]
+                                y: [0, -10, 0]
                             }}
                             transition={{ duration: 4, repeat: Infinity }}
-                            className="text-center space-y-6 px-10"
+                            className="absolute bottom-10 left-10 p-6 bg-white/10 backdrop-blur-2xl border border-white/10 rounded-3xl"
                         >
-                            <LayoutDashboard className="w-24 h-24 text-primary/20 mx-auto" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.8em] text-white/20">Control Station Preview</p>
-                            <div className="flex gap-2 justify-center">
-                                {[1, 2, 3].map(i => <div key={i} className="w-12 h-2 bg-white/5 rounded-full" />)}
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Live Data</span>
                             </div>
+                            <p className="font-black italic uppercase text-sm tracking-tighter">Sincronização Intergaláctica Ativa</p>
                         </motion.div>
                     </div>
                 </div>
