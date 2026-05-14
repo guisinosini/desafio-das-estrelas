@@ -15,7 +15,9 @@ import {
   MousePointer2,
   Lock,
   Sparkles,
-  LayoutDashboard
+  LayoutDashboard,
+  X,
+  Globe
 } from 'lucide-react';
 import { Language, translations } from '../../lib/translations';
 import { StarField } from '../desafio/HeroElements';
