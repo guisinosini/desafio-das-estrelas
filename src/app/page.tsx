@@ -340,6 +340,9 @@ export default function DesafioEstrelas() {
         setStage('reset_password');
       }
       if (event === 'SIGNED_IN') {
+        if (session?.user?.user_metadata?.full_name) {
+          setParentName(session.user.user_metadata.full_name);
+        }
         // Recarregar dados sempre que logar
         const cloudData = await loadFromCloud(session?.user);
         if (cloudData && cloudData.children) {
@@ -1285,7 +1288,9 @@ export default function DesafioEstrelas() {
                   </div>
                 </div>
                 <div className="cursor-pointer" onClick={() => setStage('select_child')}>
-                  <h1 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2">{activeChild?.name} <RefreshCw className="w-3 h-3" /></h1>
+                  <h1 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2">
+                    {parentName && `${t.mentor}: ${parentName} • `}{activeChild?.name} <RefreshCw className="w-3 h-3" />
+                  </h1>
                   <p className="text-sm md:text-lg font-black italic uppercase tracking-tighter text-white">{view === 'child' ? t.commandStation : t.controlRoom}</p>
                 </div>
               </div>
@@ -1517,6 +1522,7 @@ export default function DesafioEstrelas() {
                   language={language}
                   setLanguage={setLanguage}
                   t={t}
+                  parentName={parentName}
                 />
               )}
             </main>

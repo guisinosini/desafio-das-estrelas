@@ -59,6 +59,7 @@ interface ParentDashboardProps {
   language: any;
   setLanguage: (lang: any) => void;
   t: any;
+  parentName: string;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -99,6 +100,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   language,
   setLanguage,
   t,
+  parentName,
 }) => {
   const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
