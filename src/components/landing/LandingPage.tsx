@@ -31,10 +31,10 @@ interface LandingPageProps {
 
 const FadeInWhenVisible = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => (
   <motion.div
-    initial={{ opacity: 0, y: 30 }}
+    initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-100px" }}
-    transition={{ duration: 0.8, delay, ease: "easeOut" }}
+    viewport={{ once: true, amount: 0.2 }}
+    transition={{ duration: 0.6, delay, ease: "easeOut" }}
   >
     {children}
   </motion.div>
@@ -42,9 +42,7 @@ const FadeInWhenVisible = ({ children, delay = 0 }: { children: React.ReactNode,
 
 export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart }) => {
   const t = translations[language];
-  const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.9]);
+  // Removemos as transformações de opacidade por scroll que podiam causar oscilações visuais nas seções abaixo
 
   const languages: { code: Language; label: string; flag: string }[] = [
     { code: 'pt-BR', label: 'Português (BR)', flag: '🇧🇷' },
@@ -96,7 +94,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20 px-6 overflow-hidden">
-        <motion.div style={{ opacity, scale }} className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <div className="space-y-10">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -163,7 +161,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               </div>
             </motion.div>
           </div>
-        </motion.div>
+        </div>
 
         <motion.div 
           animate={{ y: [0, 10, 0] }}
