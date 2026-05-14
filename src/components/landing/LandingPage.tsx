@@ -361,8 +361,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 <div className="bg-[#1e293b] rounded-[48px] p-4 border border-white/10 shadow-2xl overflow-hidden">
                     <div className="bg-[#020617] rounded-[36px] aspect-square lg:aspect-[4/3] relative overflow-hidden flex items-center justify-center">
                         <img 
-                          src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200" 
-                          onError={(e) => { e.currentTarget.src = "/images/dashboard.png" }}
+                          src = "/images/dashboard.png" 
                           alt="Mentor Dashboard"
                           className="w-full h-full object-cover opacity-80"
                         />
