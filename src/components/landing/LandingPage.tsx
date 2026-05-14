@@ -17,7 +17,8 @@ import {
   Sparkles,
   LayoutDashboard,
   X,
-  Globe
+  Globe,
+  Clock
 } from 'lucide-react';
 import { Language, translations } from '../../lib/translations';
 import { StarField } from '../desafio/HeroElements';
@@ -261,6 +262,60 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                     </div>
                 </FadeInWhenVisible>
             ))}
+        </div>
+      </section>
+
+      {/* Journey Ecosystem Section */}
+      <section className="py-32 px-6 relative bg-[#020617]">
+        <div className="max-w-7xl mx-auto">
+          <FadeInWhenVisible>
+            <div className="text-center mb-24 space-y-4">
+              <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                O Ecossistema da <span className="text-primary">Jornada</span>
+              </h2>
+              <p className="text-xl text-white/40 font-bold uppercase tracking-widest">Entenda como a ciência e o jogo se unem</p>
+            </div>
+          </FadeInWhenVisible>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Token Economy */}
+            <FadeInWhenVisible delay={0.1}>
+              <div className="p-10 bg-white/[0.03] border border-white/10 rounded-[48px] h-full flex flex-col space-y-6 hover:border-primary/30 transition-all">
+                <div className="w-16 h-16 bg-yellow-500/10 rounded-2xl flex items-center justify-center border border-yellow-500/20">
+                  <Sparkles className="w-8 h-8 text-yellow-500" />
+                </div>
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter">{t.lp_token_title}</h3>
+                <p className="text-white/50 leading-relaxed">{t.lp_token_desc}</p>
+              </div>
+            </FadeInWhenVisible>
+
+            {/* Mission Types */}
+            <FadeInWhenVisible delay={0.2}>
+              <div className="p-10 bg-white/[0.03] border border-white/10 rounded-[48px] h-full flex flex-col space-y-6 hover:border-primary/30 transition-all">
+                <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20">
+                  <Clock className="w-8 h-8 text-blue-500" />
+                </div>
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter">{t.lp_missions_types_title}</h3>
+                <p className="text-white/50 leading-relaxed">{t.lp_missions_types_desc}</p>
+                <div className="flex gap-2 pt-4">
+                  {['Diárias', 'Semanais', 'Mensais'].map(tag => (
+                    <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-white/40">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </FadeInWhenVisible>
+
+            {/* Medals */}
+            <FadeInWhenVisible delay={0.3}>
+              <div className="p-10 bg-white/[0.03] border border-white/10 rounded-[48px] h-full flex flex-col space-y-6 hover:border-primary/30 transition-all">
+                <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20">
+                  <Trophy className="w-8 h-8 text-purple-500" />
+                </div>
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter">{t.lp_feat_medals}</h3>
+                <p className="text-white/50 leading-relaxed">{t.lp_feat_medals_desc}</p>
+              </div>
+            </FadeInWhenVisible>
+          </div>
         </div>
       </section>
 
