@@ -165,7 +165,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-4xl md:text-6xl lg:text-8xl font-black italic uppercase tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/30"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black italic uppercase tracking-tighter leading-[0.95] text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/30"
             >
               {t.lp_hero_title}
             </motion.h1>
@@ -320,7 +320,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         <div className="max-w-7xl mx-auto">
           <FadeInWhenVisible>
             <div className="text-center mb-16 md:mb-24 space-y-3 md:space-y-4">
-              <h2 className="text-3xl md:text-5xl lg:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+              <h2 className="text-3xl md:text-5xl lg:text-7xl font-black italic uppercase tracking-tighter leading-[0.95]">
                 {t.lp_ecosystem_title.split(' ').slice(0, -1).join(' ')} <span className="text-primary">{t.lp_ecosystem_title.split(' ').pop()}</span>
               </h2>
               <p className="text-sm md:text-xl text-white/40 font-bold uppercase tracking-widest">{t.lp_ecosystem_sub}</p>
@@ -513,7 +513,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] md:text-[11px] font-black uppercase tracking-widest">
                 <Brain className="w-3 h-3 md:w-3.5 md:h-3.5" /> {t.lp_pro_sub}
               </div>
-              <h2 className="text-3xl md:text-5xl lg:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+              <h2 className="text-3xl md:text-5xl lg:text-7xl font-black italic uppercase tracking-tighter leading-[0.95]">
                 {t.lp_pro_title}
               </h2>
               <p className="text-lg md:text-xl lg:text-2xl text-white/50 leading-relaxed">
@@ -686,7 +686,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       <section className="py-20 md:py-32 px-6">
         <FadeInWhenVisible>
             <div className="max-w-5xl mx-auto bg-gradient-to-br from-primary/20 via-purple-500/10 to-transparent p-10 md:p-24 rounded-3xl md:rounded-[64px] border border-white/10 text-center space-y-6 md:space-y-10 relative overflow-hidden">
-                <h2 className="text-3xl md:text-6xl lg:text-8xl font-black italic uppercase tracking-tighter leading-[0.9] relative z-10">
+                <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black italic uppercase tracking-tighter leading-[0.95] relative z-10">
                     {t.lp_ready_takeoff.split(' ').slice(0, -1).join(' ')} <br /><span className="text-primary">{t.lp_ready_takeoff.split(' ').pop()}</span>
                 </h2>
                 <p className="text-lg md:text-2xl text-white/50 max-w-2xl mx-auto relative z-10">
