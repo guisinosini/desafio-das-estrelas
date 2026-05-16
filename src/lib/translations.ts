@@ -197,6 +197,8 @@ export const translations: Record<Language, any> = {
     lp_pro_feat1: 'Relatórios Estruturados (PDF)',
     lp_pro_feat2: 'Gráficos de Evolução Diária',
     lp_pro_feat3: 'Monitoramento de Comportamentos-Alvo',
+    lp_pro_badge_title: 'Relatórios Clínicos',
+    lp_pro_badge_desc: 'Baseados em Dados Reais',
     lp_price_title: 'Escolha seu Plano de Voo',
     lp_plan_monthly: 'Plano Cadete',
     lp_plan_annual: 'Plano Comandante',
@@ -588,6 +590,8 @@ export const translations: Record<Language, any> = {
     lp_pro_feat1: 'Relatórios Estruturados (PDF)',
     lp_pro_feat2: 'Gráficos de Evolução Diária',
     lp_pro_feat3: 'Monitorização de Comportamentos-Alvo',
+    lp_pro_badge_title: 'Relatórios Clínicos',
+    lp_pro_badge_desc: 'Baseados em Dados Reais',
     lp_impact_quote: 'Onde a ciência do comportamento encontra a diversão da descoberta: Educando para a autonomia, uma estrela de cada vez.'
   },
   'en': {
@@ -782,6 +786,8 @@ export const translations: Record<Language, any> = {
     lp_pro_feat1: 'Structured PDF Reports',
     lp_pro_feat2: 'Daily Evolution Charts',
     lp_pro_feat3: 'Target Behavior Monitoring',
+    lp_pro_badge_title: 'Clinical Reports',
+    lp_pro_badge_desc: 'Based on Real Data',
     lp_price_title: 'Choose Your Flight Plan',
     lp_plan_monthly: 'Cadet Plan',
     lp_plan_annual: 'Commander Plan',
@@ -838,6 +844,12 @@ export const translations: Record<Language, any> = {
     shareError: 'Error generating sharing link.',
     lp_ecosystem_title: 'The Journey Ecosystem',
     lp_ecosystem_sub: 'Understand how science and play come together',
+    lp_token_title: 'Token Economy System',
+    lp_token_desc: 'We transform target behaviors into trading currency (stars). This teaches children to delay gratification and understand that major rewards require consistent effort.',
+    lp_missions_types_title: 'Temporal Missions',
+    lp_missions_types_desc: 'Daily missions for routine, Weekly for organization, and Monthly for big developmental challenges.',
+    lp_feat_medals: 'Medals of Honor',
+    lp_feat_medals_desc: 'Visual recognition and digital badges for milestones achieved and long-term consistency.',
     lp_mission_daily: 'Daily',
     lp_mission_weekly: 'Weekly',
     lp_mission_monthly: 'Monthly',
@@ -1172,6 +1184,8 @@ export const translations: Record<Language, any> = {
     lp_pro_feat1: 'Informes Estructurados (PDF)',
     lp_pro_feat2: 'Gráficos de Evolución Diaria',
     lp_pro_feat3: 'Monitoreo de Comportamientos Objetivo',
+    lp_pro_badge_title: 'Informes Clínicos',
+    lp_pro_badge_desc: 'Basados en Datos Reales',
     lp_impact_quote: 'Donde la ciencia del comportamiento se encuentra con la diversión del descubrimiento: Educando para la autonomía, una estrella a la vez.'
   },
   'fr': {
@@ -1467,6 +1481,8 @@ export const translations: Record<Language, any> = {
     lp_pro_feat1: 'Rapports Structurés (PDF)',
     lp_pro_feat2: 'Graphiques d\'Évolution Quotidienne',
     lp_pro_feat3: 'Suivi des Comportements Cibles',
+    lp_pro_badge_title: 'Rapports Cliniques',
+    lp_pro_badge_desc: 'Basés sur des Données Réelles',
     lp_impact_quote: 'Là où la science du comportement rencontre le plaisir de la découverte : Éduquer pour l\'autonomie, une étoile à la fois.'
   },
   'it': {
@@ -1762,6 +1778,8 @@ export const translations: Record<Language, any> = {
     lp_pro_feat1: 'Rapporti Strutturati (PDF)',
     lp_pro_feat2: 'Grafici di Evoluzione Giornaliera',
     lp_pro_feat3: 'Monitoraggio dei Comportamenti Obiettivo',
+    lp_pro_badge_title: 'Rapporti Clinici',
+    lp_pro_badge_desc: 'Basati su Dati Reali',
     lp_impact_quote: 'Dove la scienza del comportamento incontra il divertimento della scoperta: Educare all\'autonomia, una stella alla volta.'
   },
   'zh': {
@@ -2057,6 +2075,8 @@ export const translations: Record<Language, any> = {
     lp_pro_feat1: '结构化 PDF 报告',
     lp_pro_feat2: '每日进化图表',
     lp_pro_feat3: '目标行为监测',
+    lp_pro_badge_title: '临床报告',
+    lp_pro_badge_desc: '基于真实数据',
     lp_impact_quote: '当行为科学与探索的乐趣相遇：一次一颗星，为自主而教育。'
   }
 };

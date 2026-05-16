@@ -346,8 +346,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter">{t.lp_missions_types_title}</h3>
                 <p className="text-sm md:text-base text-white/50 leading-relaxed">{t.lp_missions_types_desc}</p>
                 <div className="flex flex-wrap gap-2 pt-2 md:pt-4">
-                  {[t.lp_mission_daily, t.lp_mission_weekly, t.lp_mission_monthly].map(tag => (
-                    <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/40">{tag}</span>
+                  {(['lp_mission_daily', 'lp_mission_weekly', 'lp_mission_monthly'] as const).map(key => (
+                    <span key={key} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/40">{t[key]}</span>
                   ))}
                 </div>
               </div>
@@ -502,8 +502,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               />
               <div className="absolute top-4 md:top-8 left-4 md:left-8 p-4 md:p-6 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl max-w-[150px] md:max-w-none">
                 <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary mb-1 md:mb-2" />
-                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Relatórios Clínicos</p>
-                <p className="text-sm md:text-lg font-bold italic leading-tight">Baseados em Dados Reais</p>
+                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">{t.lp_pro_badge_title}</p>
+                <p className="text-sm md:text-lg font-bold italic leading-tight">{t.lp_pro_badge_desc}</p>
               </div>
             </div>
           </FadeInWhenVisible>
@@ -520,12 +520,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 {t.lp_pro_desc}
               </p>
               <div className="grid gap-4 md:gap-6 max-w-md mx-auto lg:mx-0">
-                {[t.lp_pro_feat1, t.lp_pro_feat2, t.lp_pro_feat3].map((feat, i) => (
+                {(['lp_pro_feat1', 'lp_pro_feat2', 'lp_pro_feat3'] as const).map((key, i) => (
                   <div key={i} className="flex items-center gap-3 md:gap-4 group justify-center lg:justify-start text-left">
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 group-hover:bg-primary/20 transition-all shrink-0">
                       <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                     </div>
-                    <span className="text-sm md:text-lg font-bold text-white/80 leading-tight">{feat}</span>
+                    <span className="text-sm md:text-lg font-bold text-white/80 leading-tight">{t[key]}</span>
                   </div>
                 ))}
               </div>
