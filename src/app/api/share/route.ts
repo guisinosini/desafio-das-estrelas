@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     const reportData = await request.json();
-    const shareId = uuidv4();
+    const shareId = crypto.randomUUID();
 
     const { error } = await supabase
       .from('shared_reports')
