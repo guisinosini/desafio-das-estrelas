@@ -35,25 +35,43 @@ export default async function SharedReportPage({ params }: { params: Promise<{ i
   const language = childData.language || 'pt-BR';
 
   return (
-    <div className="min-h-screen bg-[#0f172a] py-12 px-4 md:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8 text-center print:hidden">
-          <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-black uppercase tracking-widest mb-4">
-            Visualização Digital de Relatório
+    <div className="min-h-screen bg-[#0f172a] py-12 px-4 md:px-8 relative overflow-hidden">
+      {/* Estrelas de fundo para manter a identidade */}
+      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
+        <div className="stars-container"></div>
+      </div>
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        <div className="mb-12 text-center print:hidden">
+          <div className="inline-block px-6 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+            Portal do Profissional • Visualização Segura
           </div>
-          <p className="text-white/40 text-xs">
-            Este é um link de acesso seguro e temporário compartilhado pelo mentor do Herói.
+          <h2 className="text-2xl font-black text-white italic tracking-tighter mb-2">Relatório de Missão: {childData.name}</h2>
+          <p className="text-white/40 text-xs max-w-md mx-auto leading-relaxed">
+            Este relatório contém dados de desempenho e observações comportamentais capturados pelo sistema Desafio das Estrelas.
           </p>
         </div>
         
-        <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden">
+        <div className="bg-[#16213e]/60 backdrop-blur-2xl border-2 border-white/5 rounded-[40px] shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden">
           <ClinicalReport activeChild={childData} language={language} />
         </div>
 
-        <div className="mt-12 text-center text-white/20 text-[10px] font-black uppercase tracking-[0.3em] print:hidden">
-          Desafio das Estrelas • Sistema de Gamificação Clínica
+        <div className="mt-12 text-center flex flex-col items-center gap-4 print:hidden">
+          <div className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">
+            Desafio das Estrelas • Gamificação & Desenvolvimento
+          </div>
+          <div className="w-1 h-12 bg-gradient-to-b from-primary/20 to-transparent rounded-full" />
         </div>
       </div>
+
+      <style jsx global>{`
+        .stars-container {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+      `}</style>
     </div>
   );
 }
