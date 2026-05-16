@@ -26,8 +26,8 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://desafio-das-estrelas.vercel.app';
-    return NextResponse.json({ url: `${baseUrl}/report/${shareId}` });
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://desafio-das-estrelas.vercel.app';
+    return NextResponse.json({ url: `${origin}/report/${shareId}` });
   } catch (error: any) {
     console.error('Erro ao compartilhar relatório:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
