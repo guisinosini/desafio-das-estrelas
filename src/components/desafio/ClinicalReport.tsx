@@ -105,27 +105,46 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
     return { planetTasks, completedCounts, totalCompleted, planetRate };
   };
 
-  // Cálculo da Atividade Semanal (Missões por dia da semana)
-  const weeklyData = [
-    { key: 'mon', dayNum: 1, count: 0 },
-    { key: 'tue', dayNum: 2, count: 0 },
-    { key: 'wed', dayNum: 3, count: 0 },
-    { key: 'thu', dayNum: 4, count: 0 },
-    { key: 'fri', dayNum: 5, count: 0 },
-    { key: 'sat', dayNum: 6, count: 0 },
-    { key: 'sun', dayNum: 0, count: 0 },
-  ];
+  // Cálculo da Atividade Semanal (Missões por dia da semana com data do mês)
+  const getWeeklyData = () => {
+    const referenceDate = endDate ? new Date(endDate + 'T12:00:00') : new Date();
+    const dayOfWeek = referenceDate.getDay(); // 0 (Sun) to 6 (Sat)
+    
+    // Encontrar a segunda-feira da semana da referenceDate
+    // No JS, Sunday is 0. Queremos Monday (1).
+    // Se hoje é Sun(0), diff é -6. Se é Mon(1), diff é 0. Se é Tue(2), diff é -1.
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(referenceDate);
+    monday.setDate(referenceDate.getDate() + diffToMonday);
 
-  tasks.forEach(task => {
-    const logs = task.completionLog || (task.status === 'done' && task.lastCompleted ? [task.lastCompleted] : []);
-    logs.filter(isInRange).forEach(log => {
-      const d = new Date(log);
-      const day = d.getDay();
-      const entry = weeklyData.find(w => w.dayNum === day);
-      if (entry) entry.count++;
-    });
-  });
+    const days = [];
+    const dayKeys: (keyof typeof t.reportDays)[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      
+      const dateStr = d.toISOString().split('T')[0];
+      const dayOfMonth = d.getDate();
+      const dayKey = dayKeys[i];
+      
+      let count = 0;
+      tasks.forEach(task => {
+        const logs = task.completionLog || (task.status === 'done' && task.lastCompleted ? [task.lastCompleted] : []);
+        count += logs.filter(log => log.startsWith(dateStr)).length;
+      });
 
+      days.push({
+        key: dayKey,
+        label: t.reportDays[dayKey],
+        dateLabel: dayOfMonth,
+        count
+      });
+    }
+    return days;
+  };
+
+  const weeklyData = getWeeklyData();
   const maxWeekly = Math.max(...weeklyData.map(w => w.count), 1);
 
   const handlePrint = () => window.print();
@@ -383,9 +402,14 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40 print:text-zinc-500">
-                    {(t.reportDays as any)[day.key]}
-                  </span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[12px] font-black text-white print:text-zinc-900 leading-none">
+                      {day.dateLabel}
+                    </span>
+                    <span className="text-[7px] font-black uppercase tracking-tighter text-white/40 print:text-zinc-500 leading-none">
+                      {day.label}
+                    </span>
+                  </div>
                 </div>
               );
             })}
