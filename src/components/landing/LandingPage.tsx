@@ -153,6 +153,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       <section className="relative min-h-screen flex items-center pt-24 pb-12 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10 w-full">
           <div className="space-y-6 md:space-y-10 text-center lg:text-left">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-[11px] font-black uppercase tracking-widest"
+            >
               <Zap className="w-3.5 h-3.5 fill-primary" /> {t.lp_alliance_sub}
             </motion.div>
             
@@ -203,7 +208,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60" />
                 <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 right-4 md:right-8 p-4 md:p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl">
-                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary">{t.pending}</span>
+                    <div className="flex items-center gap-3 mb-1 md:mb-2">
+                        <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-primary animate-ping" />
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary">{t.lp_live_data}</span>
                     </div>
                     <p className="font-black italic uppercase text-sm md:text-lg tracking-tighter">{t.planetPresets[0].title}</p>
                 </div>
