@@ -669,7 +669,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 
         {parentSubView === 'reports' && (
           <div className="space-y-8">
-            <ClinicalReport activeChild={activeChild} />
+            <ClinicalReport activeChild={activeChild} language={language} />
           </div>
         )}
       </div>
