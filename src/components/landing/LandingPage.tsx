@@ -44,30 +44,30 @@ const FadeInWhenVisible = ({ children, delay = 0 }: { children: React.ReactNode,
   </motion.div>
 );
 
+const languages: { code: Language; label: string; flag: string }[] = [
+  { code: 'pt-BR', label: 'BR', flag: '🇧🇷' },
+  { code: 'pt-PT', label: 'PT', flag: '🇵🇹' },
+  { code: 'en', label: 'EN', flag: '🇺🇸' },
+  { code: 'es', label: 'ES', flag: '🇪🇸' },
+  { code: 'fr', label: 'FR', flag: '🇫🇷' },
+  { code: 'it', label: 'IT', flag: '🇮🇹' },
+  { code: 'zh', label: 'ZH', flag: '🇨🇳' },
+];
+
+const currencyMap: Record<string, { symbol: string, monthly: string, yearly: string }> = {
+  'pt-BR': { symbol: 'R$', monthly: '19,90', yearly: '199,00' },
+  'en': { symbol: '$', monthly: '9.90', yearly: '99.00' },
+  'es': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+  'fr': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+  'it': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+  'pt-PT': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+  'zh': { symbol: '¥', monthly: '26,65', yearly: '260,00' },
+};
+
 export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart }) => {
   const t = translations[language];
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  const languages: { code: Language; label: string; flag: string }[] = [
-    { code: 'pt-BR', label: 'BR', flag: '🇧🇷' },
-    { code: 'pt-PT', label: 'PT', flag: '🇵🇹' },
-    { code: 'en', label: 'EN', flag: '🇺🇸' },
-    { code: 'es', label: 'ES', flag: '🇪🇸' },
-    { code: 'fr', label: 'FR', flag: '🇫🇷' },
-    { code: 'it', label: 'IT', flag: '🇮🇹' },
-    { code: 'zh', label: 'ZH', flag: '🇨🇳' },
-  ];
-
-  const currencyMap: Record<string, { symbol: string, monthly: string, yearly: string }> = {
-    'pt-BR': { symbol: 'R$', monthly: '19,90', yearly: '199,00' },
-    'en': { symbol: '$', monthly: '9.90', yearly: '99.00' },
-    'es': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-    'fr': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-    'it': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-    'pt-PT': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-    'zh': { symbol: '¥', monthly: '26,65', yearly: '260,00' },
-  };
 
   const currentConfig = currencyMap[language] || currencyMap['en'];
 
@@ -239,6 +239,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                   src="/images/pain.png" 
                   onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=1200" }}
                   alt="Desafios Diários"
+                  loading="lazy"
                   className="w-full h-full object-cover aspect-video lg:aspect-square"
                 />
               </div>
@@ -409,6 +410,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                           src="/images/dashboard.PNG" 
                           onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200" }}
                           alt="Mentor Dashboard"
+                          loading="lazy"
                           className="w-full h-full object-cover opacity-80"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
@@ -495,6 +497,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               <img 
                 src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1200" 
                 alt="Profissional de Saúde"
+                loading="lazy"
                 className="w-full aspect-square object-cover"
               />
               <div className="absolute top-4 md:top-8 left-4 md:left-8 p-4 md:p-6 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl max-w-[150px] md:max-w-none">
