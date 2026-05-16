@@ -1,10 +1,15 @@
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is missing');
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!stripeSecretKey && process.env.NODE_ENV === 'production') {
+  console.warn('⚠️ STRIPE_SECRET_KEY is missing. Stripe functionality will be disabled.');
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-01-27.acacia', // Versão estável do Stripe
-  typescript: true,
+export const stripe = new Stripe(stripeSecretKey || '', {
+  apiVersion: '2025-01-27' as any,
+  appInfo: {
+    name: 'Desafio das Estrelas',
+    version: '1.0.0',
+  },
 });
