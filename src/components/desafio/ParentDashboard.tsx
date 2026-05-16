@@ -134,8 +134,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
       const last = task.lastCompleted ? new Date(task.lastCompleted) : null;
       if (last) {
         if (now.getTime() - last.getTime() >= threeDays) {
-          const subject = `Lembrete: missão "${task.title}" está pendente há 3+ dias`;
-          const body = `Olá mentor,\n\nA missão "${task.title}" da criança ${activeChild.name} não foi concluída há mais de 3 dias. Por favor, incentive a retomada da atividade.\n\nAtenciosamente,\nDesafio das Estrelas`; 
+          const subject = t.email_reminder_subject.replace('{title}', task.title);
+          const body = t.email_reminder_body
+            .replace('{title}', task.title)
+            .replace('{name}', activeChild.name);
           // Placeholder: usar e‑mail do mentor armazenado na aplicação (ex.: parentPin ou outro campo)
           const mentorEmail = (activeChild as any).mentorEmail || '';
           if (mentorEmail) sendEmail(mentorEmail, subject, body);
@@ -177,7 +179,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         </button>
         <button
           onClick={() => {
-            if (confirm(`Tem certeza que deseja excluir o perfil de ${activeChild?.name}?`)) {
+            if (confirm(t.confirm_delete_hero.replace('{name}', activeChild?.name || ''))) {
               if (activeChildId) {
                 removeChild(activeChildId);
               }
@@ -547,7 +549,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               <div className="flex flex-col md:flex-row gap-4">
                 <input
                   type="text"
-                  placeholder="Ex: FAMILIA-SILVA"
+                  placeholder={t.placeholder_fleet}
                   value={fleetId}
                   onChange={e => setFleetId(e.target.value.toUpperCase().replace(/\s/g, '-'))}
                   className="flex-1 bg-white/10 border border-white/20 rounded-2xl p-4 font-black text-xl md:text-2xl outline-none focus:border-purple-500 transition-all text-white"
@@ -647,11 +649,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     onClick={() => {
                       handleSaveNote(behaviorNote);
                       setBehaviorNote('');
-                      alert("Registro salvo com sucesso no Diário de Bordo!");
+                      alert(t.note_saved_success);
                     }}
                     className="px-10 py-5 bg-primary text-black rounded-2xl hover:scale-105 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-40 flex items-center gap-3 shadow-[0_20px_40px_-10px_rgba(45,212,191,0.3)]"
                   >
-                    <CheckCircle2 className="w-5 h-5" /> Salvar Observação
+                    <CheckCircle2 className="w-5 h-5" /> {t.save_note}
                   </button>
                 </div>
               </div>

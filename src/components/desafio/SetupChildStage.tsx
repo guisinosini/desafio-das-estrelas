@@ -40,7 +40,7 @@ const SetupChildStage = memo(({
             value={newChild.name}
             onChange={e => setNewChild({ ...newChild, name: e.target.value })}
             type="text"
-            placeholder="Ex: Arthur..."
+            placeholder={t.placeholder_hero_name}
             className="w-full bg-transparent border-b-2 border-white/20 p-2 text-2xl font-black text-center outline-none focus:border-primary transition-colors"
           />
         </div>

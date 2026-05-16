@@ -60,7 +60,7 @@ const AuthStage = memo(({
         
         <div className="space-y-4 relative z-10">
           <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2">
-             <RefreshCw className="w-3 h-3 text-primary" /> {t.systemLanguage || 'Escolha seu Idioma'}
+             <RefreshCw className="w-3 h-3 text-primary" /> {t.systemLanguage}
           </label>
           <div className="flex flex-wrap gap-2.5">
             {(['pt-BR', 'pt-PT', 'en', 'es', 'fr', 'it', 'zh'] as Language[]).map(lang => (

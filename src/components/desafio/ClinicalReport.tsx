@@ -580,7 +580,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                         {new Date(note.date).toLocaleDateString(language, { day: '2-digit', month: '2-digit', year: 'numeric' })}
                       </span>
                       <span className="text-[8px] font-bold text-white/20 print:text-zinc-400 uppercase">
-                        Registro de Observação
+                        {t.observation_record}
                       </span>
                     </div>
                     <p className="text-xs text-white/80 print:text-zinc-800 font-medium leading-relaxed whitespace-pre-wrap">

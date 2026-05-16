@@ -59,22 +59,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
     { code: 'zh', label: 'ZH', flag: '🇨🇳' },
   ];
 
-  const getPrice = () => {
-    // Mapeamento de moeda por idioma
-    const currencyMap: Record<string, { symbol: string, monthly: string, yearly: string }> = {
-      'pt-BR': { symbol: 'R$', monthly: '19,90', yearly: '199,00' },
-      'en': { symbol: '$', monthly: '9.90', yearly: '99.00' },
-      'es': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-      'fr': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-      'it': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-      'pt-PT': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-      'zh': { symbol: '¥', monthly: '26,65', yearly: '260,00' },
-    };
+  const currencyMap: Record<string, { symbol: string, monthly: string, yearly: string }> = {
+    'pt-BR': { symbol: 'R$', monthly: '19,90', yearly: '199,00' },
+    'en': { symbol: '$', monthly: '9.90', yearly: '99.00' },
+    'es': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+    'fr': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+    'it': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+    'pt-PT': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+    'zh': { symbol: '¥', monthly: '26,65', yearly: '260,00' },
+  };
 
-    const config = currencyMap[language] || currencyMap['en'];
+  const currentConfig = currencyMap[language] || currencyMap['en'];
+
+  const getPrice = () => {
     return {
-      symbol: config.symbol,
-      value: billingInterval === 'monthly' ? config.monthly : config.yearly
+      symbol: currentConfig.symbol,
+      value: billingInterval === 'monthly' ? currentConfig.monthly : currentConfig.yearly
     };
   };
 
@@ -153,11 +153,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       <section className="relative min-h-screen flex items-center pt-24 pb-12 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10 w-full">
           <div className="space-y-6 md:space-y-10 text-center lg:text-left">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-[11px] font-black uppercase tracking-widest"
-            >
               <Zap className="w-3.5 h-3.5 fill-primary" /> {t.lp_alliance_sub}
             </motion.div>
             
@@ -208,11 +203,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60" />
                 <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 right-4 md:right-8 p-4 md:p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl">
-                    <div className="flex items-center gap-3 mb-1 md:mb-2">
-                        <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-primary animate-ping" />
-                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary">Missão Ativa</span>
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary">{t.pending}</span>
                     </div>
-                    <p className="font-black italic uppercase text-sm md:text-lg tracking-tighter">Explorar Planeta do Foco</p>
+                    <p className="font-black italic uppercase text-sm md:text-lg tracking-tighter">{t.planetPresets[0].title}</p>
                 </div>
               </div>
             </motion.div>
@@ -259,10 +252,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
 
             <div className="grid gap-4 md:gap-6">
               {[
-                { text: "Acordos e combinados desrespeitados", icon: X },
-                { text: "Falta de motivação para tarefas escolares", icon: X },
-                { text: "Dificuldade em gerenciar telas e tempo", icon: X },
-                { text: "Atritos constantes na rotina familiar", icon: X }
+                { text: t.punishPresets[0].label, icon: X },
+                { text: t.taskPresets[0].title, icon: X },
+                { text: t.lp_unlimited_children, icon: X },
+                { text: t.lp_all_planets_missions, icon: X }
               ].map((item, i) => (
                 <FadeInWhenVisible key={i} delay={i * 0.1}>
                   <div className="flex items-center gap-4 p-4 md:p-5 bg-white/5 border border-white/5 rounded-2xl md:rounded-3xl hover:bg-red-500/5 hover:border-red-500/20 transition-all group">
@@ -320,9 +313,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
           <FadeInWhenVisible>
             <div className="text-center mb-16 md:mb-24 space-y-3 md:space-y-4">
               <h2 className="text-3xl md:text-5xl lg:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
-                O Ecossistema da <span className="text-primary">Jornada</span>
+                {t.lp_ecosystem_title.split(' ').slice(0, -1).join(' ')} <span className="text-primary">{t.lp_ecosystem_title.split(' ').pop()}</span>
               </h2>
-              <p className="text-sm md:text-xl text-white/40 font-bold uppercase tracking-widest">Entenda como a ciência e o jogo se unem</p>
+              <p className="text-sm md:text-xl text-white/40 font-bold uppercase tracking-widest">{t.lp_ecosystem_sub}</p>
             </div>
           </FadeInWhenVisible>
 
@@ -345,7 +338,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter">{t.lp_missions_types_title}</h3>
                 <p className="text-sm md:text-base text-white/50 leading-relaxed">{t.lp_missions_types_desc}</p>
                 <div className="flex flex-wrap gap-2 pt-2 md:pt-4">
-                  {['Diárias', 'Semanais', 'Mensais'].map(tag => (
+                  {[t.lp_mission_daily, t.lp_mission_weekly, t.lp_mission_monthly].map(tag => (
                     <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/40">{tag}</span>
                   ))}
                 </div>
@@ -382,10 +375,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
 
             <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
               {[
-                { icon: ShieldCheck, title: "Gestão de Limites", desc: "Sinalize atritos e deduza estrelas de forma educativa." },
+                { icon: ShieldCheck, title: t.lp_limit_mgmt, desc: t.lp_limit_mgmt_desc },
                 { icon: FileText, title: t.lp_feat_reports, desc: t.lp_feat_reports_desc },
-                { icon: LayoutDashboard, title: "Visão 360°", desc: "Acompanhe o progresso de múltiplos heróis em um só lugar." },
-                { icon: TrendingUp, title: "Análise de Dados", desc: "Gráficos de evolução para acompanhamento profissional." }
+                { icon: LayoutDashboard, title: t.lp_view_360, desc: t.lp_view_360_desc },
+                { icon: TrendingUp, title: t.lp_data_analysis, desc: t.lp_data_analysis_desc }
               ].map((item, i) => (
                 <FadeInWhenVisible key={i} delay={i * 0.1}>
                   <div className="space-y-2 md:space-y-3">
@@ -419,9 +412,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                         >
                             <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
                                 <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-primary animate-ping" />
-                                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-primary">Live Data</span>
+                                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-primary">{t.lp_live_data}</span>
                             </div>
-                            <p className="font-black italic uppercase text-[10px] md:text-sm tracking-tighter">Sincronização Ativa</p>
+                            <p className="font-black italic uppercase text-[10px] md:text-sm tracking-tighter">{t.lp_sync_active}</p>
                         </motion.div>
                     </div>
                 </div>
@@ -465,9 +458,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                     <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
                   </div>
                   {[
-                    { name: "Leo (Você)", stars: 1250, color: "text-primary" },
-                    { name: "Dudu (Primo)", stars: 1100, color: "text-white/60" },
-                    { name: "Bia (Amiga)", stars: 950, color: "text-white/60" }
+                    { name: t.lp_leo_you, stars: 1250, color: "text-primary" },
+                    { name: t.lp_dudu_cousin, stars: 1100, color: "text-white/60" },
+                    { name: t.lp_bia_friend, stars: 950, color: "text-white/60" }
                   ].map((player, i) => (
                     <div key={i} className="flex justify-between items-center group">
                       <div className="flex items-center gap-3 md:gap-4">
@@ -572,7 +565,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                   <span className={clsx("text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2", billingInterval === 'yearly' ? "text-primary" : "text-white/30")}>
                     {t.lp_plan_annual}
                     <span className="bg-primary/20 text-primary text-[8px] px-2 py-0.5 rounded-full border border-primary/20">
-                      2 MESES GRÁTIS
+                      {t.lp_2_months_free}
                     </span>
                   </span>
                 </div>
@@ -588,26 +581,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                         <MousePointer2 className="w-6 h-6 md:w-7 md:h-7 text-white/40" />
                     </div>
                     <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">{t.lp_plan_monthly}</h3>
-                    <p className="text-white/40 text-xs md:text-sm font-medium">Ideal para começar a jornada e ver os primeiros resultados.</p>
+                    <p className="text-white/40 text-xs md:text-sm font-medium">{t.lp_plan_monthly_desc}</p>
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
                     <span className="text-5xl md:text-6xl font-black italic tracking-tighter">
-                      {price.symbol} {billingInterval === 'monthly' ? price.value : (language === 'pt-BR' ? '419,00' : '83.00')}
+                      {price.symbol} {billingInterval === 'monthly' ? currentConfig.monthly : currentConfig.yearly}
                     </span>
                     <span className="text-xl md:text-2xl text-white/30 uppercase font-black tracking-tighter">
-                      /{billingInterval === 'monthly' ? 'mês' : 'ano'}
+                      /{billingInterval === 'monthly' ? t.month_short : t.year_short}
                     </span>
                 </div>
 
                 <div className="space-y-4 md:space-y-5 flex-1 mb-8 md:mb-12">
                     {[
-                    "Crianças Ilimitadas",
-                    "Todos os Planetas e Missões",
-                    "Relatórios Clínicos Ilimitados",
-                    "Dashboard do Mentor Completo",
-                    "Sincronização em Nuvem",
-                    "Suporte Prioritário"
+                      t.lp_unlimited_children,
+                      t.lp_all_planets_missions,
+                      t.lp_unlimited_clinical_reports,
+                      t.lp_full_mentor_dashboard,
+                      t.lp_cloud_sync,
+                      t.lp_priority_support
                     ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 md:gap-4 text-white/60">
                         <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0" />
@@ -630,7 +623,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             <FadeInWhenVisible delay={0.2}>
                 <div className="group relative p-8 md:p-12 bg-primary/10 border-2 border-primary rounded-3xl md:rounded-[56px] hover:shadow-[0_0_80px_-20px_rgba(45,212,191,0.3)] transition-all h-full flex flex-col overflow-hidden">
                 <div className="absolute top-4 md:top-8 right-4 md:right-8 bg-primary text-black text-[9px] md:text-[11px] font-black px-4 md:px-5 py-1.5 md:py-2 rounded-full uppercase tracking-widest">
-                    2 MESES GRÁTIS
+                    {t.lp_2_months_free}
                 </div>
                 
                 <div className="space-y-4 mb-8 md:mb-10">
@@ -638,26 +631,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                         <Sparkles className="w-6 h-6 md:w-7 md:h-7" />
                     </div>
                     <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-primary">{t.lp_plan_annual}</h3>
-                    <p className="text-primary/60 text-xs md:text-sm font-medium">A experiência completa com o melhor custo-benefício para sua família.</p>
+                    <p className="text-primary/60 text-xs md:text-sm font-medium">{t.lp_plan_annual_desc}</p>
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
                     <span className="text-5xl md:text-6xl font-black italic tracking-tighter text-white">
-                      {price.symbol} {billingInterval === 'monthly' ? (language === 'pt-BR' ? '19,90' : '9.90') : price.value}
+                      {price.symbol} {billingInterval === 'monthly' ? currentConfig.monthly : currentConfig.yearly}
                     </span>
                     <span className="text-xl md:text-2xl text-primary/40 uppercase font-black tracking-tighter">
-                      /{billingInterval === 'monthly' ? 'mês' : 'ano'}
+                      /{billingInterval === 'monthly' ? t.month_short : t.year_short}
                     </span>
                 </div>
 
                 <div className="space-y-4 md:space-y-5 flex-1 mb-8 md:mb-12">
                     {[
-                    "Crianças Ilimitadas",
-                    "Todos os Planetas e Missões",
-                    "Relatórios Clínicos Ilimitados",
-                    "Dashboard do Mentor Completo",
-                    "Sincronização em Nuvem",
-                    "Selo Comandante Fundador"
+                      t.lp_unlimited_children,
+                      t.lp_all_planets_missions,
+                      t.lp_unlimited_clinical_reports,
+                      t.lp_full_mentor_dashboard,
+                      t.lp_cloud_sync,
+                      t.lp_founder_badge
                     ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 md:gap-4 text-white">
                         <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0" />
@@ -684,10 +677,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         <FadeInWhenVisible>
             <div className="max-w-5xl mx-auto bg-gradient-to-br from-primary/20 via-purple-500/10 to-transparent p-10 md:p-24 rounded-3xl md:rounded-[64px] border border-white/10 text-center space-y-6 md:space-y-10 relative overflow-hidden">
                 <h2 className="text-3xl md:text-6xl lg:text-8xl font-black italic uppercase tracking-tighter leading-[0.9] relative z-10">
-                    Pronto para a <br /><span className="text-primary">Decolagem?</span>
+                    {t.lp_ready_takeoff.split(' ').slice(0, -1).join(' ')} <br /><span className="text-primary">{t.lp_ready_takeoff.split(' ').pop()}</span>
                 </h2>
                 <p className="text-lg md:text-2xl text-white/50 max-w-2xl mx-auto relative z-10">
-                    Junte-se a milhares de famílias que transformaram a rotina em um legado de responsabilidade.
+                    {t.lp_cta_desc}
                 </p>
                 <button onClick={onStart} className="px-10 md:px-16 py-6 md:py-8 bg-primary text-black font-black uppercase tracking-widest rounded-2xl md:rounded-[32px] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3 md:gap-4 text-lg md:text-xl relative z-10 w-full md:w-auto justify-center">
                     {t.lp_cta_start} <Rocket className="w-6 h-6 md:w-7 md:h-7" />
@@ -709,13 +702,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </span>
             </div>
             <p className="text-[10px] md:text-xs text-white/20 leading-relaxed max-w-xs mx-auto md:mx-0 font-medium">
-                Uma iniciativa do Instituto Kamaleon para transformar a educação infantil através da tecnologia e psicologia comportamental.
+                {t.lp_footer_desc}
             </p>
           </div>
           
           <div className="flex justify-center gap-6 md:gap-10 text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/20">
-            <a href="#" className="hover:text-primary transition-colors">Privacidade</a>
-            <a href="#" className="hover:text-primary transition-colors">Termos</a>
+            <a href="#" className="hover:text-primary transition-colors">{t.lp_privacy}</a>
+            <a href="#" className="hover:text-primary transition-colors">{t.lp_terms}</a>
           </div>
 
           <div className="flex flex-col items-center md:items-end gap-4">
@@ -727,7 +720,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 ))}
             </div>
             <p className="text-[8px] md:text-[9px] font-bold text-white/10 uppercase tracking-[0.3em]">
-                © 2026 KAMALEON • TODOS OS DIREITOS RESERVADOS
+                {t.lp_rights}
             </p>
           </div>
         </div>
