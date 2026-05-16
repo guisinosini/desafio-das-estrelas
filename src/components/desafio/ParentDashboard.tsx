@@ -16,6 +16,7 @@ import {
   X,
   Gift,
   Brain,
+  FileText,
 } from 'lucide-react';
 import type { Task, Reward, ChildData, TaskRecurrence } from '@/types/desafio';
 import { AVATARS } from '@/components/desafio/HeroElements';
