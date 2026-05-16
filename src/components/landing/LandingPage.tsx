@@ -22,6 +22,7 @@ import {
   Users,
   Brain
 } from 'lucide-react';
+import clsx from 'clsx';
 import { Language, translations } from '../../lib/translations';
 import { StarField } from '../desafio/HeroElements';
 
@@ -45,6 +46,8 @@ const FadeInWhenVisible = ({ children, delay = 0 }: { children: React.ReactNode,
 
 export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart }) => {
   const t = translations[language];
+  const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const languages: { code: Language; label: string; flag: string }[] = [
     { code: 'pt-BR', label: 'BR', flag: '🇧🇷' },
@@ -55,6 +58,58 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
     { code: 'it', label: 'IT', flag: '🇮🇹' },
     { code: 'zh', label: 'ZH', flag: '🇨🇳' },
   ];
+
+  const getPrice = () => {
+    // Mapeamento de moeda por idioma
+    const currencyMap: Record<string, { symbol: string, monthly: string, yearly: string }> = {
+      'pt-BR': { symbol: 'R$', monthly: '19,90', yearly: '199,00' },
+      'en': { symbol: '$', monthly: '9.90', yearly: '99.00' },
+      'es': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+      'fr': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+      'it': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+      'pt-PT': { symbol: '€', monthly: '9.90', yearly: '99.00' },
+      'zh': { symbol: '¥', monthly: '26,65', yearly: '260,00' },
+    };
+
+    const config = currencyMap[language] || currencyMap['en'];
+    return {
+      symbol: config.symbol,
+      value: billingInterval === 'monthly' ? config.monthly : config.yearly
+    };
+  };
+
+  const handleSubscribe = async (planType: 'cadet' | 'commander') => {
+    setIsSubmitting(true);
+    try {
+      let priceId = '';
+      
+      // Lógica de ID do Stripe baseada no idioma e intervalo
+      // Certifique-se de ter esses IDs no seu .env.local
+      const envKey = `NEXT_PUBLIC_STRIPE_PRICE_${billingInterval.toUpperCase()}_${language.replace('-', '_').toUpperCase()}`;
+      priceId = (process.env as any)[envKey] || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_BRL;
+
+      if (!priceId) {
+        console.warn('Price ID não encontrado para:', envKey);
+      }
+
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      window.location.href = data.url;
+    } catch (err) {
+      console.error('Erro ao iniciar checkout:', err);
+      alert('Erro ao conectar com o sistema de pagamento. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const price = getPrice();
 
   return (
     <div className="bg-[#020617] text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
@@ -491,59 +546,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         </div>
       </section>
 
-  const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  const getPrice = () => {
-    const isBRL = language === 'pt-BR' || language === 'pt-PT';
-    if (isBRL) {
-      return billingInterval === 'monthly' ? { value: '49,90', symbol: 'R$' } : { value: '419,00', symbol: 'R$' };
-    }
-    return billingInterval === 'monthly' ? { value: '9.90', symbol: '$' } : { value: '83.00', symbol: '$' };
-  };
-
-  const handleSubscribe = async (planType: 'cadet' | 'commander') => {
-    setIsSubmitting(true);
-    try {
-      const isBRL = language === 'pt-BR' || language === 'pt-PT';
-      let priceId = '';
-
-      // Mapeamento de IDs (ajuste conforme seu Stripe Dashboard)
-      if (isBRL) {
-        priceId = billingInterval === 'monthly' 
-          ? process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_BRL || '' 
-          : process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_BRL || '';
-      } else {
-        priceId = billingInterval === 'monthly' 
-          ? process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_USD || '' 
-          : process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_USD || '';
-      }
-
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId }),
-      });
-
-      const { url, error } = await response.json();
-      if (error) throw new Error(error);
-      window.location.href = url;
-    } catch (err) {
-      console.error('Erro ao iniciar checkout:', err);
-      alert('Erro ao conectar com o sistema de pagamento. Tente novamente.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const price = getPrice();
-
-  return (
-    <div className="bg-[#020617] text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
-      <StarField />
-      
-      {/* ... (Restante da nav e seções anteriores permanecem iguais) */}
-      
       {/* Pricing Section */}
       <section className="py-24 md:py-40 px-6 relative z-20" id="pricing">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -570,7 +572,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                   <span className={clsx("text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2", billingInterval === 'yearly' ? "text-primary" : "text-white/30")}>
                     {t.lp_plan_annual}
                     <span className="bg-primary/20 text-primary text-[8px] px-2 py-0.5 rounded-full border border-primary/20">
-                      -30%
+                      2 MESES GRÁTIS
                     </span>
                   </span>
                 </div>
@@ -626,7 +628,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             <FadeInWhenVisible delay={0.2}>
                 <div className="group relative p-8 md:p-12 bg-primary/10 border-2 border-primary rounded-3xl md:rounded-[56px] hover:shadow-[0_0_80px_-20px_rgba(45,212,191,0.3)] transition-all h-full flex flex-col overflow-hidden">
                 <div className="absolute top-4 md:top-8 right-4 md:right-8 bg-primary text-black text-[9px] md:text-[11px] font-black px-4 md:px-5 py-1.5 md:py-2 rounded-full uppercase tracking-widest">
-                    {t.lp_save_30}
+                    2 MESES GRÁTIS
                 </div>
                 
                 <div className="space-y-4 mb-8 md:mb-10">
