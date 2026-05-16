@@ -491,20 +491,94 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         </div>
       </section>
 
+  const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const getPrice = () => {
+    const isBRL = language === 'pt-BR' || language === 'pt-PT';
+    if (isBRL) {
+      return billingInterval === 'monthly' ? { value: '49,90', symbol: 'R$' } : { value: '419,00', symbol: 'R$' };
+    }
+    return billingInterval === 'monthly' ? { value: '9.90', symbol: '$' } : { value: '83.00', symbol: '$' };
+  };
+
+  const handleSubscribe = async (planType: 'cadet' | 'commander') => {
+    setIsSubmitting(true);
+    try {
+      const isBRL = language === 'pt-BR' || language === 'pt-PT';
+      let priceId = '';
+
+      // Mapeamento de IDs (ajuste conforme seu Stripe Dashboard)
+      if (isBRL) {
+        priceId = billingInterval === 'monthly' 
+          ? process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_BRL || '' 
+          : process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_BRL || '';
+      } else {
+        priceId = billingInterval === 'monthly' 
+          ? process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_USD || '' 
+          : process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_USD || '';
+      }
+
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+
+      const { url, error } = await response.json();
+      if (error) throw new Error(error);
+      window.location.href = url;
+    } catch (err) {
+      console.error('Erro ao iniciar checkout:', err);
+      alert('Erro ao conectar com o sistema de pagamento. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const price = getPrice();
+
+  return (
+    <div className="bg-[#020617] text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
+      <StarField />
+      
+      {/* ... (Restante da nav e seções anteriores permanecem iguais) */}
+      
       {/* Pricing Section */}
       <section className="py-24 md:py-40 px-6 relative z-20" id="pricing">
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16 md:mb-24 space-y-4">
+          <div className="text-center mb-16 md:mb-24 space-y-8">
             <FadeInWhenVisible>
                 <h2 className="text-4xl md:text-6xl lg:text-8xl font-black italic uppercase tracking-tighter leading-[0.9]">
                     {t.lp_price_title}
                 </h2>
-                <p className="text-sm md:text-xl text-white/40 uppercase tracking-widest font-black">Investimento na educação do futuro</p>
+                
+                {/* Billing Toggle */}
+                <div className="flex items-center justify-center gap-4 mt-12">
+                  <span className={clsx("text-xs font-black uppercase tracking-widest transition-colors", billingInterval === 'monthly' ? "text-white" : "text-white/30")}>
+                    {t.monthly}
+                  </span>
+                  <button 
+                    onClick={() => setBillingInterval(billingInterval === 'monthly' ? 'yearly' : 'monthly')}
+                    className="w-14 h-8 bg-white/5 border border-white/10 rounded-full relative p-1 transition-colors hover:border-primary/50"
+                  >
+                    <motion.div 
+                      animate={{ x: billingInterval === 'monthly' ? 0 : 24 }}
+                      className="w-6 h-6 bg-primary rounded-full shadow-lg shadow-primary/40"
+                    />
+                  </button>
+                  <span className={clsx("text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2", billingInterval === 'yearly' ? "text-primary" : "text-white/30")}>
+                    {t.lp_plan_annual}
+                    <span className="bg-primary/20 text-primary text-[8px] px-2 py-0.5 rounded-full border border-primary/20">
+                      -30%
+                    </span>
+                  </span>
+                </div>
             </FadeInWhenVisible>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-10 max-w-5xl mx-auto">
-            {/* Monthly */}
+            {/* Monthly / Basic (Plano Cadete) */}
             <FadeInWhenVisible>
                 <div className="group relative p-8 md:p-12 bg-white/[0.03] border border-white/10 rounded-3xl md:rounded-[56px] hover:bg-white/[0.06] transition-all h-full flex flex-col">
                 <div className="space-y-4 mb-8 md:mb-10">
@@ -516,8 +590,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
-                    <span className="text-5xl md:text-6xl font-black italic tracking-tighter">R$ 29</span>
-                    <span className="text-xl md:text-2xl text-white/30 uppercase font-black tracking-tighter">/mês</span>
+                    <span className="text-5xl md:text-6xl font-black italic tracking-tighter">
+                      {price.symbol} {billingInterval === 'monthly' ? price.value : (language === 'pt-BR' ? '419,00' : '83.00')}
+                    </span>
+                    <span className="text-xl md:text-2xl text-white/30 uppercase font-black tracking-tighter">
+                      /{billingInterval === 'monthly' ? 'mês' : 'ano'}
+                    </span>
                 </div>
 
                 <div className="space-y-4 md:space-y-5 flex-1 mb-8 md:mb-12">
@@ -534,13 +612,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                     ))}
                 </div>
 
-                <button onClick={onStart} className="w-full py-5 md:py-6 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest hover:bg-white/10 transition-all">
-                    {t.lp_subscribe}
+                <button 
+                  onClick={() => handleSubscribe('cadet')} 
+                  disabled={isSubmitting}
+                  className="w-full py-5 md:py-6 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
+                >
+                    {isSubmitting ? t.processing : t.lp_subscribe}
                 </button>
                 </div>
             </FadeInWhenVisible>
 
-            {/* Annual */}
+            {/* Annual / Pro (Plano Comandante) */}
             <FadeInWhenVisible delay={0.2}>
                 <div className="group relative p-8 md:p-12 bg-primary/10 border-2 border-primary rounded-3xl md:rounded-[56px] hover:shadow-[0_0_80px_-20px_rgba(45,212,191,0.3)] transition-all h-full flex flex-col overflow-hidden">
                 <div className="absolute top-4 md:top-8 right-4 md:right-8 bg-primary text-black text-[9px] md:text-[11px] font-black px-4 md:px-5 py-1.5 md:py-2 rounded-full uppercase tracking-widest">
@@ -556,8 +638,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
-                    <span className="text-6xl md:text-7xl font-black italic tracking-tighter text-white">R$ 249</span>
-                    <span className="text-xl md:text-2xl text-primary/40 uppercase font-black tracking-tighter">/ano</span>
+                    <span className="text-5xl md:text-6xl font-black italic tracking-tighter text-white">
+                      {price.symbol} {billingInterval === 'monthly' ? (language === 'pt-BR' ? '69,90' : '14.90') : price.value}
+                    </span>
+                    <span className="text-xl md:text-2xl text-primary/40 uppercase font-black tracking-tighter">
+                      /{billingInterval === 'monthly' ? 'mês' : 'ano'}
+                    </span>
                 </div>
 
                 <div className="space-y-4 md:space-y-5 flex-1 mb-8 md:mb-12">
@@ -575,8 +661,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                     ))}
                 </div>
 
-                <button onClick={onStart} className="w-full py-5 md:py-7 bg-primary text-black rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20">
-                    {t.lp_subscribe}
+                <button 
+                  onClick={() => handleSubscribe('commander')} 
+                  disabled={isSubmitting}
+                  className="w-full py-5 md:py-7 bg-primary text-black rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
+                >
+                    {isSubmitting ? t.processing : t.lp_subscribe}
                 </button>
                 </div>
             </FadeInWhenVisible>
