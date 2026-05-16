@@ -1,6 +1,6 @@
 import { stripe } from '@/lib/stripe';
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
@@ -20,12 +20,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Webhook Error: ${error.message}` }, { status: 400 });
   }
 
-  // Inicializa Supabase com a Service Role Key (necessária para ignorar RLS no webhook)
-  // Nota: Você deve ter SUPABASE_SERVICE_ROLE_KEY no seu .env
-  const supabase = createClient(
+  // Inicializa Supabase com a Service Role Key
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { getAll: () => [] } } // Webhooks não têm cookies de sessão
+    { 
+      cookies: {
+        getAll() { return [] },
+        setAll(cookiesToSet) {}
+      }
+    }
   );
 
   switch (event.type) {

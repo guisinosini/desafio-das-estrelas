@@ -1081,7 +1081,7 @@ export default function DesafioEstrelas() {
                 <div className="pt-6 border-t border-white/10 space-y-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.chosenPlanets}</p>
                   <div className="space-y-2">
-                    {activeChild?.planets?.map(p => (
+                    {activeChild?.planets?.map((p: Planet) => (
                       <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{p.icon}</span>
