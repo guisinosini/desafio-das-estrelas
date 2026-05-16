@@ -36,9 +36,8 @@ export default async function SharedReportPage({ params }: { params: Promise<{ i
 
   return (
     <div className="min-h-screen bg-[#0f172a] py-12 px-4 md:px-8 relative overflow-hidden">
-      {/* Estrelas de fundo para manter a identidade */}
-      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
-        <div className="stars-container"></div>
+      {/* Estrelas de fundo com gradiente radial nativo */}
+      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none bg-[radial-gradient(circle_at_center,#1e293b_0%,#0f172a_100%)]">
       </div>
 
       <div className="max-w-4xl mx-auto relative z-10">
@@ -63,15 +62,6 @@ export default async function SharedReportPage({ params }: { params: Promise<{ i
           <div className="w-1 h-12 bg-gradient-to-b from-primary/20 to-transparent rounded-full" />
         </div>
       </div>
-
-      <style jsx global>{`
-        .stars-container {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-        }
-      `}</style>
     </div>
   );
 }
