@@ -23,6 +23,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Trash,
+  CreditCard,
   ShieldCheck,
   Brain,
   Camera,

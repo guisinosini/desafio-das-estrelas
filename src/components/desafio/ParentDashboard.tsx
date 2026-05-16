@@ -123,15 +123,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     if (!activeChild) return;
     const now = new Date();
     const threeDays = 3 * 24 * 60 * 60 * 1000;
-    tasks.forEach((t) => {
+    tasks.forEach((task) => {
       // Ignora missões já concluídas
-      if (t.status === 'done') return;
+      if (task.status === 'done') return;
       // Se nunca foi completada, use a data de criação (assumida como lastCompleted undefined)
-      const last = t.lastCompleted ? new Date(t.lastCompleted) : null;
+      const last = task.lastCompleted ? new Date(task.lastCompleted) : null;
       if (last) {
         if (now.getTime() - last.getTime() >= threeDays) {
-          const subject = `Lembrete: missão "${t.title}" está pendente há 3+ dias`;
-          const body = `Olá mentor,\n\nA missão "${t.title}" da criança ${activeChild.name} não foi concluída há mais de 3 dias. Por favor, incentive a retomada da atividade.\n\nAtenciosamente,\nDesafio das Estrelas`; 
+          const subject = `Lembrete: missão "${task.title}" está pendente há 3+ dias`;
+          const body = `Olá mentor,\n\nA missão "${task.title}" da criança ${activeChild.name} não foi concluída há mais de 3 dias. Por favor, incentive a retomada da atividade.\n\nAtenciosamente,\nDesafio das Estrelas`; 
           // Placeholder: usar e‑mail do mentor armazenado na aplicação (ex.: parentPin ou outro campo)
           const mentorEmail = (activeChild as any).mentorEmail || '';
           if (mentorEmail) sendEmail(mentorEmail, subject, body);
@@ -198,9 +198,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           <div className="space-y-6">
             <h2 className="text-3xl font-black uppercase italic tracking-tighter">{t.approvals} {t.pending}</h2>
             <div className="grid grid-cols-1 gap-4">
-              {tasks.filter((t: Task) => t.status === 'pending').map((t: Task) => (
+              {tasks.filter((tk: Task) => tk.status === 'pending').map((tk: Task) => (
                 <div
-                  key={t.id}
+                  key={tk.id}
                   className="p-4 md:p-8 bg-white/5 border border-white/10 rounded-3xl md:rounded-[40px] flex flex-col sm:flex-row items-center justify-between gap-6 backdrop-blur-md"
                 >
                   <div className="flex items-center gap-4 md:gap-6">
@@ -208,19 +208,19 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       {AVATARS.find(a => a.id === activeChild?.avatar)?.emoji}
                     </div>
                     <div>
-                      <p className="text-lg md:text-xl font-black uppercase italic text-white">{t.title}</p>
+                      <p className="text-lg md:text-xl font-black uppercase italic text-white">{tk.title}</p>
                       <p className="text-xs md:text-sm text-primary font-black uppercase">{t.stars} {t.starsToEarn}</p>
                     </div>
                   </div>
                   <div className="flex gap-3 w-full sm:w-auto">
                     <button
-                      onClick={() => handleApprove(t.id)}
+                      onClick={() => handleApprove(tk.id)}
                       className="flex-1 sm:w-16 h-14 md:h-16 bg-primary text-black rounded-2xl flex items-center justify-center hover:scale-105 transition-all"
                     >
                       <Check className="w-6 h-6 md:w-8 md:h-8" />
                     </button>
                     <button
-                      onClick={() => updateActiveChild({ tasks: tasks.map((tk: Task) => tk.id === t.id ? { ...tk, status: 'available' } : tk) })}
+                      onClick={() => updateActiveChild({ tasks: tasks.map((tItem: Task) => tItem.id === tk.id ? { ...tItem, status: 'available' } : tItem) })}
                       className="flex-1 sm:w-16 h-14 md:h-16 bg-white/10 text-white rounded-2xl flex items-center justify-center hover:bg-red-500 transition-all"
                     >
                       <X className="w-6 h-6 md:w-8 md:h-8" />
@@ -302,12 +302,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 
             {/* Task List */}
             <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              {tasks.map((t: Task) => (
-                <div key={t.id} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center group">
-                  <span className="font-bold text-sm uppercase italic">{t.title}</span>
+              {tasks.map((task: Task) => (
+                <div key={task.id} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center group">
+                  <span className="font-bold text-sm uppercase italic">{task.title}</span>
                   <div className="flex items-center gap-4">
-                    <span className="text-primary font-black">{t.stars}⭐</span>
-                    <button onClick={() => removeTask(t.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400">
+                    <span className="text-primary font-black">{task.stars}⭐</span>
+                    <button onClick={() => removeTask(task.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400">
                       <Trash className="w-4 h-4" />
                     </button>
                   </div>
