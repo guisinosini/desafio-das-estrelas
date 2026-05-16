@@ -602,10 +602,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
 
                 <div className="space-y-4 md:space-y-5 flex-1 mb-8 md:mb-12">
                     {[
-                    "1 Perfil de Herói Ativo",
-                    "Acesso a todos os Planetas",
-                    "Dashboard do Mentor Básico",
-                    "Suporte via E-mail"
+                    "Crianças Ilimitadas",
+                    "Todos os Planetas e Missões",
+                    "Relatórios Clínicos Ilimitados",
+                    "Dashboard do Mentor Completo",
+                    "Sincronização em Nuvem",
+                    "Suporte Prioritário"
                     ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 md:gap-4 text-white/60">
                         <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0" />
@@ -636,12 +638,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                         <Sparkles className="w-6 h-6 md:w-7 md:h-7" />
                     </div>
                     <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-primary">{t.lp_plan_annual}</h3>
-                    <p className="text-primary/60 text-xs md:text-sm font-medium">A experiência completa para a evolução máxima da família.</p>
+                    <p className="text-primary/60 text-xs md:text-sm font-medium">A experiência completa com o melhor custo-benefício para sua família.</p>
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
                     <span className="text-5xl md:text-6xl font-black italic tracking-tighter text-white">
-                      {price.symbol} {billingInterval === 'monthly' ? (language === 'pt-BR' ? '69,90' : '14.90') : price.value}
+                      {price.symbol} {billingInterval === 'monthly' ? (language === 'pt-BR' ? '19,90' : '9.90') : price.value}
                     </span>
                     <span className="text-xl md:text-2xl text-primary/40 uppercase font-black tracking-tighter">
                       /{billingInterval === 'monthly' ? 'mês' : 'ano'}
@@ -650,11 +652,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
 
                 <div className="space-y-4 md:space-y-5 flex-1 mb-8 md:mb-12">
                     {[
-                    "Até 3 Perfis de Heróis",
-                    "Relatórios Clínicos PDF ilimitados",
-                    "Histórico Completo de Missões",
-                    "Selo Comandante Fundador",
-                    "Suporte Prioritário 24/7"
+                    "Crianças Ilimitadas",
+                    "Todos os Planetas e Missões",
+                    "Relatórios Clínicos Ilimitados",
+                    "Dashboard do Mentor Completo",
+                    "Sincronização em Nuvem",
+                    "Selo Comandante Fundador"
                     ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 md:gap-4 text-white">
                         <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0" />

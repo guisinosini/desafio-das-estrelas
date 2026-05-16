@@ -274,11 +274,39 @@ export default function DesafioEstrelas() {
   // O relógio em tempo real foi isolado no componente ClockDisplay para evitar re-renderizações a cada segundo.
 
   useEffect(() => {
-    const initData = async () => {
-      // 1. Tentar carregar da Nuvem primeiro se estiver logado
-      const cloudData = await loadFromCloud();
+    // Detecção Automática de Idioma e Região
+    const detectUserLanguage = () => {
+      // 1. Tentar pegar do LocalStorage (preferência salva anteriormente)
+      const saved = localStorage.getItem('desafio_estrelas_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.language) return parsed.language;
+      }
 
-      // 2. Fallback para LocalStorage se não houver nuvem ou erro
+      // 2. Tentar detectar pelo navegador
+      const browserLang = navigator.language || (navigator as any).userLanguage;
+      console.log("🌐 Idioma detectado no navegador:", browserLang);
+
+      if (browserLang.startsWith('pt')) {
+        return browserLang.includes('PT') ? 'pt-PT' : 'pt-BR';
+      } else if (browserLang.startsWith('es')) {
+        return 'es';
+      } else if (browserLang.startsWith('fr')) {
+        return 'fr';
+      } else if (browserLang.startsWith('it')) {
+        return 'it';
+      } else if (browserLang.startsWith('zh')) {
+        return 'zh';
+      }
+
+      return 'en'; // Fallback para Inglês
+    };
+
+    const initialLang = detectUserLanguage();
+    setLanguage(initialLang);
+
+    const initData = async () => {
+      const cloudData = await loadFromCloud();
       const saved = localStorage.getItem('desafio_estrelas_v2');
       let finalData = null;
 
@@ -334,17 +362,11 @@ export default function DesafioEstrelas() {
 
     initData();
 
-    // Verificação dupla: via evento do Supabase e via URL direta
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Evento Auth:", event);
-      if (event === 'PASSWORD_RECOVERY') {
-        setStage('reset_password');
-      }
+      if (event === 'PASSWORD_RECOVERY') setStage('reset_password');
       if (event === 'SIGNED_IN') {
-        if (session?.user?.user_metadata?.full_name) {
-          setParentName(session.user.user_metadata.full_name);
-        }
-        // Recarregar dados sempre que logar
+        if (session?.user?.user_metadata?.full_name) setParentName(session.user.user_metadata.full_name);
         const cloudData = await loadFromCloud(session?.user);
         if (cloudData && cloudData.children) {
           setChildren(cloudData.children);
@@ -355,10 +377,7 @@ export default function DesafioEstrelas() {
       }
     });
 
-    // Forçar detecção se houver recovery na URL
-    if (window.location.hash.includes('type=recovery')) {
-      setStage('reset_password');
-    }
+    if (window.location.hash.includes('type=recovery')) setStage('reset_password');
 
     return () => subscription.unsubscribe();
   }, []);
@@ -1046,7 +1065,7 @@ export default function DesafioEstrelas() {
               <div className="space-y-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
                 <div className="flex flex-wrap gap-2">
-                  {planetPresets.map(p => (
+                  {planetPresets.map((p: any) => (
                     <button
                       key={p.title}
                       onClick={() => addPlanet(p.title, p.icon)}
@@ -1125,7 +1144,7 @@ export default function DesafioEstrelas() {
                       className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white/80 appearance-none cursor-pointer"
                     >
                       <option value="" className="text-black">{t.generalPlanetOption}</option>
-                      {activeChild?.planets?.map(p => (
+                      {activeChild?.planets?.map((p: Planet) => (
                         <option key={p.id} value={p.id} className="text-black">{p.icon} {p.title}</option>
                       ))}
                     </select>
@@ -1159,7 +1178,7 @@ export default function DesafioEstrelas() {
               <div className="space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
                 <div className="flex flex-wrap gap-2">
-                  {taskPresets.map(p => (
+                  {taskPresets.map((p: any) => (
                     <button key={p.title} onClick={() => addTask(p.title, p.stars)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all">
                       + {p.title} ({p.stars}⭐)
                     </button>
@@ -1168,7 +1187,7 @@ export default function DesafioEstrelas() {
               </div>
 
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                {tasks.map(t => (
+                {tasks.map((t: Task) => (
                   <div key={t.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary font-black">{t.stars}</div>
@@ -1225,7 +1244,7 @@ export default function DesafioEstrelas() {
               <div className="space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Sugestões Rápidas:</p>
                 <div className="flex flex-wrap gap-2">
-                  {rewardPresets.map(p => (
+                  {rewardPresets.map((p: any) => (
                     <button key={p.title} onClick={() => addReward(p.title, p.cost)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-all">
                       + {p.title} ({p.cost}⭐)
                     </button>
@@ -1234,7 +1253,7 @@ export default function DesafioEstrelas() {
               </div>
 
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                {rewards.map(r => (
+                {rewards.map((r: Reward) => (
                   <div key={r.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-yellow-400/20 rounded-xl flex items-center justify-center text-yellow-400 font-black">{r.cost}</div>
