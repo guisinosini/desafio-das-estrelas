@@ -8,6 +8,10 @@ import {
   Calendar,
   Sparkles,
   FileText,
+  Share2,
+  ExternalLink,
+  X,
+  Copy
 } from 'lucide-react';
 import type { ChildData, Task, Reward } from '@/types/desafio';
 import { Language, translations } from '@/lib/translations';
@@ -21,6 +25,10 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
   const t = translations[language];
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [generatedUrl, setGeneratedUrl] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
 
   if (!activeChild) {
     return (
@@ -96,6 +104,34 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
 
   const handlePrint = () => window.print();
 
+  const handleShareReport = async () => {
+    setIsGeneratingLink(true);
+    try {
+      const response = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...activeChild, language })
+      });
+      const data = await response.json();
+      if (data.url) {
+        setGeneratedUrl(data.url);
+      } else {
+        alert(t.shareError);
+      }
+    } catch (error) {
+      console.error(error);
+      alert(t.shareError);
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(generatedUrl);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
+
   return (
     <div className="space-y-8 clinical-report-container" style={{ background: 'transparent' }}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-primary/10 border border-primary/20 p-6 rounded-3xl backdrop-blur-md print:hidden">
@@ -125,13 +161,93 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
           />
         </div>
 
-        <button
-          onClick={handlePrint}
-          className="px-6 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center gap-2 shrink-0"
-        >
-          <Printer className="w-4 h-4" /> {t.reportExport}
-        </button>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="px-6 py-4 bg-indigo-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:bg-indigo-600 transition-all flex items-center gap-2"
+          >
+            <Share2 className="w-4 h-4" /> {t.shareReport}
+          </button>
+          <button
+            onClick={handlePrint}
+            className="px-6 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center gap-2"
+          >
+            <Printer className="w-4 h-4" /> {t.reportExport}
+          </button>
+        </div>
       </div>
+
+      {/* Modal de Compartilhamento / Consentimento */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/90 backdrop-blur-xl">
+          <div className="w-full max-w-md bg-[#16213e] border-2 border-indigo-500/20 rounded-[40px] shadow-2xl overflow-hidden text-white">
+            <div className="p-8 border-b border-white/10 flex justify-between items-center bg-indigo-500/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                  <Share2 className="w-5 h-5 text-indigo-400" />
+                </div>
+                <h2 className="text-xl font-black uppercase italic tracking-tighter">{t.shareConsentTitle}</h2>
+              </div>
+              <button 
+                onClick={() => { setShowShareModal(false); setGeneratedUrl(''); }} 
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-6">
+              {!generatedUrl ? (
+                <>
+                  <p className="text-white/60 text-sm leading-relaxed font-medium">
+                    {t.shareConsentDesc}
+                  </p>
+                  <button
+                    onClick={handleShareReport}
+                    disabled={isGeneratingLink}
+                    className="w-full py-4 bg-indigo-500 text-white font-black uppercase rounded-2xl shadow-xl hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {isGeneratingLink ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5" />
+                    )}
+                    {t.shareConfirm}
+                  </button>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-green-400" />
+                    <p className="text-green-400 text-xs font-black uppercase">{t.shareLinkGenerated}</p>
+                  </div>
+                  
+                  <div className="relative group">
+                    <input
+                      readOnly
+                      value={generatedUrl}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-medium text-white/60 outline-none pr-12"
+                    />
+                    <button
+                      onClick={handleCopyLink}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all"
+                    >
+                      {copySuccess ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => window.open(generatedUrl, '_blank')}
+                    className="w-full py-4 bg-white/5 border border-white/10 text-white font-black uppercase rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+                  >
+                    <ExternalLink className="w-5 h-5" /> {t.preview}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white/5 border border-white/10 rounded-[40px] p-6 sm:p-10 backdrop-blur-xl print:bg-white print:text-black print:border-none print:p-0 print:shadow-none space-y-8 text-white">
         <div className="border-b border-white/10 print:border-zinc-300 pb-6 flex justify-between items-start">
