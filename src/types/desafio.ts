@@ -26,6 +26,13 @@ export type ChildData = {
   tasks: Task[];
   rewards: Reward[];
   badges: string[];
-  history: { id: string, title: string, type: 'gain' | 'loss' | 'redeem', amount: number, date: string }[];
+  history: { 
+    id: string; 
+    title: string; 
+    type: 'gain' | 'loss' | 'redeem' | 'note'; 
+    amount: number; 
+    date: string;
+    content?: string;
+  }[];
 };
 export type Stage = 'landing' | 'welcome' | 'auth' | 'enter_code' | 'reset_password' | 'select_child' | 'setup_child' | 'setup_avatar' | 'setup_planets' | 'setup_tasks' | 'setup_rewards' | 'adventure';

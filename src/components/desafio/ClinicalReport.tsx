@@ -19,7 +19,6 @@ interface ClinicalReportProps {
 
 export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, language }) => {
   const t = translations[language];
-  const [mentorNotes, setMentorNotes] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -314,20 +313,37 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
           </div>
         )}
 
-        <div className="space-y-3 print:pt-4">
+        {/* Diário de Bordo (Notas Salvas no Histórico) */}
+        <div className="space-y-4 print:pt-4">
           <h3 className="text-xs font-black uppercase tracking-widest text-white/60 print:text-zinc-800 flex items-center gap-2">
             <FileText className="w-4 h-4" /> {t.reportLogBook}
           </h3>
-          <div className="print:hidden">
-            <textarea
-              value={mentorNotes}
-              onChange={e => setMentorNotes(e.target.value)}
-              placeholder={t.reportLogPlaceholder}
-              className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary resize-none"
-            />
-          </div>
-          <div className="hidden print:block text-xs text-zinc-800 whitespace-pre-wrap leading-relaxed border-l-2 border-zinc-400 pl-4 py-1">
-            {mentorNotes || t.reportNoNotes}
+          
+          <div className="space-y-4">
+            {history.filter(h => h.type === 'note' && isInRange(h.date)).length === 0 ? (
+              <p className="text-xs text-white/40 print:text-zinc-500 italic">
+                {t.reportNoNotes}
+              </p>
+            ) : (
+              history
+                .filter(h => h.type === 'note' && isInRange(h.date))
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .map((note, idx) => (
+                  <div key={idx} className="p-4 bg-white/5 print:bg-zinc-50 border border-white/10 print:border-zinc-200 rounded-2xl space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                        {new Date(note.date).toLocaleDateString(language, { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </span>
+                      <span className="text-[8px] font-bold text-white/20 print:text-zinc-400 uppercase">
+                        Registro de Observação
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/80 print:text-zinc-800 font-medium leading-relaxed whitespace-pre-wrap">
+                      {note.content}
+                    </p>
+                  </div>
+                ))
+            )}
           </div>
         </div>
 

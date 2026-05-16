@@ -55,6 +55,7 @@ interface ParentDashboardProps {
   setFleetId: (id: string) => void;
   loadFleetRanking: () => void;
   handleDeductStars: (stars: number, reason: string) => void;
+  handleSaveNote: (content: string) => void;
   removeChild: (id: string) => void;
   language: any;
   setLanguage: (lang: any) => void;
@@ -96,6 +97,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   setFleetId,
   loadFleetRanking,
   handleDeductStars,
+  handleSaveNote,
   removeChild,
   language,
   setLanguage,
@@ -104,6 +106,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 }) => {
   const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
+  const [behaviorNote, setBehaviorNote] = useState('');
 
   // Função placeholder para envio de e‑mail (substituir por serviço real)
   const sendEmail = async (to: string, subject: string, body: string) => {
@@ -613,6 +616,37 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     className="px-6 py-3 bg-red-500 text-white rounded-xl hover:scale-105 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-40"
                   >
                     {t.apply}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Novo: Diário de Bordo / Observações */}
+            <div className="p-4 bg-white/5 border border-dashed border-primary/30 rounded-2xl space-y-4">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                  {t.reportLogBookTitle}
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <textarea
+                  placeholder={t.reportLogBookPlaceholder}
+                  value={behaviorNote}
+                  onChange={e => setBehaviorNote(e.target.value)}
+                  className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary resize-none font-medium leading-relaxed"
+                />
+                <div className="flex justify-end">
+                  <button
+                    disabled={!behaviorNote.trim()}
+                    onClick={() => {
+                      handleSaveNote(behaviorNote);
+                      setBehaviorNote('');
+                      alert("Observação salva com sucesso no Diário de Bordo!");
+                    }}
+                    className="px-8 py-3 bg-primary text-black rounded-xl hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest disabled:opacity-40 flex items-center gap-2 shadow-lg"
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> Salvar no Diário
                   </button>
                 </div>
               </div>

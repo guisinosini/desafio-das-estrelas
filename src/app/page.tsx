@@ -748,6 +748,20 @@ export default function DesafioEstrelas() {
     updateActiveChild({ planets: (activeChild?.planets || []).filter(p => p.id !== id) });
   };
 
+  const handleSaveNote = (content: string) => {
+    if (!activeChild || !content.trim()) return;
+    updateActiveChild({
+      history: [{
+        id: Date.now().toString(),
+        title: `Observação do Mentor`,
+        type: 'note' as const,
+        amount: 0,
+        date: new Date().toISOString(),
+        content: content.trim()
+      }, ...(activeChild.history || [])].slice(0, 100)
+    });
+  };
+
   return (
     <div className="min-h-screen text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
       <StarField />
@@ -1567,6 +1581,7 @@ export default function DesafioEstrelas() {
                   setFleetId={setFleetId}
                   loadFleetRanking={loadFleetRanking}
                   handleDeductStars={handleDeductStars}
+                  handleSaveNote={handleSaveNote}
                   removeChild={removeChild}
                   language={language}
                   setLanguage={setLanguage}
