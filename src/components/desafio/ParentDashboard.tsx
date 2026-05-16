@@ -622,20 +622,24 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               </div>
             </div>
 
-            {/* Novo: Diário de Bordo / Observações */}
-            <div className="p-4 bg-white/5 border border-dashed border-primary/30 rounded-2xl space-y-4">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-primary" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-primary">
-                  {t.reportLogBookTitle}
-                </p>
+            {/* Diário de Bordo / Observações Clínicas */}
+            <div className="p-8 bg-white/5 border-2 border-dashed border-primary/20 rounded-[40px] space-y-6 shadow-2xl backdrop-blur-xl">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">{t.reportLogBookTitle}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.reportLogBook}</p>
+                </div>
               </div>
-              <div className="flex flex-col gap-3">
+              
+              <div className="space-y-4">
                 <textarea
                   placeholder={t.reportLogBookPlaceholder}
                   value={behaviorNote}
                   onChange={e => setBehaviorNote(e.target.value)}
-                  className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary resize-none font-medium leading-relaxed"
+                  className="w-full h-40 bg-white/5 border-2 border-white/10 rounded-3xl p-6 text-sm text-white outline-none focus:border-primary transition-all resize-none font-medium leading-relaxed placeholder:text-white/20"
                 />
                 <div className="flex justify-end">
                   <button
@@ -643,11 +647,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     onClick={() => {
                       handleSaveNote(behaviorNote);
                       setBehaviorNote('');
-                      alert("Observação salva com sucesso no Diário de Bordo!");
+                      alert("Registro salvo com sucesso no Diário de Bordo!");
                     }}
-                    className="px-8 py-3 bg-primary text-black rounded-xl hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest disabled:opacity-40 flex items-center gap-2 shadow-lg"
+                    className="px-10 py-5 bg-primary text-black rounded-2xl hover:scale-105 transition-all text-xs font-black uppercase tracking-widest disabled:opacity-40 flex items-center gap-3 shadow-[0_20px_40px_-10px_rgba(45,212,191,0.3)]"
                   >
-                    <CheckCircle2 className="w-4 h-4" /> Salvar no Diário
+                    <CheckCircle2 className="w-5 h-5" /> Salvar Observação
                   </button>
                 </div>
               </div>

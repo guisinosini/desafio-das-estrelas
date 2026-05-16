@@ -158,46 +158,58 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
 
   return (
     <div className="space-y-8 clinical-report-container" style={{ background: 'transparent' }}>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-primary/10 border border-primary/20 p-6 rounded-3xl backdrop-blur-md print:hidden">
-        <div>
-          <h2 className="text-xl font-black uppercase italic tracking-tighter text-primary flex items-center gap-2">
-            <Brain className="w-6 h-6" /> {t.reportIntegration}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-indigo-500/10 border-2 border-indigo-500/20 p-8 rounded-[40px] backdrop-blur-2xl print:hidden shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full -mr-32 -mt-32" />
+        
+        <div className="relative z-10">
+          <h2 className="text-2xl font-black uppercase italic tracking-tighter text-indigo-400 flex items-center gap-3">
+            <div className="p-2 bg-indigo-500/20 rounded-xl">
+              <Brain className="w-8 h-8" />
+            </div>
+            {t.reportIntegration}
           </h2>
-          <p className="text-xs text-white/60 font-medium mt-1">
+          <p className="text-xs text-white/60 font-medium mt-2 max-w-md leading-relaxed">
             {t.reportDesc}
           </p>
         </div>
 
-        <div className="flex gap-2 items-center flex-wrap">
-          <label className="text-xs font-black uppercase text-white/40">{t.reportFrom}</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={e => setStartDate(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary"
-          />
-          <label className="text-xs font-black uppercase text-white/40">{t.reportTo}</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={e => setEndDate(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary"
-          />
-        </div>
+        <div className="flex flex-col sm:flex-row gap-4 items-center w-full lg:w-auto relative z-10">
+          <div className="flex gap-2 items-center bg-black/20 p-2 rounded-2xl border border-white/5">
+            <div className="flex flex-col gap-1 px-2">
+              <span className="text-[8px] font-black uppercase text-white/20">{t.reportFrom}</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="bg-transparent border-none p-0 text-xs text-white font-bold outline-none cursor-pointer"
+              />
+            </div>
+            <div className="w-px h-8 bg-white/10" />
+            <div className="flex flex-col gap-1 px-2">
+              <span className="text-[8px] font-black uppercase text-white/20">{t.reportTo}</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="bg-transparent border-none p-0 text-xs text-white font-bold outline-none cursor-pointer"
+              />
+            </div>
+          </div>
 
-        <div className="flex flex-wrap gap-2 shrink-0">
-          <button
-            onClick={() => setShowShareModal(true)}
-            className="px-6 py-4 bg-indigo-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:bg-indigo-600 transition-all flex items-center gap-2"
-          >
-            <Share2 className="w-4 h-4" /> {t.shareReport}
-          </button>
-          <button
-            onClick={handlePrint}
-            className="px-6 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center gap-2"
-          >
-            <Printer className="w-4 h-4" /> {t.reportExport}
-          </button>
+          <div className="flex gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="flex-1 sm:flex-none px-8 py-5 bg-indigo-500 text-white font-black uppercase tracking-[0.1em] text-[10px] rounded-[24px] shadow-[0_20px_40px_-10px_rgba(99,102,241,0.4)] hover:scale-105 hover:bg-indigo-600 transition-all flex items-center justify-center gap-3"
+            >
+              <Share2 className="w-5 h-5" /> {t.shareReport}
+            </button>
+            <button
+              onClick={handlePrint}
+              className="flex-1 sm:flex-none px-8 py-5 bg-white/10 text-white font-black uppercase tracking-[0.1em] text-[10px] rounded-[24px] border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-3"
+            >
+              <Printer className="w-5 h-5" /> {t.reportExport}
+            </button>
+          </div>
         </div>
       </div>
 
