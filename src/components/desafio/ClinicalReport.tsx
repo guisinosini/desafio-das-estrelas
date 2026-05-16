@@ -105,41 +105,70 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
     return { planetTasks, completedCounts, totalCompleted, planetRate };
   };
 
-  // Cálculo da Atividade Semanal (Missões por dia da semana com data do mês)
+  // Cálculo da Atividade Semanal (Missões por dia) - Responsivo ao filtro de datas
   const getWeeklyData = () => {
-    const referenceDate = endDate ? new Date(endDate + 'T12:00:00') : new Date();
-    const dayOfWeek = referenceDate.getDay(); // 0 (Sun) to 6 (Sat)
-    
-    // Encontrar a segunda-feira da semana da referenceDate
-    // No JS, Sunday is 0. Queremos Monday (1).
-    // Se hoje é Sun(0), diff é -6. Se é Mon(1), diff é 0. Se é Tue(2), diff é -1.
-    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(referenceDate);
-    monday.setDate(referenceDate.getDate() + diffToMonday);
+    let chartStart: Date;
+    let chartEnd: Date;
+
+    // Determinar o intervalo do gráfico baseado nos filtros
+    if (startDate && endDate) {
+      chartStart = new Date(startDate + 'T12:00:00');
+      chartEnd = new Date(endDate + 'T12:00:00');
+    } else if (endDate) {
+      chartEnd = new Date(endDate + 'T12:00:00');
+      chartStart = new Date(chartEnd);
+      chartStart.setDate(chartEnd.getDate() - 6);
+    } else if (startDate) {
+      chartStart = new Date(startDate + 'T12:00:00');
+      chartEnd = new Date(chartStart);
+      chartEnd.setDate(chartStart.getDate() + 6);
+    } else {
+      // Padrão: semana atual (Segunda a Domingo)
+      const now = new Date();
+      const day = now.getDay(); // 0 (Dom) a 6 (Sáb)
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      chartStart = new Date(now);
+      chartStart.setDate(now.getDate() + diffToMonday);
+      chartStart.setHours(12, 0, 0, 0);
+      
+      chartEnd = new Date(chartStart);
+      chartEnd.setDate(chartStart.getDate() + 6);
+      chartEnd.setHours(12, 0, 0, 0);
+    }
+
+    // Pré-processar contagens para evitar loops aninhados pesados
+    const countsPerDate: Record<string, number> = {};
+    tasks.forEach(task => {
+      const logs = task.completionLog || (task.status === 'done' && task.lastCompleted ? [task.lastCompleted] : []);
+      logs.forEach(log => {
+        const d = log.split('T')[0];
+        countsPerDate[d] = (countsPerDate[d] || 0) + 1;
+      });
+    });
 
     const days = [];
-    const dayKeys: (keyof typeof t.reportDays)[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    const dayKeysMap: Record<number, keyof typeof t.reportDays> = {
+      0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat'
+    };
     
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      
-      const dateStr = d.toISOString().split('T')[0];
-      const dayOfMonth = d.getDate();
-      const dayKey = dayKeys[i];
-      
-      let count = 0;
-      tasks.forEach(task => {
-        const logs = task.completionLog || (task.status === 'done' && task.lastCompleted ? [task.lastCompleted] : []);
-        count += logs.filter(log => log.startsWith(dateStr)).length;
-      });
+    const current = new Date(chartStart);
+    // Limite de segurança de 31 dias para o gráfico não quebrar visualmente
+    const limit = new Date(chartStart);
+    limit.setDate(limit.getDate() + 31);
+    const finalEnd = chartEnd < limit ? chartEnd : limit;
 
+    while (current <= finalEnd) {
+      const dateStr = current.toISOString().split('T')[0];
+      const dayKey = dayKeysMap[current.getDay()];
+      
       days.push({
         key: dayKey,
         label: t.reportDays[dayKey],
-        dateLabel: dayOfMonth,
-        count
+        dateLabel: current.getDate(),
+        count: countsPerDate[dateStr] || 0
       });
+
+      current.setDate(current.getDate() + 1);
     }
     return days;
   };
