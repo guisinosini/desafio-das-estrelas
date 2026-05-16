@@ -206,6 +206,8 @@ export default function DesafioEstrelas() {
     { id: 'mission_master', icon: '🔥', label: 'Incansável', description: 'Completou 5 missões', condition: (c: ChildData) => c.history.filter(h => h.type === 'gain').length >= 5 },
   ];
 
+  const [isPremium, setIsPremium] = useState(false);
+
   const loadFromCloud = async (existingUser?: any) => {
     console.log("☁️ Tentando carregar dados da nuvem...");
     const user = existingUser || (await supabase.auth.getUser()).data.user;
@@ -215,24 +217,24 @@ export default function DesafioEstrelas() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('patient_gamification')
-        .select('state')
-        .eq('profile_id', user.id)
-        .maybeSingle();
+      // Busca o estado do jogo E o status da assinatura simultaneamente
+      const [gamificationRes, profileRes] = await Promise.all([
+        supabase.from('patient_gamification').select('state').eq('profile_id', user.id).maybeSingle(),
+        supabase.from('profiles').select('subscription_status').eq('id', user.id).maybeSingle()
+      ]);
 
-      if (error) {
-        console.error("❌ Erro na consulta ao banco:", error);
-        return null;
+      if (profileRes.data?.subscription_status === 'active') {
+        setIsPremium(true);
+      } else {
+        setIsPremium(false);
       }
 
-      if (data?.state) {
+      if (gamificationRes.data?.state) {
         console.log("📦 Dados encontrados na nuvem!");
-        return data.state;
+        return gamificationRes.data.state;
       }
-      console.log("📂 Nenhuma configuração anterior encontrada na nuvem.");
     } catch (e) {
-      console.error("💥 Erro fatal ao carregar nuvem:", e);
+      console.error("💥 Erro ao carregar dados:", e);
     }
     return null;
   };
@@ -1431,6 +1433,48 @@ export default function DesafioEstrelas() {
                             </span>
                           </div>
                         ))}
+                      </div>
+
+                      {/* Seção de Assinatura */}
+                      <div className={clsx(
+                        "p-4 rounded-2xl border flex flex-col gap-3 backdrop-blur-md",
+                        isPremium ? "bg-primary/5 border-primary/20 shadow-[0_0_30px_-10px_rgba(45,212,191,0.2)]" : "bg-white/5 border-white/10"
+                      )}>
+                        <div className="flex items-center gap-3">
+                          <div className={clsx(
+                            "w-8 h-8 rounded-full flex items-center justify-center",
+                            isPremium ? "bg-primary text-black" : "bg-white/10 text-white/40"
+                          )}>
+                            {isPremium ? <Sparkles className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[8px] font-black uppercase tracking-widest text-white/40">{t.plan || 'Plano'}</p>
+                            <p className={clsx("text-[10px] font-black uppercase tracking-tight italic", isPremium ? "text-primary" : "text-white")}>
+                              {isPremium ? 'Comandante Estelar' : 'Cadete Espacial'}
+                            </p>
+                          </div>
+                          {isPremium && (
+                            <button
+                              onClick={async () => {
+                                const res = await fetch('/api/portal', { method: 'POST' });
+                                const data = await res.json();
+                                if (data.url) window.location.href = data.url;
+                              }}
+                              className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all"
+                              title="Gerenciar Assinatura"
+                            >
+                              <Settings className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                        {!isPremium && (
+                          <button
+                            onClick={() => window.location.href = '/#pricing'}
+                            className="w-full py-2 bg-primary/20 hover:bg-primary text-primary hover:text-black text-[9px] font-black uppercase rounded-lg transition-all border border-primary/20"
+                          >
+                            Seja Premium
+                          </button>
+                        )}
                       </div>
                     </div>
 
