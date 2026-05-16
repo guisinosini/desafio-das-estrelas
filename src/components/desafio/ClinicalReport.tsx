@@ -103,6 +103,29 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
     return { planetTasks, completedCounts, totalCompleted, planetRate };
   };
 
+  // Cálculo da Atividade Semanal (Missões por dia da semana)
+  const weeklyData = [
+    { key: 'mon', dayNum: 1, count: 0 },
+    { key: 'tue', dayNum: 2, count: 0 },
+    { key: 'wed', dayNum: 3, count: 0 },
+    { key: 'thu', dayNum: 4, count: 0 },
+    { key: 'fri', dayNum: 5, count: 0 },
+    { key: 'sat', dayNum: 6, count: 0 },
+    { key: 'sun', dayNum: 0, count: 0 },
+  ];
+
+  tasks.forEach(task => {
+    const logs = task.completionLog || (task.status === 'done' && task.lastCompleted ? [task.lastCompleted] : []);
+    logs.filter(isInRange).forEach(log => {
+      const d = new Date(log);
+      const day = d.getDay();
+      const entry = weeklyData.find(w => w.dayNum === day);
+      if (entry) entry.count++;
+    });
+  });
+
+  const maxWeekly = Math.max(...weeklyData.map(w => w.count), 1);
+
   const handlePrint = () => window.print();
 
   const handleShareReport = async () => {
@@ -314,6 +337,44 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
             <p className="text-[10px] text-white/40 print:text-zinc-600 leading-relaxed">
               {t.behaviorNotice}
             </p>
+          </div>
+        </div>
+
+        {/* Gráfico de Atividade Semanal */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-white/60 print:text-zinc-800 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" /> {t.reportWeeklyActivity}
+          </h3>
+          <div className="bg-white/5 print:bg-zinc-50 border border-white/10 print:border-zinc-200 p-6 md:p-8 rounded-3xl flex items-end justify-between gap-2 h-48 sm:h-64">
+            {weeklyData.map((day, idx) => {
+              const height = (day.count / maxWeekly) * 100;
+              return (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-3 h-full justify-end group">
+                  <div className="relative w-full flex flex-col items-center justify-end h-full">
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: `${height}%` }}
+                      className={clsx(
+                        "w-full max-w-[32px] rounded-t-xl transition-all relative overflow-hidden",
+                        day.count > 0 ? "bg-primary shadow-[0_0_20px_rgba(45,212,191,0.3)]" : "bg-white/5 print:bg-zinc-200"
+                      )}
+                    >
+                      {day.count > 0 && (
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      )}
+                    </motion.div>
+                    {day.count > 0 && (
+                      <span className="absolute -top-6 text-[10px] font-black text-primary print:text-zinc-800">
+                        {day.count}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40 print:text-zinc-500">
+                    {(t.reportDays as any)[day.key]}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
