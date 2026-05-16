@@ -1,22 +1,23 @@
 {
-  "name": "Instituto Kamaleon",
-  "short_name": "Kamaleon",
-  "description": "Portal de Saúde Mental e Bem-Estar do Instituto Kamaleon",
+  "name": "Desafio das Estrelas",
+  "short_name": "Desafio Estrelas",
+  "description": "Uma jornada galáctica de conquistas e responsabilidades para pequenos heróis.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#10b981",
+  "background_color": "#0f172a",
+  "theme_color": "#2dd4bf",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/LOGO.png",
+      "src": "/conquistas/icon.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/LOGO.png",
+      "src": "/conquistas/icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
