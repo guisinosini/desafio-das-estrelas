@@ -9,7 +9,6 @@ if (!stripeSecretKey && process.env.NODE_ENV === 'production') {
 }
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2025-01-27' as any,
   appInfo: {
     name: 'Desafio das Estrelas',
     version: '1.0.0',
