@@ -61,7 +61,7 @@ const currencyMap: Record<string, { symbol: string, monthly: string, yearly: str
   'fr': { symbol: '€', monthly: '9.90', yearly: '99.00' },
   'it': { symbol: '€', monthly: '9.90', yearly: '99.00' },
   'pt-PT': { symbol: '€', monthly: '9.90', yearly: '99.00' },
-  'zh': { symbol: '¥', monthly: '26,65', yearly: '260,00' },
+  'zh': { symbol: '¥', monthly: '26,65', yearly: '265,00' },
 };
 
 export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart }) => {
@@ -69,14 +69,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const currentConfig = currencyMap[language] || currencyMap['en'];
+  const currentConfig = React.useMemo(() => {
+    return currencyMap[language] || currencyMap['en'];
+  }, [language]);
 
-  const getPrice = () => {
+  const price = React.useMemo(() => {
     return {
       symbol: currentConfig.symbol,
       value: billingInterval === 'monthly' ? currentConfig.monthly : currentConfig.yearly
     };
-  };
+  }, [currentConfig, billingInterval]);
 
   const handleSubscribe = async (planType: 'cadet' | 'commander') => {
     setIsSubmitting(true);
@@ -108,8 +110,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       setIsSubmitting(false);
     }
   };
-
-  const price = getPrice();
 
   return (
     <div className="bg-[#020617] text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
@@ -596,7 +596,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
                     <span className="text-5xl md:text-6xl font-black italic tracking-tighter">
-                      {price.symbol} {billingInterval === 'monthly' ? currentConfig.monthly : currentConfig.yearly}
+                      {price.symbol} {price.value}
                     </span>
                     <span className="text-xl md:text-2xl text-white/30 uppercase font-black tracking-tighter">
                       /{billingInterval === 'monthly' ? t.month_short : t.year_short}
@@ -646,7 +646,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
                     <span className="text-5xl md:text-6xl font-black italic tracking-tighter text-white">
-                      {price.symbol} {billingInterval === 'monthly' ? currentConfig.monthly : currentConfig.yearly}
+                      {price.symbol} {price.value}
                     </span>
                     <span className="text-xl md:text-2xl text-primary/40 uppercase font-black tracking-tighter">
                       /{billingInterval === 'monthly' ? t.month_short : t.year_short}
