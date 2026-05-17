@@ -309,6 +309,16 @@ export default function DesafioEstrelas() {
     setLanguage(initialLang);
 
     const initData = async () => {
+      // Captura o redirecionamento de cadastro vindo do Stripe
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const urlStage = params.get('stage');
+        if (urlStage === 'register' || urlStage === 'auth') {
+          setStage('auth');
+          setIsLogin(false); // Força tela de cadastro
+        }
+      }
+
       const cloudData = await loadFromCloud();
       const saved = localStorage.getItem('desafio_estrelas_v2');
       let finalData = null;

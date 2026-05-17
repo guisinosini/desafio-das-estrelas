@@ -23,8 +23,8 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
-      // Redireciona para o cadastro passando o session_id para validar o pagamento depois
-      success_url: `${origin}/auth?stage=register&session_id={CHECKOUT_SESSION_ID}`,
+      // Redireciona para a raiz com stage=register e session_id para cadastro imediato
+      success_url: `${origin}/?stage=register&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
       customer_email: customerEmail,
       allow_promotion_codes: true,
