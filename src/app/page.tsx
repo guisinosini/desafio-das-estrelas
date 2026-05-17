@@ -1319,10 +1319,28 @@ export default function DesafioEstrelas() {
                   </div>
                 </div>
                 <div className="cursor-pointer" onClick={() => setStage('select_child')}>
-                  <h1 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2">
-                    {parentName && `${t.mentor}: ${parentName} • `}{activeChild?.name} <RefreshCw className="w-3 h-3" />
+                  <h1 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2 flex-wrap">
+                    <span>{t.mentor}: {parentName || 'Comandante Galáctico'}</span>
+                    <span className="text-white/20">•</span>
+                    <span>{activeChild?.name}</span>
+                    <RefreshCw className="w-3 h-3 text-white/40" />
                   </h1>
-                  <p className="text-sm md:text-lg font-black italic uppercase tracking-tighter text-white">{view === 'child' ? t.commandStation : t.controlRoom}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <p className="text-sm md:text-lg font-black italic uppercase tracking-tighter text-white">
+                      {view === 'child' ? t.commandStation : t.controlRoom}
+                    </p>
+                    <span className={clsx(
+                      "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shrink-0",
+                      isPremium 
+                        ? "bg-primary/10 text-primary border-primary/20" 
+                        : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+                    )}>
+                      {isPremium ? 'Comandante Estelar' : 'Cadete Espacial'}
+                    </span>
+                    <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                      Ativo
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1460,47 +1478,7 @@ export default function DesafioEstrelas() {
                         ))}
                       </div>
 
-                      {/* Seção de Assinatura */}
-                      <div className={clsx(
-                        "p-4 rounded-2xl border flex flex-col gap-3 backdrop-blur-md",
-                        isPremium ? "bg-primary/5 border-primary/20 shadow-[0_0_30px_-10px_rgba(45,212,191,0.2)]" : "bg-white/5 border-white/10"
-                      )}>
-                        <div className="flex items-center gap-3">
-                          <div className={clsx(
-                            "w-8 h-8 rounded-full flex items-center justify-center",
-                            isPremium ? "bg-primary text-black" : "bg-white/10 text-white/40"
-                          )}>
-                            {isPremium ? <Sparkles className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-[8px] font-black uppercase tracking-widest text-white/40">{t.plan || 'Plano'}</p>
-                            <p className={clsx("text-[10px] font-black uppercase tracking-tight italic", isPremium ? "text-primary" : "text-white")}>
-                              {isPremium ? 'Comandante Estelar' : 'Cadete Espacial'}
-                            </p>
-                          </div>
-                          {isPremium && (
-                            <button
-                              onClick={async () => {
-                                const res = await fetch('/api/portal', { method: 'POST' });
-                                const data = await res.json();
-                                if (data.url) window.location.href = data.url;
-                              }}
-                              className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all"
-                              title="Gerenciar Assinatura"
-                            >
-                              <Settings className="w-3 h-3" />
-                            </button>
-                          )}
-                        </div>
-                        {!isPremium && (
-                          <button
-                            onClick={() => window.location.href = '/#pricing'}
-                            className="w-full py-2 bg-primary/20 hover:bg-primary text-primary hover:text-black text-[9px] font-black uppercase rounded-lg transition-all border border-primary/20"
-                          >
-                            Seja Premium
-                          </button>
-                        )}
-                      </div>
+                      {/* Espaço limpo e focado no herói */}
                     </div>
 
                     {(children.length > 1 || fleetChildren.length > 0) && (
