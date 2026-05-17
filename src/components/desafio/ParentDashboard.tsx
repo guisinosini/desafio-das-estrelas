@@ -64,6 +64,7 @@ interface ParentDashboardProps {
   t: any;
   parentName: string;
   isPremium: boolean;
+  subscriptionPriceId: string | null;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -107,7 +108,22 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   t,
   parentName,
   isPremium,
+  subscriptionPriceId,
 }) => {
+  const getPlanName = () => {
+    if (!isPremium) return 'Sem Plano';
+    const YEARLY_PRICE_IDS = new Set([
+      'price_1TXjo1Pc1qFQfvf50bPNi3i7', // BRL
+      'price_1TXjv3Pc1qFQfvf5wps2BmFU', // USD
+      'price_1TXjw5Pc1qFQfvf5cfszDbqI', // EUR
+      'price_1TXjy3Pc1qFQfvf5pCgaPX8Q', // CNY
+    ]);
+    if (subscriptionPriceId && YEARLY_PRICE_IDS.has(subscriptionPriceId)) {
+      return 'Plano Comandante Estelar (Anual)';
+    }
+    return 'Plano Cadete Espacial (Mensal)';
+  };
+
   const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
   const [behaviorNote, setBehaviorNote] = useState('');
@@ -554,10 +570,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Status da Assinatura</p>
                   <div className="flex items-center gap-2.5">
                     <span className="text-2xl font-black italic uppercase tracking-tighter text-white">
-                      {isPremium ? 'Plano Comandante Estelar' : 'Plano Cadete Espacial'}
+                      {getPlanName()}
                     </span>
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Ativo
+                    <span className={clsx(
+                      "text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shrink-0",
+                      isPremium
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-red-500/10 text-red-400 border-red-500/20"
+                    )}>
+                      {isPremium ? 'Ativo' : 'Pendente'}
                     </span>
                   </div>
                   <p className="text-xs text-white/40 mt-2 font-medium">

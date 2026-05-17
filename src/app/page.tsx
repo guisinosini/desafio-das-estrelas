@@ -72,7 +72,22 @@ const ClockDisplay = memo(({ language }: { language: string }) => {
 });
 ClockDisplay.displayName = 'ClockDisplay';
 
+const YEARLY_PRICE_IDS = new Set([
+  'price_1TXjo1Pc1qFQfvf50bPNi3i7', // BRL
+  'price_1TXjv3Pc1qFQfvf5wps2BmFU', // USD
+  'price_1TXjw5Pc1qFQfvf5cfszDbqI', // EUR
+  'price_1TXjy3Pc1qFQfvf5pCgaPX8Q', // CNY
+]);
+
 export default function DesafioEstrelas() {
+  const getPlanName = () => {
+    if (!isPremium) return 'Sem Plano';
+    if (subscriptionPriceId && YEARLY_PRICE_IDS.has(subscriptionPriceId)) {
+      return 'Comandante Estelar';
+    }
+    return 'Cadete Espacial';
+  };
+
   const [supabase] = useState(() => createClient());
   const [stage, setStage] = useState<Stage>('landing');
   const [resetPassword, setResetPassword] = useState("");
@@ -208,6 +223,7 @@ export default function DesafioEstrelas() {
   ];
 
   const [isPremium, setIsPremium] = useState(false);
+  const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
 
   const loadFromCloud = async (existingUser?: any) => {
     console.log("☁️ Tentando carregar dados da nuvem...");
@@ -221,13 +237,17 @@ export default function DesafioEstrelas() {
       // Busca o estado do jogo E o status da assinatura simultaneamente
       const [gamificationRes, profileRes] = await Promise.all([
         supabase.from('patient_gamification').select('state').eq('profile_id', user.id).maybeSingle(),
-        supabase.from('profiles').select('subscription_status').eq('id', user.id).maybeSingle()
+        supabase.from('profiles').select('subscription_status, subscription_price_id').eq('id', user.id).maybeSingle()
       ]);
 
       if (profileRes.data?.subscription_status === 'active') {
         setIsPremium(true);
+        if (profileRes.data.subscription_price_id) {
+          setSubscriptionPriceId(profileRes.data.subscription_price_id);
+        }
       } else {
         setIsPremium(false);
+        setSubscriptionPriceId(null);
       }
 
       if (gamificationRes.data?.state) {
@@ -275,6 +295,31 @@ export default function DesafioEstrelas() {
   const history = activeChild?.history || [];
 
   // O relógio em tempo real foi isolado no componente ClockDisplay para evitar re-renderizações a cada segundo.
+
+  useEffect(() => {
+    // Sincronização inteligente de assinatura em background
+    const syncSubscription = async () => {
+      try {
+        console.log("🔄 [BackgroundSync] Sincronizando detalhes da assinatura no Stripe...");
+        const res = await fetch('/api/subscription-sync', { method: 'POST' });
+        const data = await res.json();
+        if (data.priceId) {
+          setSubscriptionPriceId(data.priceId);
+        }
+        if (data.status === 'active') {
+          setIsPremium(true);
+        } else {
+          setIsPremium(false);
+        }
+      } catch (err) {
+        console.error("Erro ao sincronizar assinatura:", err);
+      }
+    };
+
+    if (stage === 'adventure' || stage === 'select_child') {
+      syncSubscription();
+    }
+  }, [stage]);
 
   useEffect(() => {
     // Detecção Automática de Idioma e Região
@@ -1335,10 +1380,15 @@ export default function DesafioEstrelas() {
                         ? "bg-primary/10 text-primary border-primary/20" 
                         : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
                     )}>
-                      {isPremium ? 'Comandante Estelar' : 'Cadete Espacial'}
+                      {getPlanName()}
                     </span>
-                    <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-                      Ativo
+                    <span className={clsx(
+                      "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shrink-0",
+                      isPremium
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-red-500/10 text-red-400 border-red-500/20"
+                    )}>
+                      {isPremium ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>
                 </div>
@@ -1543,6 +1593,7 @@ export default function DesafioEstrelas() {
                   setStage={setStage}
                   setView={setView}
                   isPremium={isPremium}
+                  subscriptionPriceId={subscriptionPriceId}
                   handleLogout={() => { 
                     const lang = localStorage.getItem('app_language');
                     localStorage.clear(); 

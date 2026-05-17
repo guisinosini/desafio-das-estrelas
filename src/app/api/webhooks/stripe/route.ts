@@ -39,6 +39,16 @@ export async function POST(req: Request) {
       const stripeCustomerId = session.customer as string;
       const subscriptionId = session.subscription as string;
 
+      let subscriptionPriceId = null;
+      if (subscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          subscriptionPriceId = subscription.items.data[0].price.id;
+        } catch (e) {
+          console.error('Error retrieving subscription items on webhook completion:', e);
+        }
+      }
+
       if (customerEmail) {
         // Atualiza o perfil do usuário baseado no e-mail
         const { error } = await supabase
@@ -47,6 +57,7 @@ export async function POST(req: Request) {
             stripe_customer_id: stripeCustomerId,
             subscription_id: subscriptionId,
             subscription_status: 'active',
+            subscription_price_id: subscriptionPriceId, // Salva o priceId exato!
           })
           .eq('email', customerEmail); // Nota: Certifique-se que a tabela profiles tem a coluna email ou use outro identificador
 
