@@ -1111,7 +1111,7 @@ export default function DesafioEstrelas() {
                         const res = await fetch('/api/checkout', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ priceId: 'price_1TXjpBPc1qFQfvf5jpxVepTf' })
+                          body: JSON.stringify({ priceId: 'price_1TXjmrPc1qFQfvf5QSImZPsd' })
                         });
                         const data = await res.json();
                         if (data.url) window.location.href = data.url;
