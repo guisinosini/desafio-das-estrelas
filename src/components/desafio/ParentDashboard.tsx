@@ -17,6 +17,7 @@ import {
   Gift,
   Brain,
   FileText,
+  CreditCard,
 } from 'lucide-react';
 import type { Task, Reward, ChildData, TaskRecurrence } from '@/types/desafio';
 import { AVATARS } from '@/components/desafio/HeroElements';
@@ -62,6 +63,7 @@ interface ParentDashboardProps {
   setLanguage: (lang: any) => void;
   t: any;
   parentName: string;
+  isPremium: boolean;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -104,6 +106,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   setLanguage,
   t,
   parentName,
+  isPremium,
 }) => {
   const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
@@ -157,6 +160,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           { id: 'fleet', label: t.alliance, icon: Zap },
           { id: 'behavior', label: t.behavior, icon: AlertCircle },
           { id: 'settings', label: t.profileSettings, icon: Settings },
+          { id: 'subscription', label: 'Assinatura', icon: CreditCard },
           { id: 'history', label: t.history, icon: History },
           { id: 'reports', label: t.reports, icon: Brain },
         ].map(item => (
@@ -528,6 +532,93 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 
             <div className="flex justify-center">
               <button onClick={() => setView('child')} className="px-10 py-4 bg-primary text-black font-black uppercase rounded-2xl shadow-xl hover:scale-105 transition-all">{t.viewDashboardChanges}</button>
+            </div>
+          </div>
+        )}
+
+        {/* Assinatura */}
+        {parentSubView === 'subscription' && (
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter text-primary flex items-center gap-3">
+                <CreditCard className="w-8 h-8" /> Gestão de Assinatura
+              </h2>
+              <p className="text-white/40">Acompanhe seu status e gerencie o faturamento da sua conta familiar.</p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] space-y-6 backdrop-blur-md relative overflow-hidden">
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
+              
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Status da Assinatura</p>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl font-black italic uppercase tracking-tighter text-white">
+                      {isPremium ? 'Plano Comandante Estelar' : 'Plano Cadete Espacial'}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      Ativo
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/40 mt-2 font-medium">
+                    {isPremium 
+                      ? 'Você tem acesso ilimitado a todas as ferramentas, missões, planetas e ao dashboard clínico completo.'
+                      : 'Você está no plano padrão. Faça o upgrade para ter acesso ao universo ilimitado.'}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  {isPremium ? (
+                    <>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/portal', { method: 'POST' });
+                            const data = await res.json();
+                            if (data.url) {
+                              window.location.href = data.url;
+                            } else {
+                              throw new Error(data.error || 'Não foi possível carregar o portal');
+                            }
+                          } catch (e: any) {
+                            alert(`Erro ao abrir portal de gerenciamento: ${e.message}`);
+                          }
+                        }}
+                        className="px-8 py-4 bg-primary text-black font-black uppercase rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 text-xs tracking-widest"
+                      >
+                        Gerenciar Assinatura
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (confirm('Você será redirecionado para o portal seguro do Stripe onde poderá cancelar a sua assinatura com um clique. Deseja prosseguir?')) {
+                            try {
+                              const res = await fetch('/api/portal', { method: 'POST' });
+                              const data = await res.json();
+                              if (data.url) {
+                                window.location.href = data.url;
+                              } else {
+                                throw new Error(data.error || 'Não foi possível carregar o portal');
+                              }
+                            } catch (e: any) {
+                              alert(`Erro ao abrir portal de cancelamento: ${e.message}`);
+                            }
+                          }
+                        }}
+                        className="px-8 py-4 bg-red-500/10 border border-red-500/20 text-red-400 font-black uppercase rounded-2xl hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 text-xs tracking-widest"
+                      >
+                        Cancelar Assinatura
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => window.location.href = '/#pricing'}
+                      className="px-8 py-4 bg-primary text-black font-black uppercase rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 text-xs tracking-widest"
+                    >
+                      Seja Premium
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -1542,6 +1542,7 @@ export default function DesafioEstrelas() {
                   history={history}
                   setStage={setStage}
                   setView={setView}
+                  isPremium={isPremium}
                   handleLogout={() => { 
                     const lang = localStorage.getItem('app_language');
                     localStorage.clear(); 
