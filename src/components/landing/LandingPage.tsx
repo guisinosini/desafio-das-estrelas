@@ -84,10 +84,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
     setIsSubmitting(true);
     try {
       let priceId = '';
+      const interval = planType === 'cadet' ? 'monthly' : 'yearly';
       
-      // Lógica de ID do Stripe baseada no idioma e intervalo
-      // Certifique-se de ter esses IDs no seu .env.local
-      const envKey = `NEXT_PUBLIC_STRIPE_PRICE_${billingInterval.toUpperCase()}_${language.replace('-', '_').toUpperCase()}`;
+      // Lógica de ID do Stripe baseada no idioma e intervalo correspondente ao plano
+      const envKey = `NEXT_PUBLIC_STRIPE_PRICE_${interval.toUpperCase()}_${language.replace('-', '_').toUpperCase()}`;
       priceId = (process.env as any)[envKey] || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_BRL;
 
       if (!priceId) {
@@ -585,21 +585,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
           <div className="grid md:grid-cols-2 gap-6 md:gap-10 max-w-5xl mx-auto">
             {/* Monthly / Basic (Plano Cadete) */}
             <FadeInWhenVisible>
-                <div className="group relative p-8 md:p-12 bg-white/[0.03] border border-white/10 rounded-3xl md:rounded-[56px] hover:bg-white/[0.06] transition-all h-full flex flex-col">
+                <div className={clsx(
+                  "group relative p-8 md:p-12 rounded-3xl md:rounded-[56px] transition-all h-full flex flex-col",
+                  billingInterval === 'monthly'
+                    ? "bg-primary/10 border-2 border-primary shadow-[0_0_80px_-20px_rgba(45,212,191,0.2)]"
+                    : "bg-white/[0.03] border border-white/10 hover:bg-white/[0.06]"
+                )}>
                 <div className="space-y-4 mb-8 md:mb-10">
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-white/5 rounded-xl md:rounded-2xl flex items-center justify-center border border-white/10">
-                        <MousePointer2 className="w-6 h-6 md:w-7 md:h-7 text-white/40" />
+                    <div className={clsx(
+                      "w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center border transition-colors",
+                      billingInterval === 'monthly'
+                        ? "bg-primary text-black border-primary/20 shadow-lg shadow-primary/10"
+                        : "bg-white/5 border-white/10 text-white/40"
+                    )}>
+                        <MousePointer2 className="w-6 h-6 md:w-7 md:h-7" />
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">{t.lp_plan_monthly}</h3>
+                    <h3 className={clsx("text-2xl md:text-3xl font-black uppercase italic tracking-tighter", billingInterval === 'monthly' && "text-primary")}>{t.lp_plan_monthly}</h3>
                     <p className="text-white/40 text-xs md:text-sm font-medium">{t.lp_plan_monthly_desc}</p>
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
                     <span className="text-5xl md:text-6xl font-black italic tracking-tighter">
-                      {price.symbol} {price.value}
+                      {currentConfig.symbol} {currentConfig.monthly}
                     </span>
                     <span className="text-xl md:text-2xl text-white/30 uppercase font-black tracking-tighter">
-                      /{billingInterval === 'monthly' ? t.month_short : t.year_short}
+                      /{t.month_short}
                     </span>
                 </div>
 
@@ -622,7 +632,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 <button 
                   onClick={() => handleSubscribe('cadet')} 
                   disabled={isSubmitting}
-                  className="w-full py-5 md:py-6 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
+                  className={clsx(
+                    "w-full py-5 md:py-6 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all disabled:opacity-50",
+                    billingInterval === 'monthly'
+                      ? "bg-primary text-black hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/20"
+                      : "bg-white/5 border border-white/10 hover:bg-white/10 text-white"
+                  )}
                 >
                     {isSubmitting ? t.processing : t.lp_subscribe}
                 </button>
@@ -631,25 +646,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
 
             {/* Annual / Pro (Plano Comandante) */}
             <FadeInWhenVisible delay={0.2}>
-                <div className="group relative p-8 md:p-12 bg-primary/10 border-2 border-primary rounded-3xl md:rounded-[56px] hover:shadow-[0_0_80px_-20px_rgba(45,212,191,0.3)] transition-all h-full flex flex-col overflow-hidden">
+                <div className={clsx(
+                  "group relative p-8 md:p-12 rounded-3xl md:rounded-[56px] transition-all h-full flex flex-col overflow-hidden",
+                  billingInterval === 'yearly'
+                    ? "bg-primary/10 border-2 border-primary shadow-[0_0_80px_-20px_rgba(45,212,191,0.3)]"
+                    : "bg-white/[0.03] border border-white/10 hover:bg-white/[0.06]"
+                )}>
                 <div className="absolute top-4 md:top-8 right-4 md:right-8 bg-primary text-black text-[9px] md:text-[11px] font-black px-4 md:px-5 py-1.5 md:py-2 rounded-full uppercase tracking-widest">
                     {t.lp_2_months_free}
                 </div>
                 
                 <div className="space-y-4 mb-8 md:mb-10">
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-primary text-black rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <div className={clsx(
+                      "w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-colors",
+                      billingInterval === 'yearly'
+                        ? "bg-primary text-black shadow-lg shadow-primary/20"
+                        : "bg-white/5 border border-white/10 text-white/40"
+                    )}>
                         <Sparkles className="w-6 h-6 md:w-7 md:h-7" />
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-primary">{t.lp_plan_annual}</h3>
-                    <p className="text-primary/60 text-xs md:text-sm font-medium">{t.lp_plan_annual_desc}</p>
+                    <h3 className={clsx("text-2xl md:text-3xl font-black uppercase italic tracking-tighter", billingInterval === 'yearly' ? "text-primary" : "text-white")}>{t.lp_plan_annual}</h3>
+                    <p className={clsx("text-xs md:text-sm font-medium transition-colors", billingInterval === 'yearly' ? "text-primary/60" : "text-white/40")}>{t.lp_plan_annual_desc}</p>
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-8 md:mb-12">
                     <span className="text-5xl md:text-6xl font-black italic tracking-tighter text-white">
-                      {price.symbol} {price.value}
+                      {currentConfig.symbol} {currentConfig.yearly}
                     </span>
-                    <span className="text-xl md:text-2xl text-primary/40 uppercase font-black tracking-tighter">
-                      /{billingInterval === 'monthly' ? t.month_short : t.year_short}
+                    <span className={clsx("text-xl md:text-2xl uppercase font-black tracking-tighter", billingInterval === 'yearly' ? "text-primary/40" : "text-white/30")}>
+                      /{t.year_short}
                     </span>
                 </div>
 
@@ -672,7 +697,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 <button 
                   onClick={() => handleSubscribe('commander')} 
                   disabled={isSubmitting}
-                  className="w-full py-5 md:py-7 bg-primary text-black rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
+                  className={clsx(
+                    "w-full py-5 md:py-7 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all disabled:opacity-50",
+                    billingInterval === 'yearly'
+                      ? "bg-primary text-black hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/20"
+                      : "bg-white/5 border border-white/10 hover:bg-white/10 text-white"
+                  )}
                 >
                     {isSubmitting ? t.processing : t.lp_subscribe}
                 </button>
