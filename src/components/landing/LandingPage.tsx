@@ -64,6 +64,37 @@ const currencyMap: Record<string, { symbol: string, monthly: string, yearly: str
   'zh': { symbol: '¥', monthly: '26,65', yearly: '265,00' },
 };
 
+const stripePriceMap: Record<string, { monthly: string | undefined, yearly: string | undefined }> = {
+  'pt-BR': {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_BRL,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_BRL,
+  },
+  'en': {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_USD,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_USD,
+  },
+  'es': {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
+  },
+  'fr': {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
+  },
+  'it': {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
+  },
+  'pt-PT': {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
+  },
+  'zh': {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_CNY,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_CNY,
+  },
+};
+
 export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart }) => {
   const t = translations[language];
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
@@ -83,15 +114,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
   const handleSubscribe = async (planType: 'cadet' | 'commander') => {
     setIsSubmitting(true);
     try {
-      let priceId = '';
       const interval = planType === 'cadet' ? 'monthly' : 'yearly';
       
-      // Lógica de ID do Stripe baseada no idioma e intervalo correspondente ao plano
-      const envKey = `NEXT_PUBLIC_STRIPE_PRICE_${interval.toUpperCase()}_${language.replace('-', '_').toUpperCase()}`;
-      priceId = (process.env as any)[envKey] || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_BRL;
+      // Obtém o priceId de forma 100% segura usando o mapa estático compilado no cliente
+      const langConfig = stripePriceMap[language] || stripePriceMap['en'];
+      const priceId = interval === 'monthly' ? langConfig.monthly : langConfig.yearly;
 
       if (!priceId) {
-        console.warn('Price ID não encontrado para:', envKey);
+        throw new Error(`ID de preço do Stripe não configurado para o idioma ${language} e plano ${planType}`);
       }
 
       const response = await fetch('/api/checkout', {
@@ -103,9 +133,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       window.location.href = data.url;
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao iniciar checkout:', err);
-      alert('Erro ao conectar com o sistema de pagamento. Tente novamente.');
+      alert(`Erro ao conectar com o sistema de pagamento: ${err?.message || err}`);
     } finally {
       setIsSubmitting(false);
     }

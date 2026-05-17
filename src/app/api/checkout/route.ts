@@ -3,11 +3,14 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { priceId, customerEmail } = await req.json();
+    let { priceId, customerEmail } = await req.json();
 
     if (!priceId) {
       return NextResponse.json({ error: 'Price ID is required' }, { status: 400 });
     }
+
+    // Sanitiza o priceId de aspas ou espaços extras vindos do .env.local
+    priceId = priceId.trim().replace(/^["']|["']$/g, '');
 
     const origin = req.headers.get('origin');
 
