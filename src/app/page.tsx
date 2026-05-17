@@ -364,6 +364,28 @@ export default function DesafioEstrelas() {
         }
       }
 
+      // Verifica primeiro se o usuário está logado e se tem assinatura ativa
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status, subscription_price_id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile?.subscription_status !== 'active') {
+          setIsPremium(false);
+          setSubscriptionPriceId(null);
+          setStage('no_subscription');
+          return; // Para a inicialização normal
+        } else {
+          setIsPremium(true);
+          if (profile.subscription_price_id) {
+            setSubscriptionPriceId(profile.subscription_price_id);
+          }
+        }
+      }
+
       const cloudData = await loadFromCloud();
       const saved = localStorage.getItem('desafio_estrelas_v2');
       let finalData = null;
@@ -425,12 +447,30 @@ export default function DesafioEstrelas() {
       if (event === 'PASSWORD_RECOVERY') setStage('reset_password');
       if (event === 'SIGNED_IN') {
         if (session?.user?.user_metadata?.full_name) setParentName(session.user.user_metadata.full_name);
-        const cloudData = await loadFromCloud(session?.user);
-        if (cloudData && cloudData.children) {
-          setChildren(cloudData.children);
-          setActiveChildId(cloudData.activeChildId || null);
-          if (cloudData.fleetId) setFleetId(cloudData.fleetId);
-          if (cloudData.language) setLanguage(cloudData.language);
+        
+        // Verifica a assinatura
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_status, subscription_price_id')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (profile?.subscription_status !== 'active') {
+          setIsPremium(false);
+          setSubscriptionPriceId(null);
+          setStage('no_subscription');
+        } else {
+          setIsPremium(true);
+          if (profile.subscription_price_id) {
+            setSubscriptionPriceId(profile.subscription_price_id);
+          }
+          const cloudData = await loadFromCloud(session?.user);
+          if (cloudData && cloudData.children) {
+            setChildren(cloudData.children);
+            setActiveChildId(cloudData.activeChildId || null);
+            if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+            if (cloudData.language) setLanguage(cloudData.language);
+          }
         }
       }
     });
@@ -515,6 +555,21 @@ export default function DesafioEstrelas() {
       }
 
       if (!user) throw new Error("Usuário não retornado pelo servidor.");
+
+      // VERIFICAÇÃO DE ASSINATURA IMEDIATA PÓS-LOGIN
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('subscription_status, subscription_price_id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profileData?.subscription_status !== 'active') {
+        setIsPremium(false);
+        setSubscriptionPriceId(null);
+        setStage('no_subscription');
+        setAuthLoading(false);
+        return;
+      }
 
       console.log("✅ Autenticado com sucesso, carregando dados para:", user.id);
       const { data, error } = await supabase
@@ -1004,6 +1059,103 @@ export default function DesafioEstrelas() {
                   {authLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : t.updatePassword}
                 </button>
               </form>
+            </div>
+          </motion.div>
+        )}
+
+        {/* --- STAGE: NO SUBSCRIPTION (TELA DE BLOQUEIO DE ASSINATURA) --- */}
+        {stage === 'no_subscription' && (
+          <motion.div key="no_subscription" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 max-w-3xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 text-center">
+            <div className="absolute top-8 right-8">
+              <button onClick={() => {
+                const lang = localStorage.getItem('app_language');
+                localStorage.clear(); 
+                if (lang) localStorage.setItem('app_language', lang);
+                window.location.reload(); 
+              }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+                <LogOut className="w-4 h-4" /> Sair da Conta
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="w-20 h-20 mx-auto bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center text-4xl animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                ⚠️
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white">
+                Sinal Interrompido! 📡
+              </h2>
+              <p className="text-red-400 font-black uppercase tracking-widest text-[10px] md:text-xs">
+                Acesso Restrito ao Setor de Mentores
+              </p>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[40px] space-y-8 shadow-2xl relative overflow-hidden">
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
+              
+              <p className="text-white/80 text-sm md:text-base leading-relaxed">
+                Saudações, Comandante! Notamos que a sua conta de mentor está ativa, mas **não possui nenhuma licença de voo ativa no momento**. Para iniciar os treinamentos e liberar acesso ao painel do mentor, relatórios clínicos e ao diário de bordo, reative a energia da sua nave escolhendo um dos planos galácticos:
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                {/* Plano Mensal */}
+                <div className="bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl flex flex-col justify-between hover:border-white/30 transition-all hover:scale-[1.02] group">
+                  <div className="space-y-2 text-left">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Plano Mensal</span>
+                    <h3 className="text-xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">Cadete Espacial</h3>
+                    <p className="text-3xl font-black italic text-white">R$ 19,90<span className="text-xs font-normal text-white/40">/mês</span></p>
+                    <p className="text-[10px] text-white/50">Cobrado mensalmente. Acesso total a todas as ferramentas.</p>
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/checkout', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ priceId: 'price_1TXjpBPc1qFQfvf5jpxVepTf' })
+                        });
+                        const data = await res.json();
+                        if (data.url) window.location.href = data.url;
+                      } catch (err) {
+                        console.error("Erro ao ir para o checkout:", err);
+                      }
+                    }}
+                    className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
+                  >
+                    Ativar Plano Cadete
+                  </button>
+                </div>
+
+                {/* Plano Anual */}
+                <div className="bg-primary/5 border-2 border-primary/20 p-6 md:p-8 rounded-3xl flex flex-col justify-between hover:border-primary/40 transition-all hover:scale-[1.02] relative overflow-hidden group shadow-lg shadow-primary/5">
+                  <div className="absolute top-3 right-3 bg-primary text-black font-black text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-full">
+                    Economize 17% 🚀
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">Melhor Custo-Benefício</span>
+                    <h3 className="text-xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">Comandante Estelar</h3>
+                    <p className="text-3xl font-black italic text-white">R$ 199,00<span className="text-xs font-normal text-white/40">/ano</span></p>
+                    <p className="text-[10px] text-white/50">Cobrado anualmente. Menos de R$ 17 por mês no ano.</p>
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/checkout', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ priceId: 'price_1TXjo1Pc1qFQfvf50bPNi3i7' })
+                        });
+                        const data = await res.json();
+                        if (data.url) window.location.href = data.url;
+                      } catch (err) {
+                        console.error("Erro ao ir para o checkout:", err);
+                      }
+                    }}
+                    className="w-full mt-6 py-4 bg-primary text-black hover:bg-teal-300 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-lg shadow-primary/10"
+                  >
+                    Ativar Plano Comandante
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
