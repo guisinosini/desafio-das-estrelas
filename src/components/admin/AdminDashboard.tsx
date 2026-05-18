@@ -35,6 +35,8 @@ interface DecodedMentor {
   email: string;
   subscriptionStatus: string;
   subscriptionPriceId: string | null;
+  subscriptionStart: string | null;
+  subscriptionEnd: string | null;
   childrenCount: number;
   planets: string[];
   missionsConcluded: number;
@@ -75,8 +77,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     return map[avatarId] || '🚀';
   };
 
-  // Algoritmo de Hash Determinístico Estável para Faturamento SaaS
-  const getSubscriptionDetails = (status: string, priceId: string | null, mentorEmail: string) => {
+  // Exibição de Vigência Real obtida diretamente da API do Stripe
+  const getSubscriptionDetails = (
+    status: string, 
+    priceId: string | null, 
+    mentorEmail: string,
+    subStart: string | null,
+    subEnd: string | null
+  ) => {
     if (status !== 'active') {
       return {
         type: 'Gratuito',
@@ -96,25 +104,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       };
     }
 
-    // Identificação com base no ID do preço do Stripe
     const isAnnual = priceId?.toLowerCase().includes('annual') || priceId?.toLowerCase().includes('anual') || priceId === 'price_1TXjo1Pc1qFQfvf50bPNi3i7_annual';
     const planType = isAnnual ? 'Anual Premium' : 'Mensal Premium';
 
-    // Gerador determinístico de vigência de ciclo baseado no e-mail do mentor
-    const mockSeed = mentorEmail.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const startDay = (mockSeed % 28) + 1;
-    const startMonth = (mockSeed % 12) + 1;
-    const startYear = 2026;
-
-    const startDateStr = `${startDay.toString().padStart(2, '0')}/${startMonth.toString().padStart(2, '0')}/${startYear}`;
-    
-    let endMonth = startMonth + (isAnnual ? 0 : 1);
-    let endYear = startYear + (isAnnual ? 1 : 0);
-    if (endMonth > 12) {
-      endMonth = 1;
-      endYear += 1;
-    }
-    const endDateStr = `${startDay.toString().padStart(2, '0')}/${endMonth.toString().padStart(2, '0')}/${endYear}`;
+    const startDateStr = subStart ? new Date(subStart).toLocaleDateString('pt-BR') : 'Sem Registro';
+    const endDateStr = subEnd ? new Date(subEnd).toLocaleDateString('pt-BR') : 'Sem Registro';
 
     return {
       type: planType,
@@ -131,10 +125,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     setSyncMessage('');
     setDatabaseError('');
     try {
-      // 1. Busca perfis reais do Supabase
+      // 1. Busca perfis reais do Supabase (incluindo as novas colunas de vigência do Stripe!)
       const { data: realProfiles, error: profError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, subscription_status, subscription_price_id');
+        .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end');
 
       if (profError) throw profError;
       
@@ -209,6 +203,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           email: p.email || 'sem-email-sincronizado@supa.io',
           subscriptionStatus: p.subscription_status || 'inactive',
           subscriptionPriceId: p.subscription_price_id || null,
+          subscriptionStart: (p as any).subscription_start || null,
+          subscriptionEnd: (p as any).subscription_end || null,
           childrenCount,
           planets: planetNames,
           missionsConcluded: completedCount,
@@ -274,10 +270,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
   const handleTogglePremium = async (profileId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     const newPriceId = newStatus === 'active' ? 'price_1TXjo1Pc1qFQfvf50bPNi3i7' : null;
+    const nowStr = newStatus === 'active' ? new Date().toISOString() : null;
+    const expStr = newStatus === 'active' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null;
 
-    // Atualização otimista
+    // Atualização otimista no frontend
     setMentorsData(prev => prev.map(m => m.profileId === profileId 
-      ? { ...m, subscriptionStatus: newStatus } 
+      ? { 
+          ...m, 
+          subscriptionStatus: newStatus,
+          subscriptionStart: nowStr,
+          subscriptionEnd: expStr
+        } 
       : m
     ));
 
@@ -286,7 +289,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         .from('profiles')
         .update({ 
           subscription_status: newStatus,
-          subscription_price_id: newPriceId
+          subscription_price_id: newPriceId,
+          subscription_start: nowStr,
+          subscription_end: expStr
         })
         .eq('id', profileId);
 
@@ -473,7 +478,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredMentors.map(m => {
-                  const subDetails = getSubscriptionDetails(m.subscriptionStatus, m.subscriptionPriceId, m.email);
+                  const subDetails = getSubscriptionDetails(m.subscriptionStatus, m.subscriptionPriceId, m.email, m.subscriptionStart, m.subscriptionEnd);
                   return (
                     <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
                       <td className="p-4 pl-6">

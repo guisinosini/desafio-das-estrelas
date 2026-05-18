@@ -40,10 +40,15 @@ export async function POST(req: Request) {
       const subscriptionId = session.subscription as string;
 
       let subscriptionPriceId = null;
+      let subscriptionStart = null;
+      let subscriptionEnd = null;
+
       if (subscriptionId) {
         try {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           subscriptionPriceId = subscription.items.data[0].price.id;
+          subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
         } catch (e) {
           console.error('Error retrieving subscription items on webhook completion:', e);
         }
@@ -58,6 +63,8 @@ export async function POST(req: Request) {
             subscription_id: subscriptionId,
             subscription_status: 'active',
             subscription_price_id: subscriptionPriceId, // Salva o priceId exato!
+            subscription_start: subscriptionStart,
+            subscription_end: subscriptionEnd,
           })
           .eq('email', customerEmail); // Nota: Certifique-se que a tabela profiles tem a coluna email ou use outro identificador
 
@@ -84,12 +91,30 @@ export async function POST(req: Request) {
     case 'invoice.payment_succeeded': {
       const invoice = event.data.object as any;
       const stripeCustomerId = invoice.customer as string;
+      const subscriptionId = invoice.subscription as string;
+
+      let subscriptionStart = null;
+      let subscriptionEnd = null;
+
+      if (subscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        } catch (e) {
+          console.error('Error retrieving subscription on invoice payment success:', e);
+        }
+      }
+
+      const updatePayload: any = {
+        subscription_status: 'active',
+      };
+      if (subscriptionStart) updatePayload.subscription_start = subscriptionStart;
+      if (subscriptionEnd) updatePayload.subscription_end = subscriptionEnd;
 
       const { error } = await supabase
         .from('profiles')
-        .update({
-          subscription_status: 'active',
-        })
+        .update(updatePayload)
         .eq('stripe_customer_id', stripeCustomerId);
 
       if (error) console.error('Error updating profile on payment success:', error);

@@ -88,17 +88,24 @@ export async function POST(req: Request) {
             subscription_id: subscriptionId,
             subscription_status: subscriptionStatus,
             subscription_price_id: subscriptionPriceId,
+            subscription_start: new Date(sub.current_period_start * 1000).toISOString(),
+            subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
           })
           .eq('id', user.id);
       }
-    } else if (subscriptionId && !subscriptionPriceId) {
-      // Caso ele já tenha os IDs mas falte apenas a coluna price_id
+    } else if (subscriptionId) {
+      // Caso ele já tenha os IDs mas queira sincronizar as datas mais atualizadas
       const sub = await stripe.subscriptions.retrieve(subscriptionId);
       subscriptionPriceId = sub.items.data[0].price.id;
 
       await supabase
         .from('profiles')
-        .update({ subscription_price_id: subscriptionPriceId })
+        .update({ 
+          subscription_status: sub.status === 'active' ? 'active' : 'inactive',
+          subscription_price_id: subscriptionPriceId,
+          subscription_start: new Date(sub.current_period_start * 1000).toISOString(),
+          subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
+        })
         .eq('id', user.id);
     }
 
