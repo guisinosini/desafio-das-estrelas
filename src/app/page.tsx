@@ -52,6 +52,7 @@ import { SearchingSignal } from "@/components/auth/SearchingSignal";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
+import { AppHeader } from "@/components/shared/AppHeader";
 
 const orbitalTransitionVariants = {
   initial: { 
@@ -946,12 +947,69 @@ export default function DesafioEstrelas() {
         date: new Date().toISOString(),
         content: content.trim()
       }, ...(activeChild.history || [])].slice(0, 100)
-    });
+  };
+
+  const getHeaderActions = () => {
+    let onBack: (() => void) | undefined = undefined;
+    let onLogout: (() => void) | undefined = undefined;
+
+    switch (stage) {
+      case 'auth':
+        if (!isLogin) {
+          onBack = () => setIsLogin(true);
+        } else {
+          onBack = () => setStage('landing');
+        }
+        break;
+      case 'enter_code':
+      case 'reset_password':
+        onBack = () => setStage('auth');
+        break;
+      case 'select_child':
+        onLogout = handleLogout;
+        break;
+      case 'setup_child':
+        if (children.length > 0) {
+          onBack = () => setStage('select_child');
+        } else {
+          onLogout = handleLogout;
+        }
+        break;
+      case 'setup_avatar':
+        onBack = () => setStage('setup_child');
+        break;
+      case 'setup_planets':
+        onBack = () => setStage('setup_avatar');
+        break;
+      case 'setup_tasks':
+        onBack = () => setStage('setup_planets');
+        break;
+      case 'setup_rewards':
+        onBack = () => setStage('setup_tasks');
+        break;
+      case 'no_subscription':
+        onLogout = handleLogout;
+        break;
+      case 'welcome':
+        onBack = () => setStage('landing');
+        break;
+      default:
+        break;
+    }
+
+    return { onBack, onLogout };
   };
 
   return (
-    <div className="min-h-screen text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
+    <div className={clsx("min-h-screen text-white font-sans selection:bg-primary/20 overflow-x-hidden relative flex flex-col", stage !== 'landing' && stage !== 'searching_signal' && stage !== 'adventure' && "pt-24")}>
       <StarField />
+
+      {stage !== 'landing' && stage !== 'searching_signal' && stage !== 'adventure' && (
+        <AppHeader
+          stage={stage}
+          {...getHeaderActions()}
+        />
+      )}
 
       <AnimatePresence mode="wait">
 
@@ -1076,7 +1134,6 @@ export default function DesafioEstrelas() {
         {/* --- STAGE: ENTER CODE (OTP) --- */}
         {stage === 'enter_code' && (
           <motion.div key="enter_code" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('auth')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> Voltar</button>
             <div className="space-y-2 text-center">
               <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.authCodeTitle}</h2>
@@ -1244,11 +1301,6 @@ export default function DesafioEstrelas() {
         {/* --- STAGE: SELECT CHILD --- */}
         {stage === 'select_child' && (
           <motion.div key="select_child" className="relative z-10 max-w-4xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-12">
-            <div className="absolute top-8 right-8">
-              <button onClick={handleLogout} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors">
-                <LogOut className="w-4 h-4" /> Sair da Conta
-              </button>
-            </div>
 
             <div className="text-center space-y-4">
               <h2 className="text-5xl font-black italic uppercase tracking-tighter">{t.whoIsTraveling}</h2>
@@ -1312,7 +1364,6 @@ export default function DesafioEstrelas() {
           >
             <OrbitalPlanet type="purple" title="Nebula X" subtitle="Setor Nebulosa" />
             <div className="relative z-10 space-y-8 flex flex-col justify-center">
-              <button onClick={() => setStage('setup_child')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.chooseAvatar}</h2>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-6 bg-white/5 backdrop-blur-xl border border-white/10 p-4 md:p-10 rounded-3xl md:rounded-[50px] shadow-2xl overflow-y-auto max-h-[50vh] md:max-h-none">
                 {AVATARS.map(a => (
@@ -1345,7 +1396,6 @@ export default function DesafioEstrelas() {
           >
             <OrbitalPlanet type="blue" title="Cosmos Blue" subtitle="Setor Cosmos" />
             <div className="relative z-10 space-y-8 flex flex-col justify-center">
-              <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
               <div className="text-center space-y-4">
                 <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.destinyPlanets}</h2>
                 <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.planetExplainer }} />
@@ -1441,7 +1491,6 @@ export default function DesafioEstrelas() {
           >
             <OrbitalPlanet type="gold" title="Helios Prime" subtitle="Setor Estelar" />
             <div className="relative z-10 space-y-8 flex flex-col justify-center">
-              <button onClick={() => setStage('setup_planets')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
               <div className="text-center space-y-4">
                 <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
                 <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.taskExplainer }} />
@@ -1549,7 +1598,6 @@ export default function DesafioEstrelas() {
           >
             <OrbitalPlanet type="turquoise" title="Aurelia Turquesa" subtitle="Setor Relíquia" />
             <div className="relative z-10 space-y-8 flex flex-col justify-center">
-              <button onClick={() => setStage('setup_tasks')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
               <div className="text-center space-y-4">
                 <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
                 <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.rewardExplainer }} />
@@ -1617,8 +1665,9 @@ export default function DesafioEstrelas() {
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
           <DailyConquestCelebration tasks={tasks} t={t} />
 
-            <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-4 md:p-6 flex justify-between items-center shadow-2xl">
-              <div className="flex items-center gap-4">
+            <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-4 md:p-6 grid grid-cols-3 items-center shadow-2xl">
+              {/* Coluna 1: Esquerda - Avatar e Status da Criança */}
+              <div className="flex items-center gap-4 justify-start">
                 <div onClick={() => {
                   if (view === 'child') {
                     setShowPin(true);
@@ -1664,8 +1713,15 @@ export default function DesafioEstrelas() {
                 </div>
               </div>
 
+              {/* Coluna 2: Centro - Título Temático e Neon "Desafio das Estrelas" */}
+              <div className="flex items-center justify-center">
+                <span className="font-black italic uppercase tracking-tighter text-xs sm:text-sm md:text-xl lg:text-2xl text-center select-none bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                  Desafio das <span className="text-primary not-italic drop-shadow-[0_0_15px_rgba(45,212,191,0.6)]">Estrelas</span>
+                </span>
+              </div>
 
-              <div className="flex gap-6 items-center">
+              {/* Coluna 3: Direita - Ações, Relógio, Estrelas e Logout */}
+              <div className="flex gap-6 items-center justify-end">
                 {/* Relógio e Data Isolados */}
                 <ClockDisplay language={language} />
 
@@ -1713,7 +1769,7 @@ export default function DesafioEstrelas() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg" title={t.exitChallenge}>
+                  <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg cursor-pointer" title={t.exitChallenge}>
                     <LogOut className="w-5 h-5" />
                   </button>
                 </div>

@@ -67,12 +67,6 @@ const SetupChildStage = memo(({
       <OrbitalPlanet type="green" title="Gaya Alfa" subtitle="Setor Origem" />
       
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
-        <button 
-          onClick={() => setStage(hasChildren ? 'select_child' : 'auth')} 
-          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"
-        >
-          <ChevronLeft className="w-4 h-4" /> {t.back}
-        </button>
         
         <h2 className="text-4xl font-black italic uppercase tracking-tighter text-center">{t.whoIsHero}</h2>
         
