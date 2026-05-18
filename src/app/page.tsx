@@ -308,6 +308,16 @@ export default function DesafioEstrelas() {
         }
         if (data.status === 'active') {
           setIsPremium(true);
+          // Se estava bloqueado na tela de assinatura, libera o acesso automaticamente em tempo real!
+          if (stage === 'no_subscription') {
+            console.log("🔓 [BackgroundSync] Assinatura ativa detectada! Liberando acesso...");
+            const cloudData = await loadFromCloud();
+            if (cloudData && cloudData.children) {
+              setChildren(cloudData.children);
+              setActiveChildId(cloudData.activeChildId || null);
+            }
+            setStage('select_child');
+          }
         } else {
           setIsPremium(false);
         }
@@ -316,7 +326,7 @@ export default function DesafioEstrelas() {
       }
     };
 
-    if (stage === 'adventure' || stage === 'select_child') {
+    if (stage === 'adventure' || stage === 'select_child' || stage === 'no_subscription') {
       syncSubscription();
     }
   }, [stage]);
