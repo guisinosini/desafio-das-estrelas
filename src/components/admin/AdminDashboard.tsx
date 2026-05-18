@@ -57,17 +57,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     setSyncMessage('');
     setDatabaseError('');
     try {
-      // 1. Busca perfis reais
+      // 1. Busca perfis reais do Supabase
       const { data: realProfiles, error: profError } = await supabase
         .from('profiles')
         .select('id, full_name, email, subscription_status, subscription_price_id');
 
       if (profError) throw profError;
+      
+      console.log("📡 [BI Admin] Perfis reais carregados:", realProfiles);
 
-      // 2. Busca dados de gamificação dos mentores
+      // 2. Busca dados de gamificação dos mentores (com tratamento de erro estrito)
       const { data: gamificationRows, error: gamError } = await supabase
         .from('patient_gamification')
         .select('profile_id, state');
+
+      if (gamError) throw gamError;
+
+      console.log("📡 [BI Admin] Progresso de gamificação bruto retornado:", gamificationRows);
 
       const gamifications = gamificationRows || [];
 
@@ -139,6 +145,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         };
       });
 
+      console.log("📊 [BI Admin] Famílias consolidadas decodificadas em memória:", decodedMentors);
       setMentorsData(decodedMentors);
     } catch (e: any) {
       console.error("❌ Falha crítica no BI administrativo:", e);
@@ -251,7 +258,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
               <h4 className="text-sm font-black uppercase tracking-wider text-red-300">Falha de Leitura Supabase</h4>
               <p className="text-xs font-bold leading-relaxed">{databaseError}</p>
               <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest pt-2">
-                Dica de segurança: Certifique-se de rodar a política de leitura para a tabela public.patient_gamification no SQL Editor do seu Supabase.
+                Dica de segurança: Certifique-se de rodar a política de leitura para a tabela public.patient_gamification no SQL Editor do seu Supabase ou tente desabilitar o RLS dela temporariamente para testes.
               </p>
             </div>
           </motion.div>
