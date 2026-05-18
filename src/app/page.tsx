@@ -69,7 +69,7 @@ const orbitalTransitionVariants = {
     x: 0, 
     y: 0,
     transition: { 
-      type: "spring",
+      type: "spring" as const,
       stiffness: 50,
       damping: 14
     }
@@ -82,10 +82,10 @@ const orbitalTransitionVariants = {
     y: 100,
     transition: { 
       duration: 0.8,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
-};
+} as const;
 
 const ClockDisplay = memo(({ language }: { language: string }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -491,7 +491,7 @@ export default function DesafioEstrelas() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Evento Auth:", event);
       if (event === 'PASSWORD_RECOVERY') setStage('reset_password');
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' && session?.user) {
         if (session?.user?.user_metadata?.full_name) setParentName(session.user.user_metadata.full_name);
         
         // Verifica a assinatura
@@ -1032,6 +1032,7 @@ export default function DesafioEstrelas() {
         date: new Date().toISOString(),
         content: content.trim()
       }, ...(activeChild.history || [])].slice(0, 100)
+    });
   };
 
   const getHeaderActions = () => {
