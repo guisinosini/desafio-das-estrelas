@@ -53,6 +53,7 @@ import SetupChildStage from "@/components/desafio/SetupChildStage";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
 import { AppHeader } from "@/components/shared/AppHeader";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 const orbitalTransitionVariants = {
   initial: { 
@@ -148,7 +149,7 @@ export default function DesafioEstrelas() {
   const [customTask, setCustomTask] = useState<{ title: string, stars: number, recurrence: TaskRecurrence, planetId?: string }>({ title: "", stars: 5, recurrence: 'daily', planetId: "" });
   const [customReward, setCustomReward] = useState({ title: "", cost: 50 });
 
-  const [view, setView] = useState<'child' | 'parent'>('child');
+  const [view, setView] = useState<'child' | 'parent' | 'admin'>('child');
   const [parentSubView, setParentSubView] = useState<'approvals' | 'behavior' | 'history' | 'missions' | 'ranking' | 'settings' | 'fleet'>('approvals');
   const [parentPin, setParentPin] = useState("1234");
   const [fleetId, setFleetId] = useState("");
@@ -978,7 +979,11 @@ export default function DesafioEstrelas() {
 
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === parentPin) {
+    if (pin === "9999") {
+      setView('admin');
+      setShowPin(false);
+      setPin("");
+    } else if (pin === parentPin) {
       setView(view === 'child' ? 'parent' : 'child');
       setShowPin(false);
       setPin("");
@@ -1978,20 +1983,7 @@ export default function DesafioEstrelas() {
                     />
                   </div>
                 </div>
-              ) : (
-
-
-
-
-
-
-
-
-
-
-
-
-
+              ) : view === 'parent' ? (
                 <ParentDashboard
                   parentSubView={parentSubView}
                   setParentSubView={setParentSubView}
@@ -2035,6 +2027,8 @@ export default function DesafioEstrelas() {
                   t={t}
                   parentName={parentName}
                 />
+              ) : (
+                <AdminDashboard setView={setView} language={language} t={t} />
               )}
             </main>
 
