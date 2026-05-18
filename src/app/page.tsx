@@ -793,9 +793,14 @@ export default function DesafioEstrelas() {
   };
 
   const handleLogout = async () => {
+    console.log("🚪 Encerrando sessão no Supabase e limpando dados galácticos...");
     await supabase.auth.signOut();
-    setStage('welcome');
+    const lang = localStorage.getItem('app_language');
+    localStorage.clear();
+    if (lang) localStorage.setItem('app_language', lang);
     setActiveChildId(null);
+    setStage('welcome');
+    window.location.reload();
   };
 
   const handleRedeemReward = (reward: Reward) => {
@@ -1756,12 +1761,7 @@ export default function DesafioEstrelas() {
                   setView={setView}
                   isPremium={isPremium}
                   subscriptionPriceId={subscriptionPriceId}
-                  handleLogout={() => { 
-                    const lang = localStorage.getItem('app_language');
-                    localStorage.clear(); 
-                    if (lang) localStorage.setItem('app_language', lang);
-                    window.location.reload(); 
-                  }}
+                  handleLogout={handleLogout}
                   setNewChild={setNewChild}
                   setStageSetupChild={() => { setStage('setup_child'); setNewChild({ name: "", avatar: "ast1" }); }}
                   handleApprove={handleApprove}

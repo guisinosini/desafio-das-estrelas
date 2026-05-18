@@ -210,10 +210,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           <Trash className="w-4 h-4" /> {t.deleteProfile}
         </button>
         <button
-          onClick={() => { localStorage.clear(); window.location.reload(); }}
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-8 py-5 mt-8 md:mt-20 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
         >
-          <LogOut className="w-4 h-4" /> {t.resetEverything}
+          <LogOut className="w-4 h-4" /> Sair da Conta
         </button>
       </div>
 
