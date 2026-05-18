@@ -559,6 +559,59 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
           </div>
         )}
 
+        {/* Desempenho no Laboratório de Treino Cognitivo */}
+        {(() => {
+          const cognitiveSessions = history.filter(
+            h => h.type === 'gain' && (h.title?.startsWith('Treino:') || h.playTime !== undefined) && isInRange(h.date)
+          );
+          if (cognitiveSessions.length === 0) return null;
+          return (
+            <div className="space-y-4 print:pt-4">
+              <h3 className="text-xs font-black uppercase tracking-widest text-indigo-400 print:text-indigo-800 flex items-center gap-2">
+                <Brain className="w-4 h-4" /> Desempenho no Laboratório Cognitivo
+              </h3>
+              
+              <div className="overflow-hidden border border-white/10 print:border-zinc-200 rounded-2xl bg-white/5 print:bg-white">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 print:border-zinc-200 bg-white/5 print:bg-zinc-50 text-[10px] font-black uppercase tracking-wider text-white/40 print:text-zinc-500">
+                      <th className="p-3">Data</th>
+                      <th className="p-3">Treinamento Praticado</th>
+                      <th className="p-3">Tempo de Jogo</th>
+                      <th className="p-3 text-right">Eficácia / Pontuação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 print:divide-zinc-100">
+                    {cognitiveSessions.map((session, idx) => {
+                      const durationText = session.playTime 
+                        ? session.playTime < 60 
+                          ? `${session.playTime}s` 
+                          : `${Math.floor(session.playTime / 60)}m ${session.playTime % 60}s`
+                        : 'N/A';
+                      return (
+                        <tr key={idx} className="hover:bg-white/5 print:hover:bg-transparent">
+                          <td className="p-3 text-white/60 print:text-zinc-500">
+                            {new Date(session.date).toLocaleDateString(language)}
+                          </td>
+                          <td className="p-3 font-bold text-white/80 print:text-zinc-800">
+                            {session.title.replace('Treino: ', '')}
+                          </td>
+                          <td className="p-3 font-medium text-white/60 print:text-zinc-600">
+                            {durationText}
+                          </td>
+                          <td className="p-3 text-right font-bold text-emerald-400 print:text-emerald-700">
+                            {session.scoreText || 'N/A'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Diário de Bordo (Notas Salvas no Histórico) */}
         <div className="space-y-4 print:pt-4">
           <h3 className="text-xs font-black uppercase tracking-widest text-white/60 print:text-zinc-800 flex items-center gap-2">

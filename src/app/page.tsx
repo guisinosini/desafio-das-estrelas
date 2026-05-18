@@ -48,6 +48,7 @@ import { ParentDashboard } from "@/components/desafio/ParentDashboard";
 import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/types/desafio";
 import { translations, type Language } from "@/lib/translations";
 import AuthStage from "@/components/auth/AuthStage";
+import CognitiveLab from "@/components/desafio/CognitiveLab";
 import { SearchingSignal } from "@/components/auth/SearchingSignal";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
 import { LandingPage } from "@/components/landing/LandingPage";
@@ -157,6 +158,7 @@ export default function DesafioEstrelas() {
   const [fleetChildren, setFleetChildren] = useState<ChildData[]>([]);
   const [showPin, setShowPin] = useState(false);
   const [showRankingModal, setShowRankingModal] = useState(false);
+  const [showCognitiveLab, setShowCognitiveLab] = useState(false);
   const [pin, setPin] = useState("");
   const [laserTarget, setLaserTarget] = useState<{ x: number, y: number, taskId: string } | null>(null);
   const [animatingStar, setAnimatingStar] = useState<{ x: number, y: number } | null>(null);
@@ -694,6 +696,31 @@ export default function DesafioEstrelas() {
 
   const updateActiveChild = (updates: Partial<ChildData>) => {
     setChildren((prev: ChildData[]) => prev.map(c => c.id === activeChildId ? { ...c, ...updates } : c));
+  };
+
+  const handleAwardStars = (amount: number, gameTitle: string, scoreText?: string, playTime?: number) => {
+    if (!activeChildId) return;
+
+    const newHistoryItem = {
+      id: Date.now().toString(),
+      type: 'gain' as const,
+      title: gameTitle,
+      amount: amount,
+      date: new Date().toISOString(),
+      scoreText,
+      playTime
+    };
+
+    setChildren((prev: ChildData[]) => prev.map(child => {
+      if (child.id === activeChildId) {
+        return {
+          ...child,
+          stars: child.stars + amount,
+          history: [newHistoryItem, ...(child.history || [])]
+        };
+      }
+      return child;
+    }));
   };
 
   const removeChild = (id: string) => {
@@ -2005,6 +2032,15 @@ export default function DesafioEstrelas() {
                     />
 
                     <div className="mt-8 w-full max-w-xs space-y-6">
+                      {/* Botão de Decolagem para o Laboratório Cognitivo */}
+                      <button
+                        onClick={() => setShowCognitiveLab(true)}
+                        className="w-full py-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 hover:text-black border-2 border-indigo-500/30 hover:border-indigo-400 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg hover:shadow-indigo-500/20 hover:scale-105 active:scale-95 group text-primary hover:text-black shrink-0"
+                      >
+                        <Brain className="w-4.5 h-4.5 animate-pulse group-hover:scale-110 transition-transform" />
+                        <span>Treino Cognitivo 🧠</span>
+                      </button>
+
                       {/* Seção de Medalhas */}
                       <div className="space-y-3">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center flex items-center justify-center gap-2">
@@ -2201,6 +2237,17 @@ export default function DesafioEstrelas() {
                     </div>
                   </motion.div>
                 </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Modal do Laboratório Cognitivo */}
+            <AnimatePresence>
+              {showCognitiveLab && (
+                <CognitiveLab
+                  onClose={() => setShowCognitiveLab(false)}
+                  onAwardStars={handleAwardStars}
+                  language={language}
+                />
               )}
             </AnimatePresence>
 
