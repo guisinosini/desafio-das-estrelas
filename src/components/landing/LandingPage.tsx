@@ -146,17 +146,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       <StarField />
       
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-[100] bg-[#020617]/70 backdrop-blur-xl border-b border-white/5 p-4 md:px-12 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+      <nav className="fixed top-0 w-full z-[100] bg-[#020617]/70 backdrop-blur-xl border-b border-white/5 p-4 md:px-12 grid grid-cols-3 items-center">
+        {/* Left Side: Rocket Logo */}
+        <div className="flex items-center gap-2 justify-start">
+          <motion.div 
+            whileHover={{ scale: 1.1, rotate: -10 }}
+            className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(45,212,191,0.2)]"
+          >
             <Rocket className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-          </div>
-          <span className="font-black italic uppercase tracking-tighter text-lg md:text-xl hidden xs:block">
-            Desafio das <span className="text-primary">Estrelas</span>
+          </motion.div>
+        </div>
+
+        {/* Center: Thematic App Name */}
+        <div className="flex items-center justify-center">
+          <span className="font-black italic uppercase tracking-tighter text-sm sm:text-base md:text-2xl text-center select-none bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+            Desafio das <span className="text-primary not-italic drop-shadow-[0_0_15px_rgba(45,212,191,0.6)]">Estrelas</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3">
+        {/* Right Side: Language & Login */}
+        <div className="flex items-center gap-2 md:gap-3 justify-end">
           <div className="relative group">
             <button className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 md:px-4 py-2 rounded-full text-[10px] md:text-sm font-bold hover:bg-white/10 transition-all">
               {languages.find(l => l.code === language)?.flag} <span className="hidden sm:inline">{languages.find(l => l.code === language)?.label}</span> <ChevronDown className="w-3 h-3 md:w-4 md:h-4 opacity-40" />
