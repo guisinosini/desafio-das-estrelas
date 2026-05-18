@@ -484,7 +484,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               <div className="bg-[#0b1329] rounded-3xl md:rounded-[56px] p-2 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
                 <div className="bg-[#020617] rounded-2xl md:rounded-[48px] aspect-square relative overflow-hidden flex items-center justify-center">
                   <img 
-                    src="https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?auto=format&fit=crop&q=80&w=1200" 
+                    src="/images/pilot_academy.png" 
                     alt="Academia de Pilotos Estelar"
                     loading="lazy"
                     className="w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-700"
