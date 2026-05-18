@@ -2037,8 +2037,8 @@ export default function DesafioEstrelas() {
                         onClick={() => setShowCognitiveLab(true)}
                         className="w-full py-4 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 hover:text-black border-2 border-indigo-500/30 hover:border-indigo-400 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg hover:shadow-indigo-500/20 hover:scale-105 active:scale-95 group text-primary hover:text-black shrink-0"
                       >
-                        <Brain className="w-4.5 h-4.5 animate-pulse group-hover:scale-110 transition-transform" />
-                        <span>Treino Cognitivo 🧠</span>
+                        <Rocket className="w-4.5 h-4.5 animate-pulse group-hover:scale-110 transition-transform" />
+                        <span>Academia de Pilotos 🚀</span>
                       </button>
 
                       {/* Seção de Medalhas */}
