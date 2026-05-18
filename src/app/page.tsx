@@ -48,6 +48,7 @@ import { ParentDashboard } from "@/components/desafio/ParentDashboard";
 import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/types/desafio";
 import { translations, type Language } from "@/lib/translations";
 import AuthStage from "@/components/auth/AuthStage";
+import { SearchingSignal } from "@/components/auth/SearchingSignal";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
@@ -600,14 +601,44 @@ export default function DesafioEstrelas() {
 
       if (!user) throw new Error("Usuário não retornado pelo servidor.");
 
-      // VERIFICAÇÃO DE ASSINATURA IMEDIATA PÓS-LOGIN
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('subscription_status, subscription_price_id')
-        .eq('id', user.id)
-        .maybeSingle();
+      // ENTRAR NO MODO BUSCANDO SINAL DO TRANSMISSOR E SALVAR TIMESTAMP
+      setStage('searching_signal');
+      const startTime = Date.now();
 
-      if (profileData?.subscription_status !== 'active') {
+      // FUNÇÃO AUXILIAR PARA CONSULTAS DO BANCO EM SEGUNDO PLANO
+      const checkAndLoadData = async () => {
+        // 1. Busca o status de assinatura
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('subscription_status, subscription_price_id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profileData?.subscription_status !== 'active') {
+          return { active: false };
+        }
+
+        // 2. Busca o estado do jogo na nuvem
+        const { data, error } = await supabase
+          .from('patient_gamification')
+          .select('state')
+          .eq('profile_id', user.id)
+          .maybeSingle();
+
+        return { active: true, profileData, cloudData: data?.state, error };
+      };
+
+      // Executa as buscas em background
+      const result = await checkAndLoadData();
+
+      // Garante que o radar galáctico apareça por pelo menos 1.8 segundos (UX / Conforto visual)
+      const elapsed = Date.now() - startTime;
+      const minDelay = 1800;
+      if (elapsed < minDelay) {
+        await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
+      }
+
+      if (!result.active) {
         setIsPremium(false);
         setSubscriptionPriceId(null);
         setStage('no_subscription');
@@ -615,20 +646,15 @@ export default function DesafioEstrelas() {
         return;
       }
 
-      console.log("✅ Autenticado com sucesso, carregando dados para:", user.id);
-      const { data, error } = await supabase
-        .from('patient_gamification')
-        .select('state')
-        .eq('profile_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error("❌ Erro ao buscar nuvem no login:", error);
+      setIsPremium(true);
+      if (result.profileData?.subscription_price_id) {
+        setSubscriptionPriceId(result.profileData.subscription_price_id);
       }
 
-      if (data && data.state) {
-        const cloudData = data.state;
+      console.log("✅ Autenticado com sucesso, carregando dados para:", user.id);
+      const cloudData = result.cloudData;
 
+      if (cloudData) {
         // TRAVA DE SEGURANÇA: Só atualiza se houver dados reais na nuvem
         // Isso evita que um erro de RLS ou novo login limpe o progresso local
         if (cloudData.children && cloudData.children.length > 0) {
@@ -654,6 +680,7 @@ export default function DesafioEstrelas() {
     } catch (err: any) {
       console.error("💥 Falha total no handleAuth:", err);
       setAuthError(err.message || "Erro desconhecido ao conectar.");
+      setStage('auth'); // Devolve para tela de login em caso de falha de autenticação
     } finally {
       setAuthLoading(false);
     }
@@ -1039,6 +1066,10 @@ export default function DesafioEstrelas() {
             setPassword={setPassword}
             handleForgotPassword={handleForgotPassword}
           />
+        )}
+
+        {stage === 'searching_signal' && (
+          <SearchingSignal language={language} />
         )}
 
         {/* --- STAGE: ENTER CODE (OTP) --- */}
