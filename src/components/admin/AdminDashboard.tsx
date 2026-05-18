@@ -156,12 +156,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     setSyncMessage('');
     setDatabaseError('');
     try {
-      // 1. Busca perfis reais do Supabase (incluindo as colunas de vigência e data real de criação!)
-      const { data: realProfiles, error: profError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end, created_at');
+      // 1. Busca perfis reais do Supabase (incluindo as colunas de vigência e tenta created_at)
+      let realProfiles: any[] = [];
+      let profError: any = null;
 
-      if (profError) throw profError;
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end, created_at');
+        
+        if (error) {
+          profError = error;
+        } else {
+          realProfiles = data || [];
+        }
+      } catch (err) {
+        profError = err;
+      }
+
+      // Se a coluna created_at estiver ausente (não migrada no banco), executa o fallback de segurança sem a coluna!
+      if (profError) {
+        const errMsg = profError.message || '';
+        if (errMsg.includes('created_at') || errMsg.includes('does not exist') || profError.code === 'PGRST204') {
+          console.warn("⚠️ Coluna created_at ausente. Realizando consulta de fallback resiliente...");
+          const { data, error: fallbackError } = await supabase
+            .from('profiles')
+            .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end');
+          
+          if (fallbackError) throw fallbackError;
+          realProfiles = data || [];
+        } else {
+          throw profError;
+        }
+      }
       
       console.log("📡 [BI Admin] Perfis reais carregados:", realProfiles);
 
