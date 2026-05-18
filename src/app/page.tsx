@@ -414,6 +414,24 @@ export default function DesafioEstrelas() {
       // Verifica primeiro se o usuário está logado e se tem assinatura ativa
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // BYPASS MESTRE DE SEGURANÇA E RECARREGAMENTO F5 DO ADMIN GLOBAL
+        const isAdmin = user.email === 'institutokamaleon@gmail.com';
+        
+        if (isAdmin) {
+          setIsPremium(true);
+          setView('admin');
+          setStage('adventure');
+          
+          const cloudData = await loadFromCloud(user);
+          if (cloudData) {
+            if (cloudData.children) setChildren(cloudData.children);
+            if (cloudData.activeChildId) setActiveChildId(cloudData.activeChildId);
+            if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+            if (cloudData.language) setLanguage(cloudData.language);
+          }
+          return; // Finaliza bypassando qualquer restrição
+        }
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('subscription_status, subscription_price_id')

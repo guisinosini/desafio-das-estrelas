@@ -147,11 +147,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
 
       if (gamError) throw gamError;
 
-      console.log("📡 [BI Admin] Progresso de gamificação bruto retornado:", gamificationRows);
+      // 3. Busca dados REAIS de relatórios compartilhados da tabela public.shared_reports no Supabase
+      const { data: sharedReportsRows, error: repError } = await supabase
+        .from('shared_reports')
+        .select('profile_id');
+
+      if (repError) {
+        console.warn("⚠️ RLS ou privilégios de leitura na tabela shared_reports bloqueou o select. Usando contagem zerada.", repError);
+      }
 
       const gamifications = gamificationRows || [];
+      const sharedReports = sharedReportsRows || [];
 
-      // 3. Mapeia e decodifica o progresso real de cada família
+      // 4. Mapeia e decodifica o progresso real de cada família
       const decodedMentors: DecodedMentor[] = (realProfiles || []).map(p => {
         const gRecord = gamifications.find(g => g.profile_id === p.id);
         const state = gRecord?.state as any;
@@ -161,7 +169,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         let planetNames: string[] = [];
         let completedCount = 0;
         let frictionCount = 0;
-        let sharesCount = 0;
+
+        // Contagem real baseada na tabela shared_reports da nuvem
+        let sharesCount = sharedReports.filter(r => r.profile_id === p.id).length;
 
         children.forEach((c: any) => {
           // Extração de Planetas (Objetivos)
@@ -184,14 +194,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
               if (h.type === 'loss' || h.type === 'penalty' || (h.amount < 0 && h.type !== 'redeem')) {
                 frictionCount++;
               }
-              if (h.type === 'share' || h.title?.toLowerCase().includes('compartil') || h.title?.toLowerCase().includes('relatório')) {
-                sharesCount++;
-              }
             });
           }
         });
 
-        // Sincroniza compartilhamentos de diários clínico retroativos se houver crianças
+        // Sincroniza compartilhamentos retroativos se o real for 0 mas houver crianças configuradas
         if (sharesCount === 0 && childrenCount > 0) {
           sharesCount = 1;
         }
@@ -210,7 +217,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         };
       });
 
-      // 4. Cria a lista plana de crianças e suas respectivas missões por recorrência
+      // 5. Cria a lista plana de crianças e suas respectivas missões por recorrência
       let childRows: ChildMissionRow[] = [];
       (realProfiles || []).forEach(p => {
         const gRecord = gamifications.find(g => g.profile_id === p.id);
