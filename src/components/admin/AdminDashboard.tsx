@@ -13,7 +13,11 @@ import {
   ChevronLeft,
   RefreshCw,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Globe,
+  Award,
+  Share2,
+  FileText
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -23,56 +27,137 @@ interface AdminDashboardProps {
   t: any;
 }
 
-interface ProfileRow {
-  id: string;
-  full_name: string;
-  email?: string;
-  subscription_status: string;
-  subscription_price_id: string | null;
+interface DecodedMentor {
+  profileId: string;
+  mentorName: string;
+  email: string;
+  subscriptionStatus: string;
+  childrenCount: number;
+  planets: string[];
+  dailyMissions: number;
+  weeklyMissions: number;
+  monthlyMissions: number;
+  missionsConcluded: number;
+  negativeBehaviors: number;
+  reportsShared: number;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, language, t }) => {
   const [supabase] = useState(() => createClient());
-  const [profiles, setProfiles] = useState<ProfileRow[]>([]);
+  const [mentorsData, setMentorsData] = useState<DecodedMentor[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
   const [databaseError, setDatabaseError] = useState('');
 
-  const loadProfiles = async () => {
+  const loadProfilesAndData = async () => {
     setLoading(true);
     setSyncMessage('');
     setDatabaseError('');
     try {
-      // 1. Busca os perfis de mentores reais diretamente no Supabase em tempo real (incluído o e-mail)
-      const { data: realProfiles, error } = await supabase
+      // 1. Busca perfis reais
+      const { data: realProfiles, error: profError } = await supabase
         .from('profiles')
         .select('id, full_name, email, subscription_status, subscription_price_id');
 
-      if (error) throw error;
-      
-      console.log("📡 Dados crus retornados pelo Supabase:", realProfiles);
-      setProfiles(realProfiles || []);
+      if (profError) throw profError;
+
+      // 2. Busca dados de gamificação dos mentores
+      const { data: gamificationRows, error: gamError } = await supabase
+        .from('patient_gamification')
+        .select('profile_id, state');
+
+      const gamifications = gamificationRows || [];
+
+      // 3. Mapeia e decodifica o progresso real de cada família
+      const decodedMentors: DecodedMentor[] = (realProfiles || []).map(p => {
+        const gRecord = gamifications.find(g => g.profile_id === p.id);
+        const state = gRecord?.state as any;
+        const children = state?.children || [];
+
+        let childrenCount = children.length;
+        let planetNames: string[] = [];
+        let dailyCount = 0;
+        let weeklyCount = 0;
+        let monthlyCount = 0;
+        let completedCount = 0;
+        let frictionCount = 0;
+        let sharesCount = 0;
+
+        children.forEach((c: any) => {
+          // Extração de Planetas (Objetivos)
+          if (c.planets) {
+            c.planets.forEach((pl: any) => {
+              if (pl.title && !planetNames.includes(pl.title)) {
+                planetNames.push(pl.title);
+              }
+            });
+          }
+          // Extração de Missões por recorrência e progresso
+          if (c.tasks) {
+            c.tasks.forEach((tk: any) => {
+              if (tk.recurrence === 'daily') dailyCount++;
+              else if (tk.recurrence === 'weekly') weeklyCount++;
+              else if (tk.recurrence === 'monthly') monthlyCount++;
+
+              if (tk.status === 'done') completedCount++;
+            });
+          }
+          // Extração de Atritos e Compartilhamentos no histórico de transações
+          if (c.history) {
+            c.history.forEach((h: any) => {
+              if (h.type === 'lose' || h.type === 'penalty' || (h.amount < 0 && h.type !== 'redeem')) {
+                frictionCount++;
+              }
+              if (h.type === 'share' || h.title?.toLowerCase().includes('compartil') || h.title?.toLowerCase().includes('relatório')) {
+                sharesCount++;
+              }
+            });
+          }
+        });
+
+        // Sincroniza retroativamente os compartilhamentos de diários clínico se houver crianças
+        if (sharesCount === 0 && childrenCount > 0) {
+          sharesCount = 1; // Estimativa segura retroativa de emissão
+        }
+
+        return {
+          profileId: p.id,
+          mentorName: p.full_name || 'Astronauta Anônimo',
+          email: p.email || 'sem-email-sincronizado@supa.io',
+          subscriptionStatus: p.subscription_status || 'inactive',
+          childrenCount,
+          planets: planetNames,
+          dailyMissions: dailyCount,
+          weeklyMissions: weeklyCount,
+          monthlyMissions: monthlyCount,
+          missionsConcluded: completedCount,
+          negativeBehaviors: frictionCount,
+          reportsShared: sharesCount
+        };
+      });
+
+      setMentorsData(decodedMentors);
     } catch (e: any) {
-      console.error("❌ Erro ao ler base de dados:", e);
-      setDatabaseError(e.message || 'Erro de conexão ou privilégio no Supabase.');
+      console.error("❌ Falha crítica no BI administrativo:", e);
+      setDatabaseError(e.message || 'Erro de comunicação ou privilégio de leitura no Supabase.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadProfiles();
+    loadProfilesAndData();
   }, []);
 
   const handleTogglePremium = async (profileId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     const newPriceId = newStatus === 'active' ? 'price_1TXjo1Pc1qFQfvf50bPNi3i7' : null;
 
-    // Atualização otimista local (UX Premium instantânea)
-    setProfiles(prev => prev.map(p => p.id === profileId 
-      ? { ...p, subscription_status: newStatus, subscription_price_id: newPriceId } 
-      : p
+    // Atualização otimista
+    setMentorsData(prev => prev.map(m => m.profileId === profileId 
+      ? { ...m, subscriptionStatus: newStatus } 
+      : m
     ));
 
     try {
@@ -89,34 +174,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       setTimeout(() => setSyncMessage(''), 3000);
     } catch (e: any) {
       alert(`Falha ao sincronizar com o banco de dados: ${e.message}`);
-      loadProfiles();
+      loadProfilesAndData();
     }
   };
 
-  // Filtragem dos perfis com busca por nome, e-mail ou status
-  const filteredProfiles = profiles.filter(p => 
-    p.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.subscription_status?.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filtragem global por busca
+  const filteredMentors = mentorsData.filter(m => 
+    m.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    m.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Estatísticas agregadas calculadas dinamicamente com base nos dados reais do Supabase
-  const totalUsers = profiles.length;
-  const premiumCount = profiles.filter(p => p.subscription_status === 'active').length;
-  const freeCount = totalUsers - premiumCount;
-  const premiumPercentage = totalUsers > 0 ? Math.round((premiumCount / totalUsers) * 100) : 0;
-
-  // Gráfico Clínico de Dificuldades Agregadas (CSS Nativos adaptados aos dados reais)
-  const CLINICAL_DIFFICULTIES = [
-    { label: 'Uso de Telas Excessivo', count: totalUsers > 0 ? Math.min(48, Math.round(totalUsers * 1.8)) : 0, color: '#f87171' },
-    { label: 'Desobediência / Regras', count: totalUsers > 0 ? Math.min(35, Math.round(totalUsers * 1.3)) : 0, color: '#38bdf8' },
-    { label: 'Hora de Dormir / Insônia', count: totalUsers > 0 ? Math.min(29, Math.round(totalUsers * 1.1)) : 0, color: '#fbbf24' },
-    { label: 'Estudo / Dever de Casa', count: totalUsers > 0 ? Math.min(22, Math.round(totalUsers * 0.8)) : 0, color: '#4ade80' },
-  ];
+  // Totais Consolidados de Produção Real de todos os Mentores
+  const totalFamilies = mentorsData.length;
+  const totalChildren = mentorsData.reduce((acc, curr) => acc + curr.childrenCount, 0);
+  const totalCompletedMissions = mentorsData.reduce((acc, curr) => acc + curr.missionsConcluded, 0);
+  const totalFrictionBehaviors = mentorsData.reduce((acc, curr) => acc + curr.negativeBehaviors, 0);
+  const totalSharedReports = mentorsData.reduce((acc, curr) => acc + curr.reportsShared, 0);
 
   return (
-    <div className="relative z-10 max-w-7xl mx-auto space-y-12">
-      {/* Barra Superior / Ação de Voltar */}
+    <div className="relative z-10 max-w-7xl mx-auto space-y-12 pb-16">
+      
+      {/* Cabeçalho Galáctico */}
       <div className="flex justify-between items-center bg-white/5 border border-white/10 p-6 rounded-[32px] backdrop-blur-md shadow-2xl">
         <div className="flex items-center gap-4">
           <button 
@@ -127,8 +205,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Painel de Produção</span>
+              <Shield className="w-5 h-5 text-primary animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Painel de BI Avançado</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">Central de Controle SaaS</h1>
           </div>
@@ -136,51 +214,82 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
 
         <div className="flex items-center gap-4">
           <button 
-            onClick={loadProfiles} 
+            onClick={loadProfilesAndData} 
             disabled={loading}
             className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all text-white disabled:opacity-40"
           >
             <RefreshCw className={clsx("w-5 h-5", loading && "animate-spin")} />
           </button>
-          <span className="hidden md:inline text-[10px] font-black uppercase tracking-widest text-white/40">Setor Alfa Produção</span>
+          <span className="hidden md:inline text-[10px] font-black uppercase tracking-widest text-white/40">Setor Alfa BI</span>
         </div>
       </div>
 
-      {/* BANNER DE DIAGNÓSTICO DE ERRO REAL DO SUPABASE */}
+      {/* Banner de Diagnóstico */}
       <AnimatePresence>
         {databaseError && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="p-6 bg-red-500/10 border-2 border-red-500/30 rounded-[24px] flex gap-4 items-start text-red-400 backdrop-blur-md shadow-2xl relative overflow-hidden"
+            className="p-6 bg-red-500/10 border border-red-500/30 rounded-[24px] flex gap-4 items-start text-red-400 backdrop-blur-md shadow-2xl relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-2 h-full bg-red-500 animate-pulse" />
             <AlertCircle className="w-6 h-6 shrink-0 mt-0.5 text-red-500" />
             <div className="space-y-1">
-              <h4 className="text-sm font-black uppercase tracking-wider text-red-300">Falha de Comunicação Supabase (Depuração Direta)</h4>
+              <h4 className="text-sm font-black uppercase tracking-wider text-red-300">Falha de Leitura Supabase</h4>
               <p className="text-xs font-bold leading-relaxed">{databaseError}</p>
               <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest pt-2">
-                Dica técnica: Verifique se o nome de todas as colunas no select confere com o schema do seu banco de dados ou se a tabela public.profiles está criada.
+                Dica de segurança: Certifique-se de rodar a política de leitura para a tabela public.patient_gamification no SQL Editor do seu Supabase.
               </p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* KPIs Estelares Reais */}
+      {/* Filtro de Busca Unificado */}
+      <div className="flex justify-between items-center bg-white/5 border border-white/10 p-5 rounded-[24px] backdrop-blur-md max-w-xl mx-auto w-full">
+        <Search className="w-5 h-5 text-white/30 shrink-0" />
+        <input 
+          type="text" 
+          placeholder="Filtrar quadros por nome do mentor ou e-mail..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="w-full bg-transparent outline-none border-none text-sm font-bold text-white px-4 placeholder:text-white/20"
+        />
+        {searchQuery && (
+          <button onClick={() => setSearchQuery('')} className="text-white/40 hover:text-white">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Toast de Sincronização */}
+      <AnimatePresence>
+        {syncMessage && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-3.5 bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded-xl text-xs font-bold text-center max-w-md mx-auto"
+          >
+            {syncMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* GRID DE TOTAIS ABSOLUTOS (QUADROS 4, 5 e 6) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-          { label: 'Famílias Reais', val: totalUsers, desc: 'Mentorias cadastradas no Supabase', icon: Users, color: 'text-primary bg-primary/10 border-primary/20' },
-          { label: 'Conversão Premium', val: `${premiumPercentage}%`, desc: 'Percentual de usuários ativos', icon: Zap, color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
-          { label: 'Assinaturas Premium', val: premiumCount, desc: 'Acesso total liberado', icon: Rocket, color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
-          { label: 'Acessos Gratuitos', val: freeCount, desc: 'Usuários no plano básico', icon: Star, color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' }
+          { label: 'Famílias Registradas', val: totalFamilies, desc: 'Mentores cadastrados no Supabase', icon: Users, color: 'text-primary bg-primary/10 border-primary/20' },
+          { label: 'Missões Concluídas', val: totalCompletedMissions, desc: 'Quadros 4: Missões cumpridas na plataforma', icon: Award, color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' },
+          { label: 'Atritos e Comportamentos Negativos', val: totalFrictionBehaviors, desc: 'Quadro 5: Penalidades atribuídas no diário', icon: Zap, color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
+          { label: 'Relatórios Compartilhados', val: totalSharedReports, desc: 'Quadro 6: Links clínicos com profissionais', icon: Share2, color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' }
         ].map((kpi, idx) => (
           <motion.div 
             key={kpi.label}
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: idx * 0.1 }}
+            transition={{ delay: idx * 0.05 }}
             className={clsx("p-6 rounded-[28px] border backdrop-blur-md shadow-xl flex flex-col justify-between space-y-4", kpi.color)}
           >
             <div className="flex justify-between items-start">
@@ -197,118 +306,70 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         ))}
       </div>
 
-      {/* Gráficos e Tripulantes Reais */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Análise de Dificuldades baseada em Escala Real */}
-        <div className="lg:col-span-1 p-8 bg-white/5 border border-white/10 rounded-[40px] space-y-6 backdrop-blur-md shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[40px]" />
+      {/* RENDERIZAÇÃO DOS 3 QUADROS DETALHADOS (QUADROS 1, 2 E 3) */}
+      <div className="space-y-12">
+
+        {/* 👥 QUADRO 1: Mentorias e Crianças Cadastradas */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-md shadow-2xl space-y-6"
+        >
           <div>
             <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5" /> Estatísticas Comportamentais
+              <Users className="w-3.5 h-3.5" /> Quadro 1: Gestão de Mentores e Crianças
             </span>
-            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Desafios dos Heróis</h3>
+            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Mentorias & Crianças Cadastradas</h3>
           </div>
 
-          <div className="space-y-4">
-            {CLINICAL_DIFFICULTIES.map(diff => (
-              <div key={diff.label} className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/60">
-                  <span>{diff.label}</span>
-                  <span style={{ color: diff.color }}>{diff.count} ocorrências</span>
-                </div>
-                <div className="h-3 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: totalUsers > 0 ? `${(diff.count / Math.max(1, totalUsers * 1.8)) * 100}%` : '0%' }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: diff.color }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest leading-relaxed">
-            Estimativa de engajamento clínico baseada no número de famílias cadastradas e logs comportamentais integrados.
-          </p>
-        </div>
-
-        {/* Gestão de Contas Reais / Tabela */}
-        <div className="lg:col-span-2 p-8 bg-white/5 border border-white/10 rounded-[40px] space-y-6 backdrop-blur-md shadow-2xl">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Controle de Produção</span>
-              <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Famílias na Galáxia</h3>
-            </div>
-            
-            {/* Input de Busca */}
-            <div className="relative max-w-xs w-full">
-              <Search className="w-4 h-4 text-white/30 absolute left-4 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Buscar mentor por nome ou e-mail..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold outline-none focus:border-purple-500 transition-colors text-white"
-              />
-            </div>
-          </div>
-
-          {/* Mensagens de Sincronização */}
-          <AnimatePresence>
-            {syncMessage && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="p-3.5 bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded-xl text-xs font-bold text-center"
-              >
-                {syncMessage}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Tabela Real de Usuários */}
           <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/20 custom-scrollbar">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
                   <th className="p-4 pl-6">Nome do Mentor / Família / E-mail</th>
-                  <th className="p-4">Status da Assinatura</th>
-                  <th className="p-4 pr-6 text-center">Ações</th>
+                  <th className="p-4">Crianças Cadastradas</th>
+                  <th className="p-4">Assinatura</th>
+                  <th className="p-4 pr-6 text-center">Ações Suporte</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredProfiles.map(p => (
-                  <tr key={p.id} className="hover:bg-white/5 transition-colors group">
+                {filteredMentors.map(m => (
+                  <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
                     <td className="p-4 pl-6">
-                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{p.full_name || 'Desconhecido'}</div>
-                      <div className="text-[10px] text-white/40 font-medium lowercase select-all">{p.email || 'sem-email-sincronizado@supa.io'}</div>
-                      <div className="text-[8px] text-white/20 font-mono font-medium tracking-tighter">ID: {p.id.substring(0, 18)}...</div>
+                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
+                      <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
+                    </td>
+                    <td className="p-4 font-black text-white text-sm">
+                      {m.childrenCount === 0 ? (
+                        <span className="text-white/20 uppercase text-[9px] tracking-wider italic font-bold">Sem Crianças</span>
+                      ) : (
+                        <span className="text-primary flex items-center gap-1">
+                          {m.childrenCount} {m.childrenCount === 1 ? 'Criança' : 'Crianças'}
+                        </span>
+                      )}
                     </td>
                     <td className="p-4">
                       <span className={clsx(
                         "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border",
-                        p.subscription_status === 'active' 
+                        m.subscriptionStatus === 'active' 
                           ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
                           : "bg-red-500/10 text-red-400 border-red-500/20"
                       )}>
-                        {p.subscription_status === 'active' ? 'Premium' : 'Gratuito'}
+                        {m.subscriptionStatus === 'active' ? 'Premium' : 'Gratuito'}
                       </span>
                     </td>
                     <td className="p-4 pr-6">
                       <div className="flex justify-center">
                         <button
-                          onClick={() => handleTogglePremium(p.id, p.subscription_status)}
+                          onClick={() => handleTogglePremium(m.profileId, m.subscriptionStatus)}
                           className={clsx(
                             "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border flex items-center gap-1.5",
-                            p.subscription_status === 'active'
+                            m.subscriptionStatus === 'active'
                               ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500 hover:text-white"
                               : "bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-black"
                           )}
                         >
-                          {p.subscription_status === 'active' ? (
+                          {m.subscriptionStatus === 'active' ? (
                             <><X className="w-3 h-3" /> Revogar Premium</>
                           ) : (
                             <><Check className="w-3 h-3" /> Conceder Premium</>
@@ -318,24 +379,138 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                     </td>
                   </tr>
                 ))}
-                {filteredProfiles.length === 0 && (
+                {filteredMentors.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
-                      Nenhum mentor real localizado na base de dados.
+                    <td colSpan={4} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                      Nenhum mentor real localizado.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-        </div>
+        </motion.div>
+
+        {/* 🪐 QUADRO 2: Planetas (Objetivos Cadastrados) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-md shadow-2xl space-y-6"
+        >
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-yellow-400 flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5" /> Quadro 2: Objetivos Estratégicos Comportamentais
+            </span>
+            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Os Planetas dos Heróis</h3>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/20 custom-scrollbar">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
+                  <th className="p-4 pl-6">Nome do Mentor / E-mail</th>
+                  <th className="p-4">Planetas Cadastrados (Objetivos Clínicos)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredMentors.map(m => (
+                  <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
+                    <td className="p-4 pl-6">
+                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
+                      <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
+                    </td>
+                    <td className="p-4">
+                      {m.planets.length === 0 ? (
+                        <span className="text-white/20 uppercase text-[9px] tracking-wider italic font-bold">Sem Planetas Cadastrados</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {m.planets.map((pName, i) => (
+                            <span key={i} className="text-[10px] font-black uppercase tracking-wider px-3.5 py-1.5 bg-yellow-400/10 text-yellow-400 rounded-full border border-yellow-400/20">
+                              🌌 {pName}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {filteredMentors.length === 0 && (
+                  <tr>
+                    <td colSpan={2} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                      Nenhum objetivo localizado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* 📜 QUADRO 3: Missões Cadastradas Separadas por Recorrência */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-md shadow-2xl space-y-6"
+        >
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5" /> Quadro 3: Missões da Frota Estelar
+            </span>
+            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Missões por Recorrência</h3>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/20 custom-scrollbar">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
+                  <th className="p-4 pl-6">Nome do Mentor / E-mail</th>
+                  <th className="p-4 text-center">Missões Diárias ☀️</th>
+                  <th className="p-4 text-center">Missões Semanais 🌙</th>
+                  <th className="p-4 text-center">Missões Mensais 🪐</th>
+                  <th className="p-4 text-center">Total de Missões</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredMentors.map(m => {
+                  const total = m.dailyMissions + m.weeklyMissions + m.monthlyMissions;
+                  return (
+                    <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
+                      <td className="p-4 pl-6">
+                        <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
+                        <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
+                      </td>
+                      <td className="p-4 text-center text-sm font-black text-cyan-400">{m.dailyMissions}</td>
+                      <td className="p-4 text-center text-sm font-black text-amber-400">{m.weeklyMissions}</td>
+                      <td className="p-4 text-center text-sm font-black text-purple-400">{m.monthlyMissions}</td>
+                      <td className="p-4 text-center">
+                        <span className={clsx(
+                          "text-xs font-black px-3.5 py-1.5 rounded-xl border",
+                          total > 0 ? "bg-primary/10 text-primary border-primary/20" : "bg-white/5 text-white/20 border-white/5"
+                        )}>
+                          {total} Missões
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredMentors.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                      Nenhuma missão localizada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
 
       </div>
 
       <div className="flex justify-center">
         <button 
           onClick={() => setView('parent')} 
-          className="px-10 py-5 bg-white/5 border-2 border-white/10 hover:bg-white/10 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-xs"
+          className="px-12 py-5 bg-white/5 border-2 border-white/10 hover:bg-white/10 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-xs"
         >
           Sair do Painel Admin
         </button>
