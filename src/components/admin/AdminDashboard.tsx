@@ -28,7 +28,6 @@ interface ProfileRow {
   full_name: string;
   subscription_status: string;
   subscription_price_id: string | null;
-  created_at?: string;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, language, t }) => {
@@ -44,11 +43,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     setSyncMessage('');
     setDatabaseError('');
     try {
-      // 1. Busca os perfis de mentores reais diretamente no Supabase em tempo real
+      // 1. Busca os perfis de mentores reais diretamente no Supabase em tempo real (removido created_at)
       const { data: realProfiles, error } = await supabase
         .from('profiles')
-        .select('id, full_name, subscription_status, subscription_price_id, created_at')
-        .order('created_at', { ascending: false });
+        .select('id, full_name, subscription_status, subscription_price_id');
 
       if (error) throw error;
       
@@ -238,7 +236,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         <div className="lg:col-span-2 p-8 bg-white/5 border border-white/10 rounded-[40px] space-y-6 backdrop-blur-md shadow-2xl">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Controle de Production</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Controle de Produção</span>
               <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Famílias na Galáxia</h3>
             </div>
             
@@ -276,7 +274,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                 <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
                   <th className="p-4 pl-6">Nome do Mentor / Família</th>
                   <th className="p-4">Status da Assinatura</th>
-                  <th className="p-4">Cadastro</th>
                   <th className="p-4 pr-6 text-center">Ações</th>
                 </tr>
               </thead>
@@ -296,9 +293,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                       )}>
                         {p.subscription_status === 'active' ? 'Premium' : 'Gratuito'}
                       </span>
-                    </td>
-                    <td className="p-4 text-xs text-white/40 font-bold uppercase tracking-widest">
-                      {p.created_at ? new Date(p.created_at).toLocaleDateString(language, { day: '2-digit', month: 'short', year: 'numeric' }) : 'Antigo'}
                     </td>
                     <td className="p-4 pr-6">
                       <div className="flex justify-center">
@@ -323,7 +317,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                 ))}
                 {filteredProfiles.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                    <td colSpan={3} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
                       Nenhum mentor real localizado na base de dados.
                     </td>
                   </tr>
