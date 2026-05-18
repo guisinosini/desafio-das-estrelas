@@ -1106,11 +1106,7 @@ export default function DesafioEstrelas() {
 
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === "9999") {
-      setView('admin');
-      setShowPin(false);
-      setPin("");
-    } else if (pin === parentPin) {
+    if (pin === parentPin) {
       setView(view === 'child' ? 'parent' : 'child');
       setShowPin(false);
       setPin("");
