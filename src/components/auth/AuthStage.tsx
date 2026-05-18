@@ -290,6 +290,7 @@ const AuthStage = memo(({
                     Ao criar a sua conta e utilizar o Desafio das Estrelas, o mentor atesta que é o responsável legal do menor cadastrado e aceita de forma irrevogável todas as regras e políticas descritas neste instrumento.
                   </p>
                 </div>
+              </div>
 
               {/* Rodapé do Modal com Ação de Aceite */}
               <div className="p-6 border-t border-white/10 bg-zinc-900/50 flex flex-col sm:flex-row justify-end items-center gap-4 shrink-0">
