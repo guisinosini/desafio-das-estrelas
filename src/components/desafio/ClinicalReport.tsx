@@ -14,7 +14,8 @@ import {
   Share2,
   ExternalLink,
   X,
-  Copy
+  Copy,
+  ShieldCheck
 } from 'lucide-react';
 import type { ChildData, Task, Reward } from '@/types/desafio';
 import { Language, translations } from '@/lib/translations';
@@ -592,8 +593,17 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
           </div>
         </div>
 
-        <div className="hidden print:block pt-12 border-t border-zinc-300 text-center text-[9px] text-zinc-500 uppercase tracking-widest">
-          {t.reportFooter}
+        {/* Rodapé Científico de Responsabilidade Técnica e Marca Registrada */}
+        <div className="pt-12 mt-12 border-t border-white/10 print:border-zinc-300 text-center space-y-4">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 print:text-zinc-500 leading-relaxed">
+              © 2026 DESAFIO DAS ESTRELAS. TODOS OS DIREITOS RESERVADOS. <span className="text-primary print:text-zinc-700 font-black">MARCA REGISTRADA</span>.
+            </div>
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-emerald-400 print:text-emerald-700 bg-emerald-500/5 print:bg-zinc-100 px-4 py-1.5 rounded-lg border border-emerald-500/10 print:border-zinc-300 w-fit">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 print:text-emerald-600 shrink-0" />
+              <span>Responsável Técnico: Guilherme Carvalho Sinosini – CRP 06/181084</span>
+            </div>
+          </div>
         </div>
 
       </div>
