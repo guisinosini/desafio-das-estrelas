@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
   Rocket, 
@@ -240,11 +241,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             >
               <div className="absolute -inset-10 md:-inset-20 bg-primary/20 blur-[80px] md:blur-[150px] rounded-full animate-pulse" />
               <div className="relative h-full rounded-3xl md:rounded-[48px] overflow-hidden border border-white/10 shadow-2xl bg-[#0f172a]">
-                <img 
+                <Image 
                   src="/images/hero.png" 
-                  onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1200" }}
                   alt="Herói Estelar"
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60" />
                 <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 right-4 md:right-8 p-4 md:p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl">
@@ -274,13 +275,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <FadeInWhenVisible>
             <div className="relative group">
-              <div className="relative rounded-3xl md:rounded-[56px] overflow-hidden border border-white/10 shadow-2xl grayscale-[0.3] hover:grayscale-0 transition-all duration-1000">
-                <img 
+              <div className="relative rounded-3xl md:rounded-[56px] overflow-hidden border border-white/10 shadow-2xl grayscale-[0.3] hover:grayscale-0 transition-all duration-1000 aspect-video lg:aspect-square">
+                <Image 
                   src="/images/pain.png" 
-                  onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=1200" }}
                   alt="Desafios Diários"
-                  loading="lazy"
-                  className="w-full h-full object-cover aspect-video lg:aspect-square"
+                  fill
+                  className="object-cover"
                 />
               </div>
             </div>
@@ -446,12 +446,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 <div className="absolute -inset-6 md:-inset-10 bg-primary/30 blur-[60px] md:blur-[120px] rounded-full opacity-30 animate-pulse" />
                 <div className="bg-[#1e293b] rounded-3xl md:rounded-[48px] p-2 md:p-4 border border-white/10 shadow-2xl overflow-hidden">
                     <div className="bg-[#020617] rounded-2xl md:rounded-[36px] aspect-video lg:aspect-[4/3] relative overflow-hidden flex items-center justify-center">
-                        <img 
+                        <Image 
                           src="/images/dashboard.PNG" 
-                          onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200" }}
                           alt="Mentor Dashboard"
-                          loading="lazy"
-                          className="w-full h-full object-cover opacity-80"
+                          fill
+                          className="object-cover opacity-80"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
                         <motion.div 
@@ -484,11 +483,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               <div className="absolute -inset-4 bg-indigo-500/20 blur-[50px] rounded-[48px] opacity-40 group-hover:opacity-60 transition-opacity animate-pulse" />
               <div className="bg-[#0b1329] rounded-3xl md:rounded-[56px] p-2 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
                 <div className="bg-[#020617] rounded-2xl md:rounded-[48px] aspect-square relative overflow-hidden flex items-center justify-center">
-                  <img 
+                  <Image 
                     src="/images/pilot_academy.png" 
                     alt="Academia de Pilotos Estelar"
-                    loading="lazy"
-                    className="w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-700"
+                    fill
+                    className="object-cover opacity-75 group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
                   
@@ -615,12 +614,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       <section className="py-20 md:py-32 px-6 bg-white/[0.01] border-y border-white/5 relative overflow-hidden z-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <FadeInWhenVisible>
-            <div className="relative group rounded-3xl md:rounded-[56px] overflow-hidden border border-white/10 shadow-2xl">
-              <img 
+            <div className="relative group rounded-3xl md:rounded-[56px] overflow-hidden border border-white/10 shadow-2xl aspect-square">
+              <Image 
                 src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1200" 
                 alt="Profissional de Saúde"
-                loading="lazy"
-                className="w-full aspect-square object-cover"
+                fill
+                className="object-cover"
               />
               <div className="absolute top-4 md:top-8 left-4 md:left-8 p-4 md:p-6 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl max-w-[150px] md:max-w-none">
                 <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary mb-1 md:mb-2" />

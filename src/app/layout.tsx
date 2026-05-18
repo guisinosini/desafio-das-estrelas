@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Desafio das Estrelas - Estação de Comando',
-  description: 'Transforme responsabilidades em conquistas galácticas.',
+  description: 'Transforme responsabilidades em conquistas galácticas. O diário comportamental gamificado mais avançado.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -26,6 +26,19 @@ export const metadata: Metadata = {
     icon: '/conquistas/icon.png',
     apple: '/conquistas/icon.png',
   },
+  openGraph: {
+    title: 'Desafio das Estrelas',
+    description: 'Transforme a rotina das crianças em uma aventura galáctica e desenvolva o comportamento de forma gamificada.',
+    url: 'https://desafiodasestrelas.com',
+    siteName: 'Desafio das Estrelas',
+    locale: 'pt_BR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Desafio das Estrelas',
+    description: 'Transforme responsabilidades em conquistas galácticas.',
+  }
 };
 
 export const viewport = {
@@ -56,9 +69,13 @@ export default function RootLayout({
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('SW registrado com sucesso:', registration.scope);
+                    if (process.env.NODE_ENV !== 'production') {
+                      console.log('SW registrado com sucesso:', registration.scope);
+                    }
                   }, function(err) {
-                    console.log('Falha no registro do SW:', err);
+                    if (process.env.NODE_ENV !== 'production') {
+                      console.log('Falha no registro do SW:', err);
+                    }
                   });
                 });
               }
