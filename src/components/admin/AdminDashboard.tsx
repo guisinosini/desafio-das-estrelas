@@ -36,21 +36,43 @@ interface DecodedMentor {
   subscriptionStatus: string;
   childrenCount: number;
   planets: string[];
-  dailyMissions: string[];
-  weeklyMissions: string[];
-  monthlyMissions: string[];
   missionsConcluded: number;
   negativeBehaviors: number;
   reportsShared: number;
 }
 
+interface ChildMissionRow {
+  mentorName: string;
+  email: string;
+  childName: string;
+  avatar: string;
+  dailyMissions: string[];
+  weeklyMissions: string[];
+  monthlyMissions: string[];
+}
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, language, t, handleLogout }) => {
   const [supabase] = useState(() => createClient());
   const [mentorsData, setMentorsData] = useState<DecodedMentor[]>([]);
+  const [childMissionsData, setChildMissionsData] = useState<ChildMissionRow[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
   const [databaseError, setDatabaseError] = useState('');
+
+  const getAvatarEmoji = (avatarId: string) => {
+    const map: Record<string, string> = {
+      ast1: '🚀',
+      ast2: '🪐',
+      ast3: '👽',
+      ast4: '🔭',
+      ast5: '🛸',
+      ast6: '🛡️',
+      ast7: '☄️',
+      ast8: '👾'
+    };
+    return map[avatarId] || '🚀';
+  };
 
   const loadProfilesAndData = async () => {
     setLoading(true);
@@ -85,9 +107,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
 
         let childrenCount = children.length;
         let planetNames: string[] = [];
-        let dailyList: string[] = [];
-        let weeklyList: string[] = [];
-        let monthlyList: string[] = [];
         let completedCount = 0;
         let frictionCount = 0;
         let sharesCount = 0;
@@ -101,18 +120,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
               }
             });
           }
-          // Extração de Missões por recorrência (com nomes reais de tarefas!)
+          // Extração de Missões concluídas
           if (c.tasks) {
             c.tasks.forEach((tk: any) => {
-              const taskTitle = tk.title || 'Missão sem nome';
-              if (tk.recurrence === 'daily') {
-                if (!dailyList.includes(taskTitle)) dailyList.push(taskTitle);
-              } else if (tk.recurrence === 'weekly') {
-                if (!weeklyList.includes(taskTitle)) weeklyList.push(taskTitle);
-              } else if (tk.recurrence === 'monthly') {
-                if (!monthlyList.includes(taskTitle)) monthlyList.push(taskTitle);
-              }
-
               if (tk.status === 'done') completedCount++;
             });
           }
@@ -129,9 +139,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           }
         });
 
-        // Sincroniza retroativamente os compartilhamentos de diários clínico se houver crianças
+        // Sincroniza compartilhamentos de diários clínico retroativos se houver crianças
         if (sharesCount === 0 && childrenCount > 0) {
-          sharesCount = 1; // Estimativa segura retroativa de emissão
+          sharesCount = 1;
         }
 
         return {
@@ -141,17 +151,54 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           subscriptionStatus: p.subscription_status || 'inactive',
           childrenCount,
           planets: planetNames,
-          dailyMissions: dailyList,
-          weeklyMissions: weeklyList,
-          monthlyMissions: monthlyList,
           missionsConcluded: completedCount,
           negativeBehaviors: frictionCount,
           reportsShared: sharesCount
         };
       });
 
-      console.log("📊 [BI Admin] Famílias consolidadas decodificadas em memória:", decodedMentors);
+      // 4. Cria a lista plana de crianças e suas respectivas missões por recorrência
+      let childRows: ChildMissionRow[] = [];
+      (realProfiles || []).forEach(p => {
+        const gRecord = gamifications.find(g => g.profile_id === p.id);
+        const state = gRecord?.state as any;
+        const children = state?.children || [];
+
+        children.forEach((c: any) => {
+          let dailyList: string[] = [];
+          let weeklyList: string[] = [];
+          let monthlyList: string[] = [];
+
+          if (c.tasks) {
+            c.tasks.forEach((tk: any) => {
+              const taskTitle = tk.title || 'Missão sem nome';
+              if (tk.recurrence === 'daily') {
+                if (!dailyList.includes(taskTitle)) dailyList.push(taskTitle);
+              } else if (tk.recurrence === 'weekly') {
+                if (!weeklyList.includes(taskTitle)) weeklyList.push(taskTitle);
+              } else if (tk.recurrence === 'monthly') {
+                if (!monthlyList.includes(taskTitle)) monthlyList.push(taskTitle);
+              }
+            });
+          }
+
+          childRows.push({
+            mentorName: p.full_name || 'Astronauta Anônimo',
+            email: p.email || 'sem-email-sincronizado@supa.io',
+            childName: c.name || 'Pequeno Herói',
+            avatar: c.avatar || 'ast1',
+            dailyMissions: dailyList,
+            weeklyMissions: weeklyList,
+            monthlyMissions: monthlyList
+          });
+        });
+      });
+
+      console.log("📊 [BI Admin] Famílias consolidadas decodificadas:", decodedMentors);
+      console.log("📊 [BI Admin] Linhas de crianças decodificadas:", childRows);
+      
       setMentorsData(decodedMentors);
+      setChildMissionsData(childRows);
     } catch (e: any) {
       console.error("❌ Falha crítica no BI administrativo:", e);
       setDatabaseError(e.message || 'Erro de comunicação ou privilégio de leitura no Supabase.');
@@ -192,10 +239,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     }
   };
 
-  // Filtragem global por busca
+  // Filtragens globais por busca
   const filteredMentors = mentorsData.filter(m => 
     m.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     m.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredChildMissions = childMissionsData.filter(cm => 
+    cm.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cm.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cm.childName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Totais Consolidados de Produção Real de todos os Mentores
@@ -275,7 +328,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         <Search className="w-5 h-5 text-white/30 shrink-0" />
         <input 
           type="text" 
-          placeholder="Filtrar quadros por nome do mentor ou e-mail..."
+          placeholder="Filtrar quadros por mentor, e-mail ou nome da criança..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           className="w-full bg-transparent outline-none border-none text-sm font-bold text-white px-4 placeholder:text-white/20"
@@ -470,7 +523,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           </div>
         </motion.div>
 
-        {/* 📜 QUADRO 3: Missões Cadastradas Separadas por Recorrência com Nomes das Missões */}
+        {/* 📜 QUADRO 3: Missões Cadastradas Separadas por Criança e Mentor */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -480,32 +533,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
             <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5" /> Quadro 3: Missões da Frota Estelar
             </span>
-            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Nomes das Missões Cadastradas por Recorrência</h3>
+            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Nomes das Missões Cadastradas por Criança e Mentor</h3>
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/20 custom-scrollbar">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
-                  <th className="p-4 pl-6 w-[200px] shrink-0">Nome do Mentor / E-mail</th>
-                  <th className="p-4 text-center w-[300px]">Missões Diárias ☀️</th>
-                  <th className="p-4 text-center w-[300px]">Missões Semanais 🌙</th>
-                  <th className="p-4 text-center w-[300px]">Missões Mensais 🪐</th>
+                  <th className="p-4 pl-6 w-[220px]">Mentor / E-mail</th>
+                  <th className="p-4 w-[160px]">Pequeno Herói</th>
+                  <th className="p-4 text-center w-[280px]">Missões Diárias ☀️</th>
+                  <th className="p-4 text-center w-[280px]">Missões Semanais 🌙</th>
+                  <th className="p-4 text-center w-[280px]">Missões Mensais 🪐</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredMentors.map(m => (
-                  <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
+                {filteredChildMissions.map((cm, idx) => (
+                  <tr key={idx} className="hover:bg-white/5 transition-colors group">
                     <td className="p-4 pl-6 align-top">
-                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
-                      <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
+                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{cm.mentorName}</div>
+                      <div className="text-[10px] text-white/40 font-medium">{cm.email}</div>
                     </td>
                     <td className="p-4 align-top">
-                      {m.dailyMissions.length === 0 ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl shrink-0" title={cm.avatar}>{getAvatarEmoji(cm.avatar)}</span>
+                        <span className="font-black text-sm text-primary uppercase tracking-wider">{cm.childName}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 align-top">
+                      {cm.dailyMissions.length === 0 ? (
                         <div className="text-center text-[9px] font-bold text-white/20 uppercase tracking-widest py-2">Nenhuma</div>
                       ) : (
                         <div className="flex flex-wrap gap-1.5 justify-center">
-                          {m.dailyMissions.map((title, i) => (
+                          {cm.dailyMissions.map((title, i) => (
                             <span key={i} className="text-[9px] font-black uppercase px-2.5 py-1 bg-cyan-400/10 text-cyan-400 rounded-md border border-cyan-400/20 text-center">
                               ☀️ {title}
                             </span>
@@ -514,11 +574,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                       )}
                     </td>
                     <td className="p-4 align-top">
-                      {m.weeklyMissions.length === 0 ? (
+                      {cm.weeklyMissions.length === 0 ? (
                         <div className="text-center text-[9px] font-bold text-white/20 uppercase tracking-widest py-2">Nenhuma</div>
                       ) : (
                         <div className="flex flex-wrap gap-1.5 justify-center">
-                          {m.weeklyMissions.map((title, i) => (
+                          {cm.weeklyMissions.map((title, i) => (
                             <span key={i} className="text-[9px] font-black uppercase px-2.5 py-1 bg-amber-400/10 text-amber-400 rounded-md border border-amber-400/20 text-center">
                               🌙 {title}
                             </span>
@@ -527,11 +587,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                       )}
                     </td>
                     <td className="p-4 align-top">
-                      {m.monthlyMissions.length === 0 ? (
+                      {cm.monthlyMissions.length === 0 ? (
                         <div className="text-center text-[9px] font-bold text-white/20 uppercase tracking-widest py-2">Nenhuma</div>
                       ) : (
                         <div className="flex flex-wrap gap-1.5 justify-center">
-                          {m.monthlyMissions.map((title, i) => (
+                          {cm.monthlyMissions.map((title, i) => (
                             <span key={i} className="text-[9px] font-black uppercase px-2.5 py-1 bg-purple-400/10 text-purple-400 rounded-md border border-purple-400/20 text-center">
                               🪐 {title}
                             </span>
@@ -541,10 +601,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                     </td>
                   </tr>
                 ))}
-                {filteredMentors.length === 0 && (
+                {filteredChildMissions.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
-                      Nenhuma missão localizada.
+                    <td colSpan={5} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                      Nenhuma missão por herói localizada.
                     </td>
                   </tr>
                 )}
