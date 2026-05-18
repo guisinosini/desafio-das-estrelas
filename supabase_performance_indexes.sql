@@ -19,13 +19,13 @@ CREATE INDEX IF NOT EXISTS idx_profiles_email
 CREATE INDEX IF NOT EXISTS idx_profiles_role 
     ON public.profiles(role);
 
--- 4. Indexar o relacionamento de uso de benefícios de parceiros
--- Evita gargalos quando centenas de usuários clicarem para resgatar cupons de desconto.
-CREATE INDEX IF NOT EXISTS idx_user_benefit_usages_user_id 
-    ON public.user_benefit_usages(user_id);
-
-CREATE INDEX IF NOT EXISTS idx_user_benefit_usages_benefit_id 
-    ON public.user_benefit_usages(benefit_id);
+-- 4. [OPCIONAL] Indexar o relacionamento de uso de benefícios de parceiros
+-- (Descomente apenas se você criou a funcionalidade de parceiros executando o script correspondente)
+-- CREATE INDEX IF NOT EXISTS idx_user_benefit_usages_user_id 
+--     ON public.user_benefit_usages(user_id);
+-- 
+-- CREATE INDEX IF NOT EXISTS idx_user_benefit_usages_benefit_id 
+--     ON public.user_benefit_usages(benefit_id);
 
 -- ==============================================================================
 -- Todos os índices acima usam a cláusula de segurança 'IF NOT EXISTS', o que 
