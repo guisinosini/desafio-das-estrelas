@@ -56,8 +56,8 @@ export const AttentionGame: React.FC<AttentionGameProps> = ({ onComplete, onClos
 
     setCurrentObject(newObj);
 
-    // Tempo de exibição do objeto: entre 1.1s e 1.4s (desafio dinâmico de atenção)
-    const duration = Math.random() * 300 + 1100;
+    // Tempo de exibição do objeto: entre 2.0s e 2.5s (desafio dinâmico acolhedor de atenção)
+    const duration = Math.random() * 500 + 2000;
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
@@ -77,8 +77,8 @@ export const AttentionGame: React.FC<AttentionGameProps> = ({ onComplete, onClos
         setStreak(0);
       }
       
-      // Spawnar o próximo objeto
-      setTimeout(() => spawnObject(), 200);
+      // Spawnar o próximo objeto com uma breve pausa de respiração
+      setTimeout(() => spawnObject(), 800);
     }, duration);
   };
 
@@ -128,10 +128,10 @@ export const AttentionGame: React.FC<AttentionGameProps> = ({ onComplete, onClos
       setEnergy(prev => Math.max(prev - 15, 0)); // Drena 15 de energia, mas não deixa ir abaixo de 0
     }
 
-    // Limpar objeto e forçar novo spawn imediato
+    // Limpar objeto e forçar novo spawn imediato após pausa relaxante
     setCurrentObject(null);
     if (timerRef.current) clearTimeout(timerRef.current);
-    setTimeout(() => spawnObject(), 200);
+    setTimeout(() => spawnObject(), 800);
   };
 
   const handleEmptySpaceClick = () => {
