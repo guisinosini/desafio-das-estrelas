@@ -571,8 +571,8 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                 <Brain className="w-4 h-4" /> Desempenho no Laboratório Cognitivo
               </h3>
               
-              <div className="overflow-hidden border border-white/10 print:border-zinc-200 rounded-2xl bg-white/5 print:bg-white">
-                <table className="w-full text-left text-xs border-collapse">
+              <div className="w-full overflow-x-auto border border-white/10 print:border-zinc-200 rounded-2xl bg-white/5 print:bg-white">
+                <table className="w-full text-left text-xs border-collapse min-w-[500px]">
                   <thead>
                     <tr className="border-b border-white/10 print:border-zinc-200 bg-white/5 print:bg-zinc-50 text-[10px] font-black uppercase tracking-wider text-white/40 print:text-zinc-500">
                       <th className="p-3">Data</th>

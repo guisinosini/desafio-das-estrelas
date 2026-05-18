@@ -192,7 +192,7 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
             </AnimatePresence>
 
             {/* Radar Esquerdo */}
-            <div className="aspect-square bg-indigo-500/5 border-2 border-indigo-500/10 rounded-[32px] p-6 grid grid-cols-3 gap-2 items-center justify-items-center relative overflow-hidden">
+            <div className="aspect-square bg-indigo-500/5 border-2 border-indigo-500/10 rounded-[24px] sm:rounded-[32px] p-2 xs:p-4 sm:p-6 grid grid-cols-3 gap-0.5 xs:gap-1 sm:gap-2 items-center justify-items-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05)_0%,transparent_70%)]" />
               {leftDeck.map((item, idx) => {
                 const SymbolIcon = item.icon;
@@ -200,17 +200,17 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
                   <button
                     key={`left-${idx}`}
                     onClick={() => handleSymbolClick(item.id)}
-                    className="focus:outline-none hover:scale-110 active:scale-95 transition-all p-2 rounded-xl hover:bg-white/5 relative z-10 shrink-0"
+                    className="focus:outline-none hover:scale-110 active:scale-95 transition-all p-1 xs:p-2 rounded-xl hover:bg-white/5 relative z-10 shrink-0"
                     style={{ transform: `scale(${item.scale}) rotate(${item.rotate}deg)` }}
                   >
-                    <SymbolIcon className={clsx("w-7 h-7", item.color)} />
+                    <SymbolIcon className={clsx("w-5 h-5 xs:w-6 h-6 sm:w-7 h-7", item.color)} />
                   </button>
                 );
               })}
             </div>
 
             {/* Radar Direito */}
-            <div className="aspect-square bg-indigo-500/5 border-2 border-indigo-500/10 rounded-[32px] p-6 grid grid-cols-3 gap-2 items-center justify-items-center relative overflow-hidden">
+            <div className="aspect-square bg-indigo-500/5 border-2 border-indigo-500/10 rounded-[24px] sm:rounded-[32px] p-2 xs:p-4 sm:p-6 grid grid-cols-3 gap-0.5 xs:gap-1 sm:gap-2 items-center justify-items-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05)_0%,transparent_70%)]" />
               {rightDeck.map((item, idx) => {
                 const SymbolIcon = item.icon;
@@ -218,10 +218,10 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
                   <button
                     key={`right-${idx}`}
                     onClick={() => handleSymbolClick(item.id)}
-                    className="focus:outline-none hover:scale-110 active:scale-95 transition-all p-2 rounded-xl hover:bg-white/5 relative z-10 shrink-0"
+                    className="focus:outline-none hover:scale-110 active:scale-95 transition-all p-1 xs:p-2 rounded-xl hover:bg-white/5 relative z-10 shrink-0"
                     style={{ transform: `scale(${item.scale}) rotate(${item.rotate}deg)` }}
                   >
-                    <SymbolIcon className={clsx("w-7 h-7", item.color)} />
+                    <SymbolIcon className={clsx("w-5 h-5 xs:w-6 h-6 sm:w-7 h-7", item.color)} />
                   </button>
                 );
               })}

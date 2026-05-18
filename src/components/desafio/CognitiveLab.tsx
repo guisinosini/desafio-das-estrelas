@@ -49,39 +49,39 @@ export const CognitiveLab: React.FC<CognitiveLabProps> = ({ onClose, onAwardStar
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/95 backdrop-blur-2xl overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 xs:p-4 bg-zinc-950/95 backdrop-blur-2xl overflow-y-auto"
     >
       <motion.div 
         initial={{ scale: 0.9, y: 30 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 30 }}
-        className="w-full max-w-2xl bg-[#090f1d] border-2 border-indigo-500/20 rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-2xl bg-[#090f1d] border-2 border-indigo-500/20 rounded-[28px] sm:rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]"
       >
         {/* Header do Hub */}
-        <div className="p-8 border-b border-white/10 flex justify-between items-center bg-indigo-500/5 shrink-0">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-white/10 flex justify-between items-center bg-indigo-500/5 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <Brain className="w-6 h-6 animate-pulse" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+              <Brain className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
             </div>
             <div>
-              <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">
+              <h2 className="text-base sm:text-xl font-black uppercase italic tracking-tighter text-white">
                 {getGameTitle()}
               </h2>
-              <p className="text-[9px] font-black uppercase tracking-widest text-primary/80">
+              <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-primary/80">
                 {activeGame ? 'MÓDULO DE TREINAMENTO ATIVO' : 'ACADEMIA COGNITIVA INTERGALÁCTICA'}
               </p>
             </div>
           </div>
           <button 
             onClick={activeGame ? () => setActiveGame(null) : onClose} 
-            className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all text-white/60 hover:text-white"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all text-white/60 hover:text-white shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Corpo Principal (Chaveador de Telas) */}
-        <div className="p-8 overflow-y-auto flex-1 flex flex-col justify-center min-h-0">
+        <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1 flex flex-col justify-center min-h-0">
           <AnimatePresence mode="wait">
             {!activeGame ? (
               <motion.div 
@@ -92,118 +92,118 @@ export const CognitiveLab: React.FC<CognitiveLabProps> = ({ onClose, onAwardStar
                 className="space-y-6"
               >
                 {/* Banner de Status Diário */}
-                <div className="p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-3xl flex justify-between items-center text-left">
+                <div className="p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-3xl flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between text-left">
                   <div className="space-y-1">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400">Energia Diária de Treino</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400 block">Energia Diária de Treino</span>
                     <h4 className="text-xs font-bold text-white/80">Bônus de Estrelas Ativo: {dailyGamesPlayed} / {maxDailyGames} Concluídos</h4>
                   </div>
-                  <div className="flex items-center gap-1 bg-yellow-400/10 px-3 py-1.5 rounded-2xl text-[9px] font-black uppercase text-yellow-400 tracking-wider">
+                  <div className="flex items-center gap-1 bg-yellow-400/10 px-3 py-1.5 rounded-2xl text-[9px] font-black uppercase text-yellow-400 tracking-wider shrink-0">
                     <Sparkles className="w-3.5 h-3.5 fill-yellow-400/20" /> +2⭐ por Treino
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-3 sm:gap-4">
                   
                   {/* Card Jogo 1: Memória Espacial */}
                   <button 
                     onClick={() => setActiveGame('memory')}
-                    className="group w-full p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
+                    className="group w-full p-3 xs:p-4 sm:p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
-                        <Brain className="w-7 h-7" />
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 xs:w-14 xs:h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all shrink-0">
+                        <Brain className="w-5 h-5 xs:w-7 xs:h-7" />
                       </div>
-                      <div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors">Pares Estelares</h3>
-                        <p className="text-[10px] text-white/50 font-bold mt-1">Treino de Memória de Trabalho Visual e Foco</p>
+                      <div className="min-w-0">
+                        <h3 className="text-xs xs:text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors truncate">Pares Estelares</h3>
+                        <p className="text-[9px] xs:text-[10px] text-white/50 font-bold mt-0.5 leading-snug break-words">Treino de Memória de Trabalho Visual e Foco</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
 
                   {/* Card Jogo 2: Radares Gêmeos */}
                   <button 
                     onClick={() => setActiveGame('spot')}
-                    className="group w-full p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
+                    className="group w-full p-3 xs:p-4 sm:p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
-                        <Compass className="w-7 h-7" />
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 xs:w-14 xs:h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all shrink-0">
+                        <Compass className="w-5 h-5 xs:w-7 xs:h-7" />
                       </div>
-                      <div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors">Radares Gêmeos</h3>
-                        <p className="text-[10px] text-white/50 font-bold mt-1">Treino de Atenção Concentrada e Discriminação Visual</p>
+                      <div className="min-w-0">
+                        <h3 className="text-xs xs:text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors truncate">Radares Gêmeos</h3>
+                        <p className="text-[9px] xs:text-[10px] text-white/50 font-bold mt-0.5 leading-snug break-words">Treino de Atenção Concentrada e Discriminação Visual</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
 
                   {/* Card Jogo 3: Escudo do Silêncio */}
                   <button 
                     onClick={() => setActiveGame('attention')}
-                    className="group w-full p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
+                    className="group w-full p-3 xs:p-4 sm:p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
-                        <Shield className="w-7 h-7" />
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 xs:w-14 xs:h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all shrink-0">
+                        <Shield className="w-5 h-5 xs:w-7 xs:h-7" />
                       </div>
-                      <div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors">Escudo do Silêncio</h3>
-                        <p className="text-[10px] text-white/50 font-bold mt-1">Treino de Controle Inibitório e Freio de Impulsividade</p>
+                      <div className="min-w-0">
+                        <h3 className="text-xs xs:text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors truncate">Escudo do Silêncio</h3>
+                        <p className="text-[9px] xs:text-[10px] text-white/50 font-bold mt-0.5 leading-snug break-words">Treino de Controle Inibitório e Freio de Impulsividade</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
 
                   {/* Card Jogo 4: Cores Cósmicas */}
                   <button 
                     onClick={() => setActiveGame('stroop')}
-                    className="group w-full p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
+                    className="group w-full p-3 xs:p-4 sm:p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
-                        <Sparkles className="w-7 h-7" />
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 xs:w-14 xs:h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all shrink-0">
+                        <Sparkles className="w-5 h-5 xs:w-7 xs:h-7" />
                       </div>
-                      <div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors">Cores Cósmicas</h3>
-                        <p className="text-[10px] text-white/50 font-bold mt-1">Treino de Controle Inibitório e Atenção Seletiva (Stroop)</p>
+                      <div className="min-w-0">
+                        <h3 className="text-xs xs:text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors truncate">Cores Cósmicas</h3>
+                        <p className="text-[9px] xs:text-[10px] text-white/50 font-bold mt-0.5 leading-snug break-words">Treino de Controle Inibitório e Atenção Seletiva (Stroop)</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
 
                   {/* Card Jogo 5: Ritmo Estelar */}
                   <button 
                     onClick={() => setActiveGame('simon')}
-                    className="group w-full p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
+                    className="group w-full p-3 xs:p-4 sm:p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
-                        <Gamepad2 className="w-7 h-7" />
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 xs:w-14 xs:h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all shrink-0">
+                        <Gamepad2 className="w-5 h-5 xs:w-7 xs:h-7" />
                       </div>
-                      <div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors">Ritmo Estelar</h3>
-                        <p className="text-[10px] text-white/50 font-bold mt-1">Treino de Memória Auditiva e Foco (Simon says)</p>
+                      <div className="min-w-0">
+                        <h3 className="text-xs xs:text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors truncate">Ritmo Estelar</h3>
+                        <p className="text-[9px] xs:text-[10px] text-white/50 font-bold mt-0.5 leading-snug break-words">Treino de Memória Auditiva e Foco (Simon says)</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
 
                   {/* Card Jogo 6: Cargas de Corsi */}
                   <button 
                     onClick={() => setActiveGame('corsi')}
-                    className="group w-full p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
+                    className="group w-full p-3 xs:p-4 sm:p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
-                        <Box className="w-7 h-7" />
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 xs:w-14 xs:h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all shrink-0">
+                        <Box className="w-5 h-5 xs:w-7 xs:h-7" />
                       </div>
-                      <div>
-                        <h3 className="text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors">Cargas de Corsi</h3>
-                        <p className="text-[10px] text-white/50 font-bold mt-1">Treino de Memória de Trabalho Visoespacial e Planejamento</p>
+                      <div className="min-w-0">
+                        <h3 className="text-xs xs:text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors truncate">Cargas de Corsi</h3>
+                        <p className="text-[9px] xs:text-[10px] text-white/50 font-bold mt-0.5 leading-snug break-words">Treino de Memória de Trabalho Visoespacial e Planejamento</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
 
                 </div>
