@@ -471,6 +471,87 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         </div>
       </section>
 
+      {/* Pilot Academy / Cognitive Training Section */}
+      <section className="py-20 md:py-32 px-6 bg-indigo-950/20 border-b border-white/5 relative overflow-hidden z-20">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          
+          {/* Lado Esquerdo: Imagem Futurista do Cockpit de Jogos */}
+          <FadeInWhenVisible>
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-indigo-500/20 blur-[50px] rounded-[48px] opacity-40 group-hover:opacity-60 transition-opacity animate-pulse" />
+              <div className="bg-[#0b1329] rounded-3xl md:rounded-[56px] p-2 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
+                <div className="bg-[#020617] rounded-2xl md:rounded-[48px] aspect-square relative overflow-hidden flex items-center justify-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?auto=format&fit=crop&q=80&w=1200" 
+                    alt="Academia de Pilotos Estelar"
+                    loading="lazy"
+                    className="w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
+                  
+                  {/* Flutuador de Status Clínico */}
+                  <motion.div 
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 3.5, repeat: Infinity }}
+                    className="absolute bottom-6 left-6 right-6 p-4 bg-zinc-950/80 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl flex justify-between items-center"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center border border-indigo-500/30 text-indigo-400">
+                        <Brain className="w-5 h-5 animate-pulse" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400 block">Sessão Cognitiva</span>
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">Metas de Autocontrole Ativas</span>
+                      </div>
+                    </div>
+                    <div className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black uppercase text-emerald-400 tracking-wider">
+                      +6 Jogos Científicos
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </FadeInWhenVisible>
+
+          {/* Lado Direito: Copy de Vendas Científico e Apelo Gamer */}
+          <div className="space-y-8 md:space-y-12 text-center lg:text-left">
+            <FadeInWhenVisible delay={0.2}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                <Rocket className="w-3 h-3 md:w-3.5 md:h-3.5" /> EXCLUSIVO PARA CRIANÇAS
+              </div>
+              <h2 className="text-3xl md:text-5xl lg:text-7xl font-black italic uppercase tracking-tighter leading-[0.9] mt-4">
+                ACADEMIA DE <span className="text-indigo-400">PILOTOS ESTELARES</span>
+              </h2>
+              <p className="text-lg md:text-xl lg:text-2xl text-white/50 leading-relaxed mt-6">
+                Mais do que cumprir regras em casa, as crianças agora treinam o próprio cérebro em nosso laboratório com 6 jogos neuropsicológicos integrados!
+              </p>
+              
+              {/* Cards de Pilares de Treino */}
+              <div className="grid gap-4 md:gap-6 mt-8 max-w-md mx-auto lg:mx-0 text-left">
+                {[
+                  { title: "Controle Inibitório e Foco (Go/No-Go)", desc: "Treina a inibição de impulsos indesejados e foco seletivo nos jogos Escudo do Silêncio e Cores Cósmicas.", icon: Target },
+                  { title: "Memória de Trabalho Visual e Auditiva", desc: "Desenvolve a capacidade de manter e manipular informações geométricas e sequências de notas musicais em tempo real.", icon: Zap },
+                  { title: "Telemetria Clínica de Desempenho", desc: "A duração e eficácia das jogadas são registradas silenciosamente em background e compiladas na tabela de relatórios dos pais.", icon: FileText }
+                ].map((feat, i) => (
+                  <div key={i} className="flex gap-4 p-4 bg-white/[0.02] border border-white/5 hover:border-indigo-500/20 rounded-2xl transition-all group">
+                    <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center shrink-0 text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
+                      <feat.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-black uppercase italic text-xs md:text-sm text-white">{feat.title}</h4>
+                      <p className="text-[10px] md:text-xs text-white/40 leading-relaxed mt-1">{feat.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </FadeInWhenVisible>
+          </div>
+
+        </div>
+      </section>
+
       {/* Galactic Alliance Section */}
       <section className="py-20 md:py-32 px-6 relative overflow-hidden z-20">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
