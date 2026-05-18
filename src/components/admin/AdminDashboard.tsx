@@ -26,6 +26,7 @@ interface AdminDashboardProps {
 interface ProfileRow {
   id: string;
   full_name: string;
+  email?: string;
   subscription_status: string;
   subscription_price_id: string | null;
 }
@@ -43,10 +44,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     setSyncMessage('');
     setDatabaseError('');
     try {
-      // 1. Busca os perfis de mentores reais diretamente no Supabase em tempo real (removido created_at)
+      // 1. Busca os perfis de mentores reais diretamente no Supabase em tempo real (incluído o e-mail)
       const { data: realProfiles, error } = await supabase
         .from('profiles')
-        .select('id, full_name, subscription_status, subscription_price_id');
+        .select('id, full_name, email, subscription_status, subscription_price_id');
 
       if (error) throw error;
       
@@ -92,9 +93,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     }
   };
 
-  // Filtragem dos perfis com busca
+  // Filtragem dos perfis com busca por nome, e-mail ou status
   const filteredProfiles = profiles.filter(p => 
     p.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.subscription_status?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -245,7 +247,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
               <Search className="w-4 h-4 text-white/30 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Buscar mentor pelo nome..."
+                placeholder="Buscar mentor por nome ou e-mail..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold outline-none focus:border-purple-500 transition-colors text-white"
@@ -272,7 +274,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
-                  <th className="p-4 pl-6">Nome do Mentor / Família</th>
+                  <th className="p-4 pl-6">Nome do Mentor / Família / E-mail</th>
                   <th className="p-4">Status da Assinatura</th>
                   <th className="p-4 pr-6 text-center">Ações</th>
                 </tr>
@@ -282,7 +284,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                   <tr key={p.id} className="hover:bg-white/5 transition-colors group">
                     <td className="p-4 pl-6">
                       <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{p.full_name || 'Desconhecido'}</div>
-                      <div className="text-[9px] text-white/30 font-mono font-medium tracking-tighter">ID: {p.id.substring(0, 18)}...</div>
+                      <div className="text-[10px] text-white/40 font-medium lowercase select-all">{p.email || 'sem-email-sincronizado@supa.io'}</div>
+                      <div className="text-[8px] text-white/20 font-mono font-medium tracking-tighter">ID: {p.id.substring(0, 18)}...</div>
                     </td>
                     <td className="p-4">
                       <span className={clsx(
