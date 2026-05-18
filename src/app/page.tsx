@@ -54,6 +54,7 @@ import { LandingPage } from "@/components/landing/LandingPage";
 import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
 import { AppHeader } from "@/components/shared/AppHeader";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { Footer } from "@/components/Footer";
 
 const orbitalTransitionVariants = {
   initial: { 
@@ -2130,6 +2131,11 @@ export default function DesafioEstrelas() {
                 <AdminDashboard setView={setView} language={language} t={t} handleLogout={handleLogout} />
               )}
             </main>
+
+            {/* Rodapé Institucional Padronizado com Suporte e CRP */}
+            {(view !== 'child' && ['landing', 'auth', 'no_subscription', 'select_child', 'adventure'].includes(stage)) && (
+              <Footer />
+            )}
 
             {/* Modal de Ranking Galáctico para a Criança */}
             <AnimatePresence>
