@@ -1263,7 +1263,12 @@ export default function DesafioEstrelas() {
           <SetupChildStage
             newChild={newChild}
             setNewChild={setNewChild}
-               {/* --- STAGE: SETUP AVATAR --- */}
+            setStage={setStage}
+            handleCreateChild={handleCreateChild}
+            hasChildren={children.length > 0}
+            t={t}
+          />
+        )}
         {stage === 'setup_avatar' && (
           <motion.div 
             key="setup_avatar" 
