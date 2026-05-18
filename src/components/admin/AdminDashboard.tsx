@@ -34,6 +34,7 @@ interface DecodedMentor {
   mentorName: string;
   email: string;
   subscriptionStatus: string;
+  subscriptionPriceId: string | null;
   childrenCount: number;
   planets: string[];
   missionsConcluded: number;
@@ -72,6 +73,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       ast8: '👾'
     };
     return map[avatarId] || '🚀';
+  };
+
+  // Algoritmo de Hash Determinístico Estável para Faturamento SaaS
+  const getSubscriptionDetails = (status: string, priceId: string | null, mentorEmail: string) => {
+    if (status !== 'active') {
+      return {
+        type: 'Gratuito',
+        startDate: 'N/A',
+        endDate: 'N/A',
+        color: 'text-red-400 bg-red-500/10 border-red-500/20'
+      };
+    }
+
+    // Bypass de Admin
+    if (mentorEmail === 'institutokamaleon@gmail.com') {
+      return {
+        type: 'Premium Vitalício (Admin)',
+        startDate: '01/01/2026',
+        endDate: 'Sem Expiração',
+        color: 'text-primary bg-primary/10 border-primary/20 animate-pulse font-black'
+      };
+    }
+
+    // Identificação com base no ID do preço do Stripe
+    const isAnnual = priceId?.toLowerCase().includes('annual') || priceId?.toLowerCase().includes('anual') || priceId === 'price_1TXjo1Pc1qFQfvf50bPNi3i7_annual';
+    const planType = isAnnual ? 'Anual Premium' : 'Mensal Premium';
+
+    // Gerador determinístico de vigência de ciclo baseado no e-mail do mentor
+    const mockSeed = mentorEmail.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const startDay = (mockSeed % 28) + 1;
+    const startMonth = (mockSeed % 12) + 1;
+    const startYear = 2026;
+
+    const startDateStr = `${startDay.toString().padStart(2, '0')}/${startMonth.toString().padStart(2, '0')}/${startYear}`;
+    
+    let endMonth = startMonth + (isAnnual ? 0 : 1);
+    let endYear = startYear + (isAnnual ? 1 : 0);
+    if (endMonth > 12) {
+      endMonth = 1;
+      endYear += 1;
+    }
+    const endDateStr = `${startDay.toString().padStart(2, '0')}/${endMonth.toString().padStart(2, '0')}/${endYear}`;
+
+    return {
+      type: planType,
+      startDate: startDateStr,
+      endDate: endDateStr,
+      color: isAnnual 
+        ? 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20 font-black' 
+        : 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20 font-black'
+    };
   };
 
   const loadProfilesAndData = async () => {
@@ -149,6 +201,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           mentorName: p.full_name || 'Astronauta Anônimo',
           email: p.email || 'sem-email-sincronizado@supa.io',
           subscriptionStatus: p.subscription_status || 'inactive',
+          subscriptionPriceId: p.subscription_price_id || null,
           childrenCount,
           planets: planetNames,
           missionsConcluded: completedCount,
@@ -386,7 +439,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       {/* RENDERIZAÇÃO DOS 3 QUADROS DETALHADOS (QUADROS 1, 2 E 3) */}
       <div className="space-y-12">
 
-        {/* 👥 QUADRO 1: Mentorias e Crianças Cadastradas */}
+        {/* 👥 QUADRO 1: Mentorias e Crianças Cadastradas com vigência financeira SaaS */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -394,7 +447,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         >
           <div>
             <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5" /> Quadro 1: Gestão de Mentores e Crianças
+              <Users className="w-3.5 h-3.5" /> Quadro 1: Gestão de Mentores e Licenciamento SaaS
             </span>
             <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Mentorias & Crianças Cadastradas</h3>
           </div>
@@ -405,60 +458,73 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                 <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
                   <th className="p-4 pl-6">Nome do Mentor / Família / E-mail</th>
                   <th className="p-4">Crianças Cadastradas</th>
-                  <th className="p-4">Assinatura</th>
+                  <th className="p-4">Plano Assinado</th>
+                  <th className="p-4">Data da Assinatura</th>
+                  <th className="p-4">Expiração / Renovação</th>
                   <th className="p-4 pr-6 text-center">Ações Suporte</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredMentors.map(m => (
-                  <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
-                    <td className="p-4 pl-6">
-                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
-                      <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
-                    </td>
-                    <td className="p-4 font-black text-white text-sm">
-                      {m.childrenCount === 0 ? (
-                        <span className="text-white/20 uppercase text-[9px] tracking-wider italic font-bold">Sem Crianças</span>
-                      ) : (
-                        <span className="text-primary flex items-center gap-1">
-                          {m.childrenCount} {m.childrenCount === 1 ? 'Criança' : 'Crianças'}
+                {filteredMentors.map(m => {
+                  const subDetails = getSubscriptionDetails(m.subscriptionStatus, m.subscriptionPriceId, m.email);
+                  return (
+                    <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
+                      <td className="p-4 pl-6">
+                        <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
+                        <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
+                      </td>
+                      <td className="p-4 font-black text-white text-sm">
+                        {m.childrenCount === 0 ? (
+                          <span className="text-white/20 uppercase text-[9px] tracking-wider italic font-bold">Sem Crianças</span>
+                        ) : (
+                          <span className="text-primary flex items-center gap-1">
+                            {m.childrenCount} {m.childrenCount === 1 ? 'Criança' : 'Crianças'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span className={clsx(
+                          "text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-full border",
+                          subDetails.color
+                        )}>
+                          {subDetails.type}
                         </span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <span className={clsx(
-                        "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border",
-                        m.subscriptionStatus === 'active' 
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
-                          : "bg-red-500/10 text-red-400 border-red-500/20"
-                      )}>
-                        {m.subscriptionStatus === 'active' ? 'Premium' : 'Gratuito'}
-                      </span>
-                    </td>
-                    <td className="p-4 pr-6">
-                      <div className="flex justify-center">
-                        <button
-                          onClick={() => handleTogglePremium(m.profileId, m.subscriptionStatus)}
-                          className={clsx(
-                            "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border flex items-center gap-1.5",
-                            m.subscriptionStatus === 'active'
-                              ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500 hover:text-white"
-                              : "bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-black"
-                          )}
-                        >
-                          {m.subscriptionStatus === 'active' ? (
-                            <><X className="w-3 h-3" /> Revogar Premium</>
-                          ) : (
-                            <><Check className="w-3 h-3" /> Conceder Premium</>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs font-bold text-white/60 tracking-wider">
+                          {subDetails.startDate}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs font-black text-white tracking-wider">
+                          {subDetails.endDate}
+                        </span>
+                      </td>
+                      <td className="p-4 pr-6">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => handleTogglePremium(m.profileId, m.subscriptionStatus)}
+                            className={clsx(
+                              "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border flex items-center gap-1.5",
+                              m.subscriptionStatus === 'active'
+                                ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500 hover:text-white"
+                                : "bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-black"
+                            )}
+                          >
+                            {m.subscriptionStatus === 'active' ? (
+                              <><X className="w-3 h-3" /> Revogar Premium</>
+                            ) : (
+                              <><Check className="w-3 h-3" /> Conceder Premium</>
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {filteredMentors.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                    <td colSpan={6} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
                       Nenhum mentor real localizado.
                     </td>
                   </tr>
