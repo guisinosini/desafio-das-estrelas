@@ -25,6 +25,7 @@ import {
 import clsx from 'clsx';
 import { Language, translations } from '../../lib/translations';
 import { StarField } from '../desafio/HeroElements';
+import { Footer } from '../Footer';
 
 interface LandingPageProps {
   language: Language;
@@ -851,41 +852,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       </section>
 
       {/* Footer */}
-      <footer className="py-12 md:py-20 border-t border-white/5 bg-[#020617]/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12 md:gap-16 items-center">
-          <div className="space-y-4 text-center md:text-left">
-            <div className="flex items-center gap-2 justify-center md:justify-start">
-                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                    <Rocket className="w-4 h-4 text-primary" />
-                </div>
-                <span className="font-black italic uppercase tracking-tighter text-lg">
-                Desafio das <span className="text-primary">Estrelas</span>
-                </span>
-            </div>
-            <p className="text-[10px] md:text-xs text-white/20 leading-relaxed max-w-xs mx-auto md:mx-0 font-medium">
-                {t.lp_footer_desc}
-            </p>
-          </div>
-          
-          <div className="flex justify-center gap-6 md:gap-10 text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/20">
-            <a href="#" className="hover:text-primary transition-colors">{t.lp_privacy}</a>
-            <a href="#" className="hover:text-primary transition-colors">{t.lp_terms}</a>
-          </div>
-
-          <div className="flex flex-col items-center md:items-end gap-4">
-            <div className="flex gap-4">
-                {[1, 2, 3].map(i => (
-                    <div key={i} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 cursor-pointer transition-all">
-                        <Lock className="w-4 h-4 text-white/20" />
-                    </div>
-                ))}
-            </div>
-            <p className="text-[8px] md:text-[9px] font-bold text-white/10 uppercase tracking-[0.3em]">
-                {t.lp_rights}
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
