@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
       if (subscriptionId) {
         try {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = (await stripe.subscriptions.retrieve(subscriptionId)) as any;
           subscriptionPriceId = subscription.items.data[0].price.id;
           subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
           subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
 
       if (subscriptionId) {
         try {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = (await stripe.subscriptions.retrieve(subscriptionId)) as any;
           subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
           subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
         } catch (e) {

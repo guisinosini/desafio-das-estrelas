@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       });
 
       if (subscriptions.data.length > 0) {
-        const sub = subscriptions.data[0];
+        const sub = subscriptions.data[0] as any;
         subscriptionId = sub.id;
         subscriptionStatus = 'active';
         subscriptionPriceId = sub.items.data[0].price.id;
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
       }
     } else if (subscriptionId) {
       // Caso ele já tenha os IDs mas queira sincronizar as datas mais atualizadas
-      const sub = await stripe.subscriptions.retrieve(subscriptionId);
+      const sub = (await stripe.subscriptions.retrieve(subscriptionId)) as any;
       subscriptionPriceId = sub.items.data[0].price.id;
 
       await supabase
