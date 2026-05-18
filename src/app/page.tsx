@@ -495,6 +495,21 @@ export default function DesafioEstrelas() {
       if (event === 'SIGNED_IN' && session?.user) {
         if (session?.user?.user_metadata?.full_name) setParentName(session.user.user_metadata.full_name);
         
+        // BYPASS MESTRE DE SEGURANÇA: Se for o e-mail de admin global
+        if (session.user.email === 'institutokamaleon@gmail.com') {
+          setIsPremium(true);
+          setView('admin');
+          setStage('adventure');
+          const cloudData = await loadFromCloud(session.user);
+          if (cloudData && cloudData.children) {
+            setChildren(cloudData.children);
+            setActiveChildId(cloudData.activeChildId || null);
+            if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+            if (cloudData.language) setLanguage(cloudData.language);
+          }
+          return;
+        }
+
         // Verifica a assinatura
         const { data: profile } = await supabase
           .from('profiles')
@@ -724,6 +739,23 @@ export default function DesafioEstrelas() {
       const minDelay = 3000;
       if (elapsed < minDelay) {
         await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
+      }
+
+      // BYPASS MESTRE DE SEGURANÇA: Se for o e-mail de admin global
+      if (user.email === 'institutokamaleon@gmail.com') {
+        setIsPremium(true);
+        setView('admin');
+        setStage('adventure');
+        setAuthLoading(false);
+        const cloudData = result.cloudData;
+        if (cloudData && cloudData.children) {
+          setChildren(cloudData.children);
+          setActiveChildId(cloudData.activeChildId || null);
+          if (cloudData.parentPin) setParentPin(cloudData.parentPin);
+          if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+          if (cloudData.language) setLanguage(cloudData.language);
+        }
+        return;
       }
 
       if (!result.active) {
