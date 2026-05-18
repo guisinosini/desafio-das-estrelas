@@ -32,6 +32,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    // Garante que o e-mail esteja preenchido na tabela profiles para fins de webhooks do Stripe
+    if (user.email) {
+      await supabase
+        .from('profiles')
+        .update({ email: user.email })
+        .eq('id', user.id)
+        .is('email', null);
+    }
+
     // Busca o perfil atual do usuário
     const { data: profile } = await supabase
       .from('profiles')

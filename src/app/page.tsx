@@ -432,6 +432,15 @@ export default function DesafioEstrelas() {
           return; // Finaliza bypassando qualquer restrição
         }
 
+        // Sincroniza preventivamente o e-mail no Supabase para garantir webhooks de alta precisão
+        if (user.email) {
+          await supabase
+            .from('profiles')
+            .update({ email: user.email })
+            .eq('id', user.id)
+            .is('email', null);
+        }
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('subscription_status, subscription_price_id')
@@ -439,6 +448,31 @@ export default function DesafioEstrelas() {
           .maybeSingle();
 
         if (profile?.subscription_status !== 'active') {
+          console.log("🔍 Perfil inativo no banco. Sincronizando ativamente com o Stripe...");
+          try {
+            const syncRes = await fetch('/api/subscription-sync', { method: 'POST' });
+            if (syncRes.ok) {
+              const syncData = await syncRes.json();
+              if (syncData.status === 'active') {
+                console.log("✅ Assinatura ativa identificada no Stripe! Liberando acesso...");
+                setIsPremium(true);
+                if (syncData.priceId) setSubscriptionPriceId(syncData.priceId);
+                
+                const cloudData = await loadFromCloud(user);
+                if (cloudData) {
+                  if (cloudData.children) setChildren(cloudData.children);
+                  if (cloudData.activeChildId) setActiveChildId(cloudData.activeChildId);
+                  if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+                  if (cloudData.language) setLanguage(cloudData.language);
+                }
+                setStage('adventure');
+                return;
+              }
+            }
+          } catch (syncErr) {
+            console.error("Falha ao tentar sincronizar assinatura na inicialização:", syncErr);
+          }
+
           setIsPremium(false);
           setSubscriptionPriceId(null);
           setStage('no_subscription');
