@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Garante que o e-mail esteja preenchido na tabela profiles para fins de webhooks do Stripe
+    // 1. Garante que o e-mail esteja preenchido na tabela profiles para fins de webhooks do Stripe
     if (user.email) {
       await supabase
         .from('profiles')
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         .is('email', null);
     }
 
-    // Busca o perfil atual do usuário
+    // 2. Busca o perfil atual do usuário no banco
     const { data: profile } = await supabase
       .from('profiles')
       .select('stripe_customer_id, subscription_id, subscription_status, subscription_price_id')
@@ -53,69 +53,74 @@ export async function POST(req: Request) {
     let subscriptionStatus = profile?.subscription_status;
     let subscriptionPriceId = profile?.subscription_price_id;
 
-    // Caso o usuário não tenha o stripe_customer_id cadastrado (ex: teste local em que o webhook de checkout não rodou),
-    // nós buscamos o cliente no Stripe pelo e-mail da conta do Supabase!
-    if (!stripeCustomerId && user.email) {
-      console.log(`🔍 [SubscriptionSync] Buscando e-mail no Stripe: ${user.email}`);
-      const customers = await stripe.customers.list({
-        email: user.email,
-        limit: 1,
-      });
+    let activeSubFound = false;
 
-      if (customers.data.length > 0) {
-        stripeCustomerId = customers.data[0].id;
+    // 3. Algoritmo de Varredura de Segurança: Busca clientes no Stripe pelo e-mail do usuário logado
+    if (user.email) {
+      console.log(`🔍 [SubscriptionSync] Varrendo clientes no Stripe para e-mail: ${user.email}`);
+      try {
+        const customers = await stripe.customers.list({
+          email: user.email,
+          limit: 10, // Varre até os últimos 10 customers criados com esse e-mail
+        });
+
+        for (const customer of customers.data) {
+          const subscriptions = await stripe.subscriptions.list({
+            customer: customer.id,
+            status: 'active',
+            limit: 1,
+          });
+
+          if (subscriptions.data.length > 0) {
+            const sub = subscriptions.data[0] as any;
+            stripeCustomerId = customer.id;
+            subscriptionId = sub.id;
+            subscriptionStatus = 'active';
+            subscriptionPriceId = sub.items.data[0].price.id;
+            activeSubFound = true;
+
+            console.log(`✅ [SubscriptionSync] Assinatura ativa localizada no Stripe para o cliente: ${customer.id}`);
+            
+            // Grava no banco de dados de vigência
+            await supabase
+              .from('profiles')
+              .update({
+                stripe_customer_id: stripeCustomerId,
+                subscription_id: subscriptionId,
+                subscription_status: 'active',
+                subscription_price_id: subscriptionPriceId,
+                subscription_start: new Date(sub.current_period_start * 1000).toISOString(),
+                subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
+              })
+              .eq('id', user.id);
+
+            break; // Para a varredura ao encontrar a primeira assinatura ativa
+          }
+        }
+      } catch (stripeErr) {
+        console.error("⚠️ Erro ao listar assinaturas do Stripe:", stripeErr);
       }
     }
 
-    // Se encontramos o cliente no Stripe, listamos as assinaturas ativas dele
-    if (stripeCustomerId && (!subscriptionId || subscriptionStatus !== 'active' || !subscriptionPriceId)) {
-      console.log(`🔍 [SubscriptionSync] Buscando assinaturas ativas do cliente: ${stripeCustomerId}`);
-      const subscriptions = await stripe.subscriptions.list({
-        customer: stripeCustomerId,
-        status: 'active',
-        limit: 1,
-      });
-
-      if (subscriptions.data.length > 0) {
-        const sub = subscriptions.data[0] as any;
-        subscriptionId = sub.id;
+    // 4. Caso nenhuma assinatura ativa seja encontrada no Stripe
+    if (!activeSubFound) {
+      console.log("🔍 [SubscriptionSync] Nenhuma assinatura ativa encontrada no Stripe.");
+      
+      // Se no banco de dados o perfil já consta como "active" (Ex: concessão de suporte manual),
+      // nós MANTEMOS o acesso ativo dele, não sobrescrevendo com inativo!
+      if (profile?.subscription_status === 'active') {
+        console.log("🛡️ [SubscriptionSync] Mantendo status de faturamento ativo concedido por suporte.");
         subscriptionStatus = 'active';
-        subscriptionPriceId = sub.items.data[0].price.id;
-
-        console.log(`💾 [SubscriptionSync] Sincronizando dados no Supabase para ${user.email}:`, {
-          stripeCustomerId,
-          subscriptionId,
-          subscriptionStatus,
-          subscriptionPriceId
-        });
-
-        // Grava no banco as chaves de assinatura corretas do Stripe
+      } else {
+        // Se no banco não estava ativo e no Stripe também não, garante o status inativo
+        subscriptionStatus = 'inactive';
         await supabase
           .from('profiles')
           .update({
-            stripe_customer_id: stripeCustomerId,
-            subscription_id: subscriptionId,
-            subscription_status: subscriptionStatus,
-            subscription_price_id: subscriptionPriceId,
-            subscription_start: new Date(sub.current_period_start * 1000).toISOString(),
-            subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
+            subscription_status: 'inactive'
           })
           .eq('id', user.id);
       }
-    } else if (subscriptionId) {
-      // Caso ele já tenha os IDs mas queira sincronizar as datas mais atualizadas
-      const sub = (await stripe.subscriptions.retrieve(subscriptionId)) as any;
-      subscriptionPriceId = sub.items.data[0].price.id;
-
-      await supabase
-        .from('profiles')
-        .update({ 
-          subscription_status: sub.status === 'active' ? 'active' : 'inactive',
-          subscription_price_id: subscriptionPriceId,
-          subscription_start: new Date(sub.current_period_start * 1000).toISOString(),
-          subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
-        })
-        .eq('id', user.id);
     }
 
     return NextResponse.json({
