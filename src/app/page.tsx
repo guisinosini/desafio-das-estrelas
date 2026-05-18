@@ -562,6 +562,10 @@ export default function DesafioEstrelas() {
     setAuthError("");
     setAuthSuccess("");
 
+    // ENTRAR NO MODO BUSCANDO SINAL DO TRANSMISSOR E SALVAR TIMESTAMP IMEDIATAMENTE (UX MÁXIMA)
+    setStage('searching_signal');
+    const startTime = Date.now();
+
     try {
       let user = null;
 
@@ -588,6 +592,7 @@ export default function DesafioEstrelas() {
 
         if (signUpData.user && !signUpData.session) {
           setAuthError("Confirme seu e-mail para continuar.");
+          setStage('auth');
           setAuthLoading(false);
           return;
         }
@@ -600,10 +605,6 @@ export default function DesafioEstrelas() {
       }
 
       if (!user) throw new Error("Usuário não retornado pelo servidor.");
-
-      // ENTRAR NO MODO BUSCANDO SINAL DO TRANSMISSOR E SALVAR TIMESTAMP
-      setStage('searching_signal');
-      const startTime = Date.now();
 
       // FUNÇÃO AUXILIAR PARA CONSULTAS DO BANCO EM SEGUNDO PLANO
       const checkAndLoadData = async () => {
@@ -631,9 +632,9 @@ export default function DesafioEstrelas() {
       // Executa as buscas em background
       const result = await checkAndLoadData();
 
-      // Garante que o radar galáctico apareça por pelo menos 1.8 segundos (UX / Conforto visual)
+      // Garante que o radar galáctico apareça por pelo menos 3.0 segundos (UX / Conforto visual)
       const elapsed = Date.now() - startTime;
-      const minDelay = 1800;
+      const minDelay = 3000;
       if (elapsed < minDelay) {
         await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
       }
