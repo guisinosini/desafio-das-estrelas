@@ -37,6 +37,7 @@ interface DecodedMentor {
   subscriptionPriceId: string | null;
   subscriptionStart: string | null;
   subscriptionEnd: string | null;
+  createdAt: string | null;
   childrenCount: number;
   planets: string[];
   missionsConcluded: number;
@@ -87,13 +88,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     return map[avatarId] || '🚀';
   };
 
-  // Exibição de Vigência Real obtida diretamente da API do Stripe
+  // Exibição de Vigência Real obtida diretamente da API do Stripe ou fallback do banco de dados (created_at)
   const getSubscriptionDetails = (
     status: string, 
     priceId: string | null, 
     mentorEmail: string,
     subStart: string | null,
-    subEnd: string | null
+    subEnd: string | null,
+    createdAt: string | null
   ) => {
     if (status !== 'active') {
       return {
@@ -117,34 +119,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     const isAnnual = priceId?.toLowerCase().includes('annual') || priceId?.toLowerCase().includes('anual') || priceId === 'price_1TXjo1Pc1qFQfvf50bPNi3i7_annual';
     const planType = isAnnual ? 'Anual Premium' : 'Mensal Premium';
 
-    // Fallback inteligente para registros existentes que ainda não possuem datas oficiais no banco
     let startDateStr = 'Sem Registro';
     let endDateStr = 'Sem Registro';
 
-    if (subStart) {
-      startDateStr = new Date(subStart).toLocaleDateString('pt-BR');
-    } else {
-      const mockSeed = mentorEmail.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const startDay = (mockSeed % 28) + 1;
-      const startMonth = 5; // Maio (Mês corrente)
-      const startYear = 2026;
-      startDateStr = `${startDay.toString().padStart(2, '0')}/${startMonth.toString().padStart(2, '0')}/${startYear}`;
-    }
+    // 1. Data de início: Prioriza a data oficial do Stripe (subStart).
+    // Se não houver, usa a data de criação real da conta no Supabase (createdAt) que é 100% verídica!
+    const baseDate = subStart ? new Date(subStart) : (createdAt ? new Date(createdAt) : new Date());
+    startDateStr = baseDate.toLocaleDateString('pt-BR');
 
+    // 2. Data de expiração: Prioriza a data oficial do Stripe (subEnd).
+    // Se não houver, calcula adicionando 1 mês ou 1 ano a partir da data real de início!
     if (subEnd) {
       endDateStr = new Date(subEnd).toLocaleDateString('pt-BR');
     } else {
-      const mockSeed = mentorEmail.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const startDay = (mockSeed % 28) + 1;
-      const startMonth = 5;
-      const startYear = 2026;
-      let endMonth = startMonth + (isAnnual ? 0 : 1);
-      let endYear = startYear + (isAnnual ? 1 : 0);
-      if (endMonth > 12) {
-        endMonth = 1;
-        endYear += 1;
+      const expDate = new Date(baseDate);
+      if (isAnnual) {
+        expDate.setFullYear(expDate.getFullYear() + 1);
+      } else {
+        expDate.setMonth(expDate.getMonth() + 1);
       }
-      endDateStr = `${startDay.toString().padStart(2, '0')}/${endMonth.toString().padStart(2, '0')}/${endYear}`;
+      endDateStr = expDate.toLocaleDateString('pt-BR');
     }
 
     return {
@@ -162,10 +156,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     setSyncMessage('');
     setDatabaseError('');
     try {
-      // 1. Busca perfis reais do Supabase (incluindo as novas colunas de vigência do Stripe!)
+      // 1. Busca perfis reais do Supabase (incluindo as colunas de vigência e data real de criação!)
       const { data: realProfiles, error: profError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end');
+        .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end, created_at');
 
       if (profError) throw profError;
       
@@ -251,6 +245,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           subscriptionPriceId: p.subscription_price_id || null,
           subscriptionStart: (p as any).subscription_start || null,
           subscriptionEnd: (p as any).subscription_end || null,
+          createdAt: (p as any).created_at || null,
           childrenCount,
           planets: planetNames,
           missionsConcluded: completedCount,
@@ -550,7 +545,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredMentors.map(m => {
-                  const subDetails = getSubscriptionDetails(m.subscriptionStatus, m.subscriptionPriceId, m.email, m.subscriptionStart, m.subscriptionEnd);
+                  const subDetails = getSubscriptionDetails(m.subscriptionStatus, m.subscriptionPriceId, m.email, m.subscriptionStart, m.subscriptionEnd, m.createdAt);
                   return (
                     <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
                       <td className="p-4 pl-6">
