@@ -295,7 +295,19 @@ export const translations: Record<Language, any> = {
     note_saved_success: 'Registro salvo com sucesso no Diário de Bordo!',
     save_note: 'Salvar Observação',
     placeholder_hero_name: 'Ex: Arthur...',
-    observation_record: 'Registro de Observação'
+    observation_record: 'Registro de Observação',
+    lp_cognitive_session_badge: 'Sessão Cognitiva',
+    lp_cognitive_goals: 'Metas de Autocontrole Ativas',
+    lp_cognitive_games_count: '+6 Jogos Científicos',
+    lp_cognitive_exclusive: 'EXCLUSIVO PARA CRIANÇAS',
+    lp_cognitive_academy_title: 'ACADEMIA DE PILOTOS ESTELARES',
+    lp_cognitive_academy_desc: 'Mais do que cumprir regras em casa, as crianças agora treinam o próprio cérebro em nosso laboratório com 6 jogos neuropsicológicos integrados!',
+    lp_cognitive_feat1_title: 'Controle Inibitório e Foco (Go/No-Go)',
+    lp_cognitive_feat1_desc: 'Treina a inibição de impulsos indesejados e foco seletivo nos jogos Escudo do Silêncio e Cores Cósmicas.',
+    lp_cognitive_feat2_title: 'Memória de Trabalho Visual e Auditiva',
+    lp_cognitive_feat2_desc: 'Desenvolve a capacidade de manter e manipular informações geométricas e sequências de notas musicais em tempo real.',
+    lp_cognitive_feat3_title: 'Telemetria Clínica de Desempenho',
+    lp_cognitive_feat3_desc: 'A duração e eficácia das jogadas são registradas silenciosamente em background e compiladas na tabela de relatórios dos pais.'
   },
   'pt-PT': {
     welcome: 'Bem-vindo',
@@ -592,7 +604,19 @@ export const translations: Record<Language, any> = {
     lp_pro_feat3: 'Monitorização de Comportamentos-Alvo',
     lp_pro_badge_title: 'Relatórios Clínicos',
     lp_pro_badge_desc: 'Baseados em Dados Reais',
-    lp_impact_quote: 'Onde a ciência do comportamento encontra a diversão da descoberta: Educando para a autonomia, uma estrela de cada vez.'
+    lp_impact_quote: 'Onde a ciência do comportamento encontra a diversão da descoberta: Educando para a autonomia, uma estrela de cada vez.',
+    lp_cognitive_session_badge: 'Sessão Cognitiva',
+    lp_cognitive_goals: 'Metas de Autocontrolo Ativas',
+    lp_cognitive_games_count: '+6 Jogos Científicos',
+    lp_cognitive_exclusive: 'EXCLUSIVO PARA CRIANÇAS',
+    lp_cognitive_academy_title: 'ACADEMIA DE PILOTOS ESTELARES',
+    lp_cognitive_academy_desc: 'Mais do que cumprir regras em casa, as crianças agora treinam o próprio cérebro no nosso laboratório com 6 jogos neuropsicológicos integrados!',
+    lp_cognitive_feat1_title: 'Controlo Inibitório e Foco (Go/No-Go)',
+    lp_cognitive_feat1_desc: 'Treina a inibição de impulsos indesejados e foco seletivo nos jogos Escudo do Silêncio e Cores Cósmicas.',
+    lp_cognitive_feat2_title: 'Memória de Trabalho Visual e Auditiva',
+    lp_cognitive_feat2_desc: 'Desenvolve a capacidade de manter e manipular informações geométricas e sequências de notas musicais em tempo real.',
+    lp_cognitive_feat3_title: 'Telemetria Clínica de Desempenho',
+    lp_cognitive_feat3_desc: 'A duração e eficácia das jogadas são registadas silenciosamente em background e compiladas na tabela de relatórios dos pais.'
   },
   'en': {
     welcome: 'Welcome',
@@ -889,7 +913,19 @@ export const translations: Record<Language, any> = {
     note_saved_success: 'Note saved successfully in the Logbook!',
     save_note: 'Save Observation',
     placeholder_hero_name: 'Ex: Arthur...',
-    observation_record: 'Observation Record'
+    observation_record: 'Observation Record',
+    lp_cognitive_session_badge: 'Cognitive Session',
+    lp_cognitive_goals: 'Active Self-Control Goals',
+    lp_cognitive_games_count: '+6 Scientific Games',
+    lp_cognitive_exclusive: 'EXCLUSIVE FOR KIDS',
+    lp_cognitive_academy_title: 'STAR PILOTS ACADEMY',
+    lp_cognitive_academy_desc: 'More than just following rules at home, children now train their own brains in our lab with 6 integrated neuropsychological games!',
+    lp_cognitive_feat1_title: 'Inhibitory Control and Focus (Go/No-Go)',
+    lp_cognitive_feat1_desc: 'Trains the inhibition of unwanted impulses and selective focus in the Shield of Silence and Cosmic Colors games.',
+    lp_cognitive_feat2_title: 'Visual and Auditory Working Memory',
+    lp_cognitive_feat2_desc: 'Develops the capacity to hold and manipulate geometric information and musical note sequences in real time.',
+    lp_cognitive_feat3_title: 'Clinical Performance Telemetry',
+    lp_cognitive_feat3_desc: 'Play duration and efficacy are recorded silently in the background and compiled in the parents\' reports table.'
   },
   'es': {
     welcome: 'Bienvenido',
@@ -1186,7 +1222,19 @@ export const translations: Record<Language, any> = {
     lp_pro_feat3: 'Monitoreo de Comportamientos Objetivo',
     lp_pro_badge_title: 'Informes Clínicos',
     lp_pro_badge_desc: 'Basados en Datos Reales',
-    lp_impact_quote: 'Donde la ciencia del comportamiento se encuentra con la diversión del descubrimiento: Educando para la autonomía, una estrella a la vez.'
+    lp_impact_quote: 'Donde la ciencia del comportamiento se encuentra con la diversión del descubrimiento: Educando para la autonomía, una estrella a la vez.',
+    lp_cognitive_session_badge: 'Sesión Cognitiva',
+    lp_cognitive_goals: 'Metas de Autocontrol Activas',
+    lp_cognitive_games_count: '+6 Juegos Científicos',
+    lp_cognitive_exclusive: 'EXCLUSIVO PARA NIÑOS',
+    lp_cognitive_academy_title: 'ACADEMIA DE PILOTOS ESTELARES',
+    lp_cognitive_academy_desc: '¡Más que solo seguir reglas en casa, los niños ahora entrenan sus propios cerebros en nuestro laboratorio con 6 juegos neuropsicológicos integrados!',
+    lp_cognitive_feat1_title: 'Control Inhibitorio y Enfoque (Go/No-Go)',
+    lp_cognitive_feat1_desc: 'Entrena la inhibición de impulsos no deseados y el enfoque selectivo en los juegos Escudo del Silencio y Colores Cósmicos.',
+    lp_cognitive_feat2_title: 'Memoria de Trabajo Visual y Auditiva',
+    lp_cognitive_feat2_desc: 'Desarrolla la capacidad de mantener y manipular información geométrica y secuencias de notas musicales en tiempo real.',
+    lp_cognitive_feat3_title: 'Telemetría Clínica de Rendimiento',
+    lp_cognitive_feat3_desc: 'La duración y la eficacia de las jugadas se registran silenciosamente en segundo plano y se compilan en la tabla de informes de los padres.'
   },
   'fr': {
     welcome: 'Bienvenue',
@@ -1483,7 +1531,19 @@ export const translations: Record<Language, any> = {
     lp_pro_feat3: 'Suivi des Comportements Cibles',
     lp_pro_badge_title: 'Rapports Cliniques',
     lp_pro_badge_desc: 'Basés sur des Données Réelles',
-    lp_impact_quote: 'Là où la science du comportement rencontre le plaisir de la découverte : Éduquer pour l\'autonomie, une étoile à la fois.'
+    lp_impact_quote: 'Là où la science du comportement rencontre le plaisir de la découverte : Éduquer pour l\'autonomie, une étoile à la fois.',
+    lp_cognitive_session_badge: 'Session Cognitive',
+    lp_cognitive_goals: 'Objectifs d\'Autocontrôle Actifs',
+    lp_cognitive_games_count: '+6 Jeux Scientifiques',
+    lp_cognitive_exclusive: 'EXCLUSIF POUR ENFANTS',
+    lp_cognitive_academy_title: 'ACADÉMIE DE PILOTES STELLAIRES',
+    lp_cognitive_academy_desc: 'Plus que de simples règles à la maison, les enfants entraînent désormais leur propre cerveau dans notre laboratoire avec 6 jeux neuropsychologiques intégrés !',
+    lp_cognitive_feat1_title: 'Contrôle Inhibiteur et Concentration (Go/No-Go)',
+    lp_cognitive_feat1_desc: 'Entraîne l\'inhibition des impulsions indésirables et la concentration sélective dans les jeux Bouclier du Silence et Couleurs Cosmiques.',
+    lp_cognitive_feat2_title: 'Mémoire de Travail Visuelle et Auditive',
+    lp_cognitive_feat2_desc: 'Développe la capacité de conserver et de manipuler des informations géométriques et des séquences de notes de musique en temps réel.',
+    lp_cognitive_feat3_title: 'Télémétrie Clinique de Performance',
+    lp_cognitive_feat3_desc: 'La durée et l\'efficacité des parties sont enregistrées silencieusement en arrière-plan et compilées dans le tableau des rapports des parents.'
   },
   'it': {
     welcome: 'Benvenuto',
@@ -1780,7 +1840,19 @@ export const translations: Record<Language, any> = {
     lp_pro_feat3: 'Monitoraggio dei Comportamenti Obiettivo',
     lp_pro_badge_title: 'Rapporti Clinici',
     lp_pro_badge_desc: 'Basati su Dati Reali',
-    lp_impact_quote: 'Dove la scienza del comportamento incontra il divertimento della scoperta: Educare all\'autonomia, una stella alla volta.'
+    lp_impact_quote: 'Dove la scienza del comportamento incontra il divertimento della scoperta: Educare all\'autonomia, una stella alla volta.',
+    lp_cognitive_session_badge: 'Sessione Cognitiva',
+    lp_cognitive_goals: 'Obiettivi di Autocontrollo Attivi',
+    lp_cognitive_games_count: '+6 Giochi Scientifici',
+    lp_cognitive_exclusive: 'ESCLUSIVO PER BAMBINI',
+    lp_cognitive_academy_title: 'ACCADEMIA DI PILOTI STELLARI',
+    lp_cognitive_academy_desc: 'Più che seguire le regole a casa, i bambini ora allenano il proprio cervello nel nostro laboratorio con 6 giochi neuropsicologici integrati!',
+    lp_cognitive_feat1_title: 'Controllo Inibitorio e Concentrazione (Go/No-Go)',
+    lp_cognitive_feat1_desc: 'Allena l\'inibizione degli impulsi indesiderati e la concentrazione selettiva nei giochi Scudo del Silenzio e Colori Cosmici.',
+    lp_cognitive_feat2_title: 'Memoria di Lavoro Visiva e Uditiva',
+    lp_cognitive_feat2_desc: 'Sviluppa la capacità di conservare e manipolare informazioni geometriche e sequenze di note musicali in tempo reale.',
+    lp_cognitive_feat3_title: 'Telemetria Clinica di Prestazione',
+    lp_cognitive_feat3_desc: 'La durata e l\'efficacia dei giochi sono registrate silenziosamente in background e compilate nella tabella dei rapporti dei genitori.'
   },
   'zh': {
     welcome: '欢迎',
@@ -2077,6 +2149,18 @@ export const translations: Record<Language, any> = {
     lp_pro_feat3: '目标行为监测',
     lp_pro_badge_title: '临床报告',
     lp_pro_badge_desc: '基于真实数据',
-    lp_impact_quote: '当行为科学与探索的乐趣相遇：一次一颗星，为自主而教育。'
+    lp_impact_quote: '当行为科学与探索的乐趣相遇：一次一颗星，为自主而教育。',
+    lp_cognitive_session_badge: '认知训练',
+    lp_cognitive_goals: '活跃的自我控制目标',
+    lp_cognitive_games_count: '+6 科学游戏',
+    lp_cognitive_exclusive: '儿童专属',
+    lp_cognitive_academy_title: '星际飞行员学院',
+    lp_cognitive_academy_desc: '不仅仅是在家里遵守规则，孩子们现在可以在我们的实验室中通过6个集成的神经心理学游戏来训练自己的大脑！',
+    lp_cognitive_feat1_title: '抑制控制与专注力 (Go/No-Go)',
+    lp_cognitive_feat1_desc: '在“静音之盾”和“宇宙色彩”游戏中训练对不良冲动的抑制和选择性专注。',
+    lp_cognitive_feat2_title: '视觉与听觉工作记忆',
+    lp_cognitive_feat2_desc: '培养实时保持和操作几何信息以及音符序列的能力。',
+    lp_cognitive_feat3_title: '临床表现遥测',
+    lp_cognitive_feat3_desc: '游戏时长和效果在后台静默记录，并汇编在父母 hometown 报告表中。'
   }
 };

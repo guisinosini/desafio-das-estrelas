@@ -6,7 +6,88 @@ import clsx from 'clsx';
 interface MemoryGameProps {
   onComplete: (bonusStars: number, scoreText: string, playTime: number) => void;
   onClose: () => void;
+  language: string;
 }
+
+const memoryTranslations: Record<string, any> = {
+  'pt-BR': {
+    title: 'Pares Estelares',
+    subtitle: 'Treino de Memória de Trabalho',
+    moves: 'Movimentos:',
+    restart: 'Reiniciar',
+    victoryTitle: 'Excelente Trabalho!',
+    victoryDesc: 'Sua memória espacial está brilhando hoje. Você ajudou sua tripulação galáctica!',
+    reward: 'Recompensa: +2 Estrelas ⭐⭐',
+    backToHub: 'Voltar ao Hub',
+    scoreText: 'movimentos'
+  },
+  'pt-PT': {
+    title: 'Pares Estelares',
+    subtitle: 'Treino de Memória de Trabalho',
+    moves: 'Movimentos:',
+    restart: 'Reiniciar',
+    victoryTitle: 'Excelente Trabalho!',
+    victoryDesc: 'A sua memória espacial está a brilhar hoje. Ajudou a sua tripulação galáctica!',
+    reward: 'Recompensa: +2 Estrelas ⭐⭐',
+    backToHub: 'Voltar ao Hub',
+    scoreText: 'movimentos'
+  },
+  'en': {
+    title: 'Star Pairs',
+    subtitle: 'Working Memory Training',
+    moves: 'Moves:',
+    restart: 'Restart',
+    victoryTitle: 'Excellent Work!',
+    victoryDesc: 'Your spatial memory is shining today. You helped your galactic crew!',
+    reward: 'Reward: +2 Stars ⭐⭐',
+    backToHub: 'Back to Hub',
+    scoreText: 'moves'
+  },
+  'es': {
+    title: 'Pares Estelares',
+    subtitle: 'Entrenamiento de Memoria de Trabajo',
+    moves: 'Movimientos:',
+    restart: 'Reiniciar',
+    victoryTitle: '¡Excelente Trabalho!',
+    victoryDesc: 'Tu memoria espacial está brillando hoy. ¡Has ayudado a tu tripulación galáctica!',
+    reward: 'Recompensa: +2 Estrellas ⭐⭐',
+    backToHub: 'Volver al Hub',
+    scoreText: 'movimientos'
+  },
+  'fr': {
+    title: 'Paires Stellaires',
+    subtitle: 'Entraînement de la Mémoire de Travail',
+    moves: 'Mouvements :',
+    restart: 'Réinitialiser',
+    victoryTitle: 'Excellent Travail !',
+    victoryDesc: 'Votre mémoire spatiale brille aujourd\'hui. Vous avez aidé votre équipage galactique !',
+    reward: 'Récompense : +2 Étoiles ⭐⭐',
+    backToHub: 'Retour au Hub',
+    scoreText: 'mouvements'
+  },
+  'it': {
+    title: 'Coppie Stellari',
+    subtitle: 'Allenamento di Memoria di Lavoro',
+    moves: 'Mosse:',
+    restart: 'Riavvia',
+    victoryTitle: 'Eccellente Lavoro!',
+    victoryDesc: 'La tua memoria spaziale sta brillando oggi. Hai aiutato il tuo equipaggio galattico!',
+    reward: 'Ricompensa: +2 Stelle ⭐⭐',
+    backToHub: 'Torna all\'Hub',
+    scoreText: 'mosse'
+  },
+  'zh': {
+    title: '星际配对',
+    subtitle: '工作记忆训练',
+    moves: '步数：',
+    restart: '重新开始',
+    victoryTitle: '非常棒！',
+    victoryDesc: '你的空间记忆今天闪闪发光。你帮助了你的星际机组人员！',
+    reward: '奖励：+2 颗星星 ⭐⭐',
+    backToHub: '返回中心',
+    scoreText: '步数'
+  }
+};
 
 const ICONS = [
   { icon: Rocket, color: 'text-indigo-400', id: 'rocket' },
@@ -17,12 +98,15 @@ const ICONS = [
   { icon: Star, color: 'text-pink-400', id: 'star' }
 ];
 
-export const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onClose }) => {
+export const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onClose, language }) => {
   const [cards, setCards] = useState<{ id: string; icon: any; color: string; index: number; isFlipped: boolean; isMatched: boolean }[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [hasFinished, setHasFinished] = useState(false);
   const startTimeRef = useRef(Date.now());
+
+  const currentLang = language || 'pt-BR';
+  const mt = memoryTranslations[currentLang] || memoryTranslations['pt-BR'];
 
   const initGame = () => {
     const deck = [...ICONS, ...ICONS]
@@ -59,7 +143,6 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onClose }) =
       const [firstIdx, secondIdx] = newSelected;
       
       if (cards[firstIdx].id === cards[secondIdx].id) {
-        // Encontrou um par!
         setTimeout(() => {
           const matchedCards = [...newCards];
           matchedCards[firstIdx].isMatched = true;
@@ -67,17 +150,15 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onClose }) =
           setCards(matchedCards);
           setSelectedCards([]);
 
-          // Verificar se acabou o jogo
           if (matchedCards.every(c => c.isMatched)) {
             setHasFinished(true);
             const playTime = Math.round((Date.now() - startTimeRef.current) / 1000);
             setTimeout(() => {
-              onComplete(2, `${moves} movimentos`, playTime); // Concede 2 estrelas de bônus!
+              onComplete(2, `${moves + 1} ${mt.scoreText}`, playTime);
             }, 1000);
           }
         }, 600);
       } else {
-        // Não deu match
         setTimeout(() => {
           const resetCards = [...newCards];
           resetCards[firstIdx].isFlipped = false;
@@ -92,14 +173,14 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onClose }) =
   return (
     <div className="flex flex-col items-center justify-center p-6 space-y-6 max-w-md mx-auto">
       <div className="text-center space-y-1">
-        <h3 className="text-2xl font-black uppercase italic tracking-tighter text-indigo-400">Pares Estelares</h3>
-        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Treino de Memória de Trabalho</p>
+        <h3 className="text-2xl font-black uppercase italic tracking-tighter text-indigo-400">{mt.title}</h3>
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{mt.subtitle}</p>
       </div>
 
       <div className="flex justify-between items-center w-full px-4 text-xs font-bold text-white/60">
-        <span>Movimentos: <strong className="text-primary">{moves}</strong></span>
+        <span>{mt.moves} <strong className="text-primary">{moves}</strong></span>
         <button onClick={initGame} className="flex items-center gap-1 hover:text-primary transition-colors uppercase tracking-wider text-[10px] font-black">
-          <RefreshCw className="w-3.5 h-3.5" /> Reiniciar
+          <RefreshCw className="w-3.5 h-3.5" /> {mt.restart}
         </button>
       </div>
 
@@ -112,16 +193,16 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onClose }) =
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto text-primary animate-bounce">
             <Trophy className="w-8 h-8" />
           </div>
-          <h4 className="text-xl font-black uppercase italic text-primary">Excelente Trabalho!</h4>
-          <p className="text-xs text-white/70 font-medium">Sua memória espacial está brilhando hoje. Você ajudou sua tripulação galáctica!</p>
+          <h4 className="text-xl font-black uppercase italic text-primary">{mt.victoryTitle}</h4>
+          <p className="text-xs text-white/70 font-medium">{mt.victoryDesc}</p>
           <div className="text-sm font-black uppercase tracking-wider text-yellow-400">
-            Recompensa: +2 Estrelas ⭐⭐
+            {mt.reward}
           </div>
           <button 
             onClick={onClose} 
             className="px-6 py-3.5 bg-primary text-black font-black uppercase rounded-2xl text-[10px] tracking-widest transition-all hover:scale-105"
           >
-            Voltar ao Hub
+            {mt.backToHub}
           </button>
         </motion.div>
       ) : (
@@ -132,10 +213,10 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({ onComplete, onClose }) =
               <button
                 key={idx}
                 onClick={() => handleCardClick(idx)}
-                className="aspect-square relative rounded-2xl overflow-hidden focus:outline-none perspective shadow-lg"
+                className="aspect-square relative rounded-2xl overflow-hidden focus:outline-none perspective shadow-lg will-change-transform"
               >
                 <div className={clsx(
-                  "w-full h-full relative transition-transform duration-500 transform-style-3d",
+                  "w-full h-full relative transition-transform duration-500 transform-style-3d transform-gpu",
                   (card.isFlipped || card.isMatched) ? "rotate-y-180" : ""
                 )}>
                   {/* Frente do Card (Virado / Revelado) */}

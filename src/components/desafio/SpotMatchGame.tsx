@@ -9,9 +9,110 @@ import clsx from 'clsx';
 interface SpotMatchGameProps {
   onComplete: (bonusStars: number, scoreText: string, playTime: number) => void;
   onClose: () => void;
+  language: string;
 }
 
-// Catálogo de Ícones do Jogo
+const spotTranslations: Record<string, any> = {
+  'pt-BR': {
+    title: 'Radares Gêmeos',
+    subtitle: 'Treino de Atenção e Discriminação Visual',
+    score: 'Acertos:',
+    targetObjective: 'Objetivo Estelar',
+    victoryTitle: 'Missão Cumprida!',
+    victoryDesc: 'Você encontrou todos os radares de rádio correspondentes. Comunicação espacial restabelecida!',
+    reward: 'Recompensa: +2 Estrelas ⭐⭐',
+    backToHub: 'Voltar ao Hub',
+    instruction: 'Encontre o ÚNICO símbolo que se repete nos dois radares!',
+    feedbackSuccess: 'Radar Identificado!',
+    feedbackError: 'Sinal Incorreto...',
+    scoreText: 'acertos'
+  },
+  'pt-PT': {
+    title: 'Radares Gémeos',
+    subtitle: 'Treino de Atenção e Discriminação Visual',
+    score: 'Acertos:',
+    targetObjective: 'Objetivo Estelar',
+    victoryTitle: 'Missão Cumprida!',
+    victoryDesc: 'Encontrou todos os radares de rádio correspondentes. Comunicação espacial restabelecida!',
+    reward: 'Recompensa: +2 Estrelas ⭐⭐',
+    backToHub: 'Voltar ao Hub',
+    instruction: 'Encontre o ÚNICO símbolo que se repete nos dois radares!',
+    feedbackSuccess: 'Radar Identificado!',
+    feedbackError: 'Sinal Incorreto...',
+    scoreText: 'acertos'
+  },
+  'en': {
+    title: 'Twin Radars',
+    subtitle: 'Attention & Visual Discrimination',
+    score: 'Matches:',
+    targetObjective: 'Star Objective',
+    victoryTitle: 'Mission Accomplished!',
+    victoryDesc: 'You found all the matching radio radars. Space communication restored!',
+    reward: 'Reward: +2 Stars ⭐⭐',
+    backToHub: 'Back to Hub',
+    instruction: 'Find the ONLY symbol that repeats in both radars!',
+    feedbackSuccess: 'Radar Identified!',
+    feedbackError: 'Incorrect Signal...',
+    scoreText: 'matches'
+  },
+  'es': {
+    title: 'Radares Gemelos',
+    subtitle: 'Atención y Discriminación Visual',
+    score: 'Aciertos:',
+    targetObjective: 'Objetivo Estelar',
+    victoryTitle: '¡Misión Cumplida!',
+    victoryDesc: 'Has encontrado todos los radares correspondientes. ¡Comunicación espacial restablecida!',
+    reward: 'Recompensa: +2 Estrellas ⭐⭐',
+    backToHub: 'Volver al Hub',
+    instruction: '¡Encuentra el ÚNICO símbolo que se repite en ambos radares!',
+    feedbackSuccess: '¡Radar Identificado!',
+    feedbackError: 'Señal Incorrecta...',
+    scoreText: 'aciertos'
+  },
+  'fr': {
+    title: 'Radars Jumeaux',
+    subtitle: 'Attention & Discrimination Visuelle',
+    score: 'Corrects :',
+    targetObjective: 'Objectif Stellaire',
+    victoryTitle: 'Mission Accomplie !',
+    victoryDesc: 'Vous avez trouvé tous les radars correspondants. Communication spatiale rétablie !',
+    reward: 'Récompense : +2 Étoiles ⭐⭐',
+    backToHub: 'Retour au Hub',
+    instruction: 'Trouvez le SEUL symbole qui se répète dans les deux radars !',
+    feedbackSuccess: 'Radar Identifié !',
+    feedbackError: 'Signal Incorrect...',
+    scoreText: 'corrects'
+  },
+  'it': {
+    title: 'Radar Gemelli',
+    subtitle: 'Attenzione e Discriminazione Visiva',
+    score: 'Corretti:',
+    targetObjective: 'Obbiettivo Stellare',
+    victoryTitle: 'Missione Compiuta!',
+    victoryDesc: 'Hai trovato tutti i radar corrispondenti. Comunicazione spaziale ripristinata!',
+    reward: 'Ricompensa: +2 Stelle ⭐⭐',
+    backToHub: 'Torna all\'Hub',
+    instruction: 'Trova l\'UNICO simbolo che si ripete in entrambi i radar!',
+    feedbackSuccess: 'Radar Identificato!',
+    feedbackError: 'Segnale Incorretto...',
+    scoreText: 'corretti'
+  },
+  'zh': {
+    title: '孪生雷达',
+    subtitle: '注意力与视觉辨别训练',
+    score: '配对：',
+    targetObjective: '星际目标',
+    victoryTitle: '任务完成！',
+    victoryDesc: '你找到了所有匹配的无线电雷达。空间通信已恢复！',
+    reward: '奖励：+2 颗星星 ⭐⭐',
+    backToHub: '返回中心',
+    instruction: '找出两台雷达中唯一重复的符号！',
+    feedbackSuccess: '雷达已识别！',
+    feedbackError: '信号错误...',
+    scoreText: '匹配'
+  }
+};
+
 const ICON_POOL = [
   { id: 'star', icon: Star, color: 'text-yellow-400' },
   { id: 'moon', icon: Moon, color: 'text-cyan-400' },
@@ -27,9 +128,9 @@ const ICON_POOL = [
   { id: 'sparkles', icon: Sparkles, color: 'text-primary' }
 ];
 
-export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClose }) => {
+export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClose, language }) => {
   const [score, setScore] = useState(0);
-  const [targetScore] = useState(5); // Objetivo: 5 acertos
+  const [targetScore] = useState(5);
   const [leftDeck, setLeftDeck] = useState<{ id: string; icon: any; color: string; scale: number; rotate: number }[]>([]);
   const [rightDeck, setRightDeck] = useState<{ id: string; icon: any; color: string; scale: number; rotate: number }[]>([]);
   const [commonId, setCommonId] = useState('');
@@ -37,25 +138,19 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
   const [feedback, setFeedback] = useState<'success' | 'error' | null>(null);
   const startTimeRef = useRef(Date.now());
 
+  const currentLang = language || 'pt-BR';
+  const st = spotTranslations[currentLang] || spotTranslations['pt-BR'];
+
   const generateRound = () => {
-    // 1. Sortear o ícone comum
     const commonIdx = Math.floor(Math.random() * ICON_POOL.length);
     const common = ICON_POOL[commonIdx];
     setCommonId(common.id);
 
-    // Filtrar o pool para tirar o comum
     const poolWithoutCommon = ICON_POOL.filter(item => item.id !== common.id);
-
-    // 2. Embaralhar o pool restante
     const shuffledPool = [...poolWithoutCommon].sort(() => Math.random() - 0.5);
-
-    // 3. Pegar 5 ícones para o lado esquerdo
     const leftPool = shuffledPool.slice(0, 5);
-    
-    // 4. Pegar 5 ícones para o lado direito (sem interseção com o esquerdo)
     const rightPool = shuffledPool.slice(5, 10);
 
-    // Função para enriquecer os ícones com tamanho (scale) e rotação aleatórios
     const enrichIcon = (item: any) => {
       const scales = [0.8, 1.0, 1.2, 1.4];
       const rotates = [0, 45, 90, 135, 180, 225, 270, 315];
@@ -66,7 +161,6 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
       };
     };
 
-    // 5. Adicionar o comum a ambos os lados e embaralhar as posições finais
     const leftFinal = [...leftPool, common].map(enrichIcon).sort(() => Math.random() - 0.5);
     const rightFinal = [...rightPool, common].map(enrichIcon).sort(() => Math.random() - 0.5);
 
@@ -93,7 +187,7 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
         setTimeout(() => {
           setHasFinished(true);
           setTimeout(() => {
-            onComplete(2, `${targetScore} acertos`, playTime); // Concede 2 estrelas de bônus!
+            onComplete(2, `${targetScore} ${st.scoreText}`, playTime);
           }, 1000);
         }, 800);
       } else {
@@ -112,15 +206,15 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
   return (
     <div className="flex flex-col items-center justify-center p-6 space-y-6 max-w-lg mx-auto">
       <div className="text-center space-y-1">
-        <h3 className="text-2xl font-black uppercase italic tracking-tighter text-indigo-400">Radares Gêmeos</h3>
-        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Treino de Atenção e Discriminação Visual</p>
+        <h3 className="text-2xl font-black uppercase italic tracking-tighter text-indigo-400">{st.title}</h3>
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{st.subtitle}</p>
       </div>
 
       {/* Barra de Progresso e Placar */}
       <div className="w-full space-y-2">
         <div className="flex justify-between items-center text-xs font-bold text-white/60">
-          <span>Acertos: <strong className="text-primary">{score} / {targetScore}</strong></span>
-          <span>Objetivo Estelar</span>
+          <span>{st.score} <strong className="text-primary">{score} / {targetScore}</strong></span>
+          <span>{st.targetObjective}</span>
         </div>
         <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
           <motion.div 
@@ -140,26 +234,24 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto text-primary animate-bounce">
             <Trophy className="w-8 h-8" />
           </div>
-          <h4 className="text-xl font-black uppercase italic text-primary">Missão Cumprida!</h4>
-          <p className="text-xs text-white/70 font-medium">Você encontrou todos os radares de rádio correspondentes. Comunicação espacial restabelecida!</p>
+          <h4 className="text-xl font-black uppercase italic text-primary">{st.victoryTitle}</h4>
+          <p className="text-xs text-white/70 font-medium">{st.victoryDesc}</p>
           <div className="text-sm font-black uppercase tracking-wider text-yellow-400">
-            Recompensa: +2 Estrelas ⭐⭐
+            {st.reward}
           </div>
           <button 
             onClick={onClose} 
             className="px-6 py-3.5 bg-primary text-black font-black uppercase rounded-2xl text-[10px] tracking-widest transition-all hover:scale-105"
           >
-            Voltar ao Hub
+            {st.backToHub}
           </button>
         </motion.div>
       ) : (
         <div className="space-y-6 w-full">
-          {/* Instrução em destaque */}
           <div className="text-center text-[10px] font-black uppercase tracking-wider text-white/50 bg-white/5 border border-white/5 py-2 px-4 rounded-xl">
-            Encontre o ÚNICO símbolo que se repete nos dois radares!
+            {st.instruction}
           </div>
 
-          {/* Radares (Esquerdo e Direito) */}
           <div className="grid grid-cols-2 gap-4 relative">
             
             {/* Feedback Visual Overlay */}
@@ -178,12 +270,12 @@ export const SpotMatchGame: React.FC<SpotMatchGameProps> = ({ onComplete, onClos
                     {feedback === 'success' ? (
                       <div className="flex flex-col items-center gap-2">
                         <Check className="w-12 h-12" />
-                        <span className="text-xs font-black uppercase tracking-widest">Radar Identificado!</span>
+                        <span className="text-xs font-black uppercase tracking-widest">{st.feedbackSuccess}</span>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-2">
                         <AlertCircle className="w-12 h-12" />
-                        <span className="text-xs font-black uppercase tracking-widest">Sinal Incorreto...</span>
+                        <span className="text-xs font-black uppercase tracking-widest">{st.feedbackError}</span>
                       </div>
                     )}
                   </motion.div>

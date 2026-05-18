@@ -6,19 +6,148 @@ import clsx from 'clsx';
 interface StroopGameProps {
   onComplete: (bonusStars: number, scoreText: string, playTime: number) => void;
   onClose: () => void;
+  language: string;
 }
 
-// Opções de Cores Galácticas do Jogo
+const stroopTranslations: Record<string, any> = {
+  'pt-BR': {
+    title: 'Cores Cósmicas',
+    subtitle: 'Treino de Controle Inibitório e Foco (Stroop)',
+    starsReactor: 'Estrelas de Reator:',
+    crystalStable: 'Cristal Estável',
+    victoryTitle: 'Incrível Agilidade!',
+    victoryDesc: 'Seu cérebro inibiu com maestria os dados incorretos e calibrou os motores da nave!',
+    reward: 'Recompensa: +2 Estrelas ⭐⭐',
+    backToHub: 'Voltar ao Hub',
+    instruction: 'CLIQUE NA COR DA TINTA!',
+    colors: {
+      red: 'Vermelho',
+      yellow: 'Amarelo',
+      green: 'Verde',
+      blue: 'Azul'
+    },
+    scoreText: 'acertos'
+  },
+  'pt-PT': {
+    title: 'Cores Cósmicas',
+    subtitle: 'Treino de Controlo Inibitório e Foco (Stroop)',
+    starsReactor: 'Estrelas de Reator:',
+    crystalStable: 'Cristal Estável',
+    victoryTitle: 'Incrível Agilidade!',
+    victoryDesc: 'O seu cérebro inibiu com mestria os dados incorretos e calibrou os motores da nave!',
+    reward: 'Recompensa: +2 Estrelas ⭐⭐',
+    backToHub: 'Voltar ao Hub',
+    instruction: 'CLIQUE NA COR DA TINTA!',
+    colors: {
+      red: 'Vermelho',
+      yellow: 'Amarelo',
+      green: 'Verde',
+      blue: 'Azul'
+    },
+    scoreText: 'acertos'
+  },
+  'en': {
+    title: 'Cosmic Colors',
+    subtitle: 'Inhibitory Control & Focus (Stroop)',
+    starsReactor: 'Reactor Stars:',
+    crystalStable: 'Stable Crystal',
+    victoryTitle: 'Amazing Agility!',
+    victoryDesc: 'Your brain successfully inhibited the incorrect data and calibrated the ship\'s engines!',
+    reward: 'Reward: +2 Stars ⭐⭐',
+    backToHub: 'Back to Hub',
+    instruction: 'CLICK THE INK COLOR!',
+    colors: {
+      red: 'Red',
+      yellow: 'Yellow',
+      green: 'Green',
+      blue: 'Blue'
+    },
+    scoreText: 'matches'
+  },
+  'es': {
+    title: 'Colores Cósmicos',
+    subtitle: 'Control Inhibitorio y Enfoque (Stroop)',
+    starsReactor: 'Estrellas del Reactor:',
+    crystalStable: 'Cristal Estable',
+    victoryTitle: '¡Increíble Agilidad!',
+    victoryDesc: '¡Tu cerebro inhibió con maestría los datos incorrectos y calibró los motores de la nave!',
+    reward: 'Recompensa: +2 Estrellas ⭐⭐',
+    backToHub: 'Volver al Hub',
+    instruction: '¡HAZ CLIC EN EL COLOR DE LA TINTA!',
+    colors: {
+      red: 'Rojo',
+      yellow: 'Amarillo',
+      green: 'Verde',
+      blue: 'Azul'
+    },
+    scoreText: 'aciertos'
+  },
+  'fr': {
+    title: 'Couleurs Cosmiques',
+    subtitle: 'Contrôle Inhibiteur & Concentration (Stroop)',
+    starsReactor: 'Étoiles du Réacteur :',
+    crystalStable: 'Cristal Stable',
+    victoryTitle: 'Incroyable Agilité !',
+    victoryDesc: 'Votre cerveau a inhibé avec maîtrise les données incorrectes et a calibré les moteurs du vaisseau !',
+    reward: 'Récompense : +2 Étoiles ⭐⭐',
+    backToHub: 'Retour au Hub',
+    instruction: 'CLIQUEZ SUR LA COULEUR DE L\'ENCRE !',
+    colors: {
+      red: 'Rouge',
+      yellow: 'Jaune',
+      green: 'Vert',
+      blue: 'Bleu'
+    },
+    scoreText: 'corrects'
+  },
+  'it': {
+    title: 'Colori Cosmici',
+    subtitle: 'Controllo Inibitorio e Flessibilità (Stroop)',
+    starsReactor: 'Stelle del Reattore:',
+    crystalStable: 'Cristallo Stabile',
+    victoryTitle: 'Incredibile Agilità!',
+    victoryDesc: 'Il tuo cervello ha inibito con maestria i dati errati e ha calibrato i motori della nave!',
+    reward: 'Ricompensa: +2 Stelle ⭐⭐',
+    backToHub: 'Torna all\'Hub',
+    instruction: 'CLICCA SUL COLORE DELL\'INCHIOSTRO!',
+    colors: {
+      red: 'Rosso',
+      yellow: 'Giallo',
+      green: 'Verde',
+      blue: 'Blu'
+    },
+    scoreText: 'corretti'
+  },
+  'zh': {
+    title: '宇宙色彩',
+    subtitle: '抑制控制与专注力训练 (Stroop)',
+    starsReactor: '反应堆星星：',
+    crystalStable: '稳定水晶',
+    victoryTitle: '惊人的敏捷度！',
+    victoryDesc: '你的大脑成功抑制了错误的数据，并校准了飞船的引擎！',
+    reward: '奖励：+2 颗星星 ⭐微',
+    backToHub: '返回中心',
+    instruction: '点击油墨的颜色！',
+    colors: {
+      red: '红色',
+      yellow: '黄色',
+      green: '绿色',
+      blue: '蓝色'
+    },
+    scoreText: '次配对'
+  }
+};
+
 const COLOR_OPTIONS = [
-  { id: 'red', name: 'Vermelho', colorClass: 'text-red-500', bgClass: 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20 hover:border-red-400 text-red-400' },
-  { id: 'yellow', name: 'Amarelo', colorClass: 'text-yellow-400', bgClass: 'bg-yellow-400/10 border-yellow-400/30 hover:bg-yellow-400/20 hover:border-yellow-400 text-yellow-400' },
-  { id: 'green', name: 'Verde', colorClass: 'text-emerald-400', bgClass: 'bg-emerald-400/10 border-emerald-400/30 hover:bg-emerald-400/20 hover:border-emerald-400 text-emerald-400' },
-  { id: 'blue', name: 'Azul', colorClass: 'text-cyan-400', bgClass: 'bg-cyan-400/10 border-cyan-400/30 hover:bg-cyan-400/20 hover:border-cyan-400 text-cyan-400' }
+  { id: 'red', colorClass: 'text-red-500', bgClass: 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20 hover:border-red-400 text-red-400' },
+  { id: 'yellow', colorClass: 'text-yellow-400', bgClass: 'bg-yellow-400/10 border-yellow-400/30 hover:bg-yellow-400/20 hover:border-yellow-400 text-yellow-400' },
+  { id: 'green', colorClass: 'text-emerald-400', bgClass: 'bg-emerald-400/10 border-emerald-400/30 hover:bg-emerald-400/20 hover:border-emerald-400 text-emerald-400' },
+  { id: 'blue', colorClass: 'text-cyan-400', bgClass: 'bg-cyan-400/10 border-cyan-400/30 hover:bg-cyan-400/20 hover:border-cyan-400 text-cyan-400' }
 ];
 
-export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) => {
+export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose, language }) => {
   const [score, setScore] = useState(0);
-  const [targetScore] = useState(10); // Meta: 10 acertos rápidos
+  const [targetScore] = useState(10);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [currentWord, setCurrentWord] = useState({ text: '', colorId: '', wordId: '' });
   const [hasFinished, setHasFinished] = useState(false);
@@ -26,12 +155,13 @@ export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) =
 
   const startTimeRef = useRef(Date.now());
 
+  const currentLang = language || 'pt-BR';
+  const sTrans = stroopTranslations[currentLang] || stroopTranslations['pt-BR'];
+
   const generateRound = () => {
-    // Sorteia um índice para o significado da palavra e um índice diferente para a cor da palavra
     const wordIdx = Math.floor(Math.random() * COLOR_OPTIONS.length);
     let colorIdx = Math.floor(Math.random() * COLOR_OPTIONS.length);
     
-    // Forçar que a cor e a palavra sejam contraditórias em 80% das vezes (efeito Stroop puro!)
     if (Math.random() < 0.8) {
       while (colorIdx === wordIdx) {
         colorIdx = Math.floor(Math.random() * COLOR_OPTIONS.length);
@@ -42,7 +172,7 @@ export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) =
     const color = COLOR_OPTIONS[colorIdx];
 
     setCurrentWord({
-      text: word.name,
+      text: sTrans.colors[word.id] || '',
       wordId: word.id,
       colorId: color.id
     });
@@ -70,7 +200,7 @@ export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) =
         setTimeout(() => {
           setHasFinished(true);
           setTimeout(() => {
-            onComplete(2, `${targetScore} acertos (${accuracy}% precisão)`, playTime);
+            onComplete(2, `${targetScore} ${sTrans.scoreText} (${accuracy}% accuracy)`, playTime);
           }, 1000);
         }, 600);
       } else {
@@ -94,15 +224,15 @@ export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) =
   return (
     <div className="flex flex-col items-center justify-center p-6 space-y-6 max-w-md mx-auto w-full select-none">
       <div className="text-center space-y-1">
-        <h3 className="text-2xl font-black uppercase italic tracking-tighter text-indigo-400">Cores Cósmicas</h3>
-        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Treino de Controle Inibitório e Foco (Stroop)</p>
+        <h3 className="text-2xl font-black uppercase italic tracking-tighter text-indigo-400">{sTrans.title}</h3>
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{sTrans.subtitle}</p>
       </div>
 
       {/* Barra de Progresso */}
       <div className="w-full space-y-2">
         <div className="flex justify-between items-center text-xs font-bold text-white/60">
-          <span>Estrelas de Reator: <strong className="text-primary">{score} / {targetScore}</strong></span>
-          <span>Cristal Estável</span>
+          <span>{sTrans.starsReactor} <strong className="text-primary">{score} / {targetScore}</strong></span>
+          <span>{sTrans.crystalStable}</span>
         </div>
         <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
           <motion.div 
@@ -122,16 +252,16 @@ export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) =
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto text-primary animate-bounce">
             <Trophy className="w-8 h-8" />
           </div>
-          <h4 className="text-xl font-black uppercase italic text-primary">Incrível Agilidade!</h4>
-          <p className="text-xs text-white/70 font-medium">Seu cérebro inibiu com maestria os dados incorretos e calibrou os motores da nave!</p>
+          <h4 className="text-xl font-black uppercase italic text-primary">{sTrans.victoryTitle}</h4>
+          <p className="text-xs text-white/70 font-medium">{sTrans.victoryDesc}</p>
           <div className="text-sm font-black uppercase tracking-wider text-yellow-400">
-            Recompensa: +2 Estrelas ⭐⭐
+            {sTrans.reward}
           </div>
           <button 
             onClick={onClose} 
             className="px-6 py-3.5 bg-primary text-black font-black uppercase rounded-2xl text-[10px] tracking-widest transition-all hover:scale-105"
           >
-            Voltar ao Hub
+            {sTrans.backToHub}
           </button>
         </motion.div>
       ) : (
@@ -144,7 +274,7 @@ export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) =
             feedback === 'error' ? 'bg-red-500/10 border-red-500/30' : ''
           )}>
             <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-[0.2em] text-white/20">
-              CLIQUE NA COR DA TINTA!
+              {sTrans.instruction}
             </div>
 
             <AnimatePresence mode="wait">
@@ -173,7 +303,7 @@ export const StroopGame: React.FC<StroopGameProps> = ({ onComplete, onClose }) =
                 )}
               >
                 <div className={clsx("w-3 h-3 rounded-full bg-current shadow-[0_0_8px_currentColor]")} />
-                {btn.name}
+                {sTrans.colors[btn.id]}
               </button>
             ))}
           </div>
