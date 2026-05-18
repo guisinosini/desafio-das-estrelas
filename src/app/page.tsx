@@ -975,13 +975,28 @@ export default function DesafioEstrelas() {
 
   const handleLogout = async () => {
     console.log("🚪 Encerrando sessão no Supabase e limpando dados galácticos...");
-    await supabase.auth.signOut();
-    const lang = localStorage.getItem('app_language');
-    localStorage.clear();
-    if (lang) localStorage.setItem('app_language', lang);
-    setActiveChildId(null);
-    setStage('welcome');
-    window.location.reload();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn("Erro ao invalidar sessão na API do Supabase:", err);
+    } finally {
+      // Limpeza manual absoluta de tokens e cookies locais (independente de falha de API ou internet)
+      const lang = localStorage.getItem('app_language');
+      localStorage.clear();
+      if (lang) localStorage.setItem('app_language', lang);
+      
+      if (typeof document !== 'undefined') {
+        document.cookie.split(";").forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+      }
+      
+      setActiveChildId(null);
+      setStage('welcome');
+      window.location.reload();
+    }
   };
 
   const handleRedeemReward = (reward: Reward) => {
@@ -2060,7 +2075,7 @@ export default function DesafioEstrelas() {
                   parentName={parentName}
                 />
               ) : (
-                <AdminDashboard setView={setView} language={language} t={t} />
+                <AdminDashboard setView={setView} language={language} t={t} handleLogout={handleLogout} />
               )}
             </main>
 

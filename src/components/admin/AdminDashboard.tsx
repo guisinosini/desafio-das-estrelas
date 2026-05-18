@@ -17,7 +17,8 @@ import {
   Globe,
   Award,
   Share2,
-  FileText
+  FileText,
+  LogOut
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -25,6 +26,7 @@ interface AdminDashboardProps {
   setView: (view: 'child' | 'parent' | 'admin') => void;
   language: string;
   t: any;
+  handleLogout: () => void;
 }
 
 interface DecodedMentor {
@@ -42,7 +44,7 @@ interface DecodedMentor {
   reportsShared: number;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, language, t }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, language, t, handleLogout }) => {
   const [supabase] = useState(() => createClient());
   const [mentorsData, setMentorsData] = useState<DecodedMentor[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -200,9 +202,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           <button 
             onClick={() => setView('parent')} 
             className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all text-white"
+            title="Voltar ao Painel do Mentor"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
+          
+          <button 
+            onClick={handleLogout} 
+            className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all text-red-400"
+            title="Sair da Conta (Logout)"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+
           <div>
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary animate-pulse" />
