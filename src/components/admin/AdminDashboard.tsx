@@ -15,7 +15,7 @@ import {
   TrendingUp,
   AlertCircle
 } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 interface AdminDashboardProps {
   setView: (view: 'child' | 'parent' | 'admin') => void;
