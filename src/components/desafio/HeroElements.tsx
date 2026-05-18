@@ -2,7 +2,7 @@
 
 import { useState, useRef, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Rocket, X } from "lucide-react";
+import { Rocket, X, Share2 } from "lucide-react";
 import clsx from "clsx";
 import type { Task } from "@/types/desafio";
 import confetti from "canvas-confetti";
@@ -203,7 +203,7 @@ export const SpaceShipVideo = memo(function SpaceShipVideo() {
 // ─── DailyConquestCelebration ──────────────────────────────────────────────
 // Monitora as missões diárias. Quando todas ficam 'done', anima a nave
 // voando para o centro da tela e reproduz o vídeo Conquista.mp4.
-export const DailyConquestCelebration = memo(function DailyConquestCelebration({ tasks, t }: { tasks: Task[], t: any }) {
+export const DailyConquestCelebration = memo(function DailyConquestCelebration({ tasks, t, onAwardStars }: { tasks: Task[], t: any, onAwardStars?: (amount: number, title: string) => void }) {
   const [shipState, setShipState] = useState<'corner' | 'flying' | 'center' | 'icon'>('corner');
   const [showCelebration, setShowCelebration] = useState(false);
   const [shipPlayCount, setShipPlayCount] = useState(0);
@@ -263,6 +263,30 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
     if (conquestVideoRef.current) {
       conquestVideoRef.current.pause();
       conquestVideoRef.current.currentTime = 0;
+    }
+  };
+
+  const handleShare = () => {
+    const inviteText = `🌟 Acabei de completar todas as minhas missões diárias no Desafio das Estrelas! Venha entrar para a frota galáctica e vencer comigo: https://www.desafioestrelas.com/`;
+    
+    const awardBonus = () => {
+      if (onAwardStars) {
+        onAwardStars(5, 'Bônus de Compartilhamento');
+      }
+    };
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'Vitória no Desafio das Estrelas',
+        text: inviteText,
+        url: 'https://www.desafioestrelas.com/',
+      }).then(() => {
+        awardBonus();
+      }).catch(err => console.log('Erro ao compartilhar:', err));
+    } else {
+      navigator.clipboard.writeText(inviteText);
+      alert('Vitória copiada para a área de transferência! Cole nas suas redes.');
+      awardBonus();
     }
   };
 
@@ -427,13 +451,12 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_12px_red]" />
               <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full animate-pulse delay-75 shadow-[0_0_12px_blue]" />
               <div className="w-full h-full rounded-full border-[8px] border-primary/60 bg-white shadow-[0_0_80px_rgba(45,212,191,0.7)] overflow-hidden relative flex items-center justify-center">
-                <video
-                  ref={conquestVideoRef}
-                  src="/Conquista.mp4"
-                  playsInline
-                  onEnded={closeCelebration}
-                  className="w-[100%] h-[100%] object-contain"
-                />
+                  <video
+                    ref={conquestVideoRef}
+                    src="/Conquista.mp4"
+                    playsInline
+                    className="w-[100%] h-[100%] object-contain"
+                  />
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
               </div>
               <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-1 h-8 bg-zinc-500 rounded-full" />
@@ -444,15 +467,28 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
               </p>
             </motion.div>
 
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 0.4 }}
-              onClick={closeCelebration}
-              className="mt-14 px-10 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-sm"
-            >
-              {t.continue || 'Continuar a Missão'} 🚀
-            </motion.button>
+            <div className="mt-14 flex flex-col md:flex-row gap-4 items-center">
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.4 }}
+                onClick={handleShare}
+                className="px-8 py-4 bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 border border-purple-500/50 transition-all text-xs md:text-sm flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-4 h-4 md:w-5 md:h-5" />
+                Compartilhar Vitória 🌟
+              </motion.button>
+              
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.4 }}
+                onClick={closeCelebration}
+                className="px-10 py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all text-xs md:text-sm"
+              >
+                {t.continue || 'Continuar a Missão'} 🚀
+              </motion.button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

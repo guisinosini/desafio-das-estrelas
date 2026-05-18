@@ -35,7 +35,8 @@ import {
   LogOut,
   Rocket,
   Milestone,
-  Lightbulb
+  Lightbulb,
+  Share2
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import confetti from "canvas-confetti";
@@ -1877,7 +1878,7 @@ export default function DesafioEstrelas() {
         {/* --- DASHBOARD ADVENTURE --- */}
         {stage === 'adventure' && (
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
-          <DailyConquestCelebration tasks={tasks} t={t} />
+          <DailyConquestCelebration tasks={tasks} t={t} onAwardStars={handleAwardStars} />
 
             <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-4 md:p-6 grid grid-cols-3 items-center shadow-2xl">
               {/* Coluna 1: Esquerda - Avatar e Status da Criança */}
@@ -2028,6 +2029,27 @@ export default function DesafioEstrelas() {
                     />
 
                     <div className="mt-8 w-full max-w-xs space-y-6">
+                      {/* Botão de Convite Temático */}
+                      <button
+                        onClick={() => {
+                          const inviteText = `🌟 Ei! Venha participar da Aliança Galáctica no Desafio das Estrelas! Transforme a rotina em conquistas épicas. Acesse: https://www.desafioestrelas.com/`;
+                          if (navigator.share) {
+                            navigator.share({
+                              title: 'Desafio das Estrelas',
+                              text: inviteText,
+                              url: 'https://www.desafioestrelas.com/',
+                            }).catch(err => console.log('Erro ao compartilhar:', err));
+                          } else {
+                            navigator.clipboard.writeText(inviteText);
+                            alert('Convite copiado para a área de transferência!');
+                          }
+                        }}
+                        className="w-full py-4 bg-primary/10 hover:bg-primary/20 border-2 border-primary/30 hover:border-primary text-primary rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-primary/5 hover:scale-105 active:scale-95 group shrink-0"
+                      >
+                        <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <span>Convocar Recruta 🛰️</span>
+                      </button>
+
                       {/* Botão de Decolagem para o Laboratório Cognitivo */}
                       <button
                         onClick={() => setShowCognitiveLab(true)}
