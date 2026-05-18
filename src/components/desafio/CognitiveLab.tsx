@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Compass, Shield, Sparkles, X, ChevronRight, Gamepad2, Award } from 'lucide-react';
+import { Brain, Compass, Shield, Sparkles, X, ChevronRight, Gamepad2, Award, Box } from 'lucide-react';
 import MemoryGame from './MemoryGame';
 import SpotMatchGame from './SpotMatchGame';
 import AttentionGame from './AttentionGame';
 import StroopGame from './StroopGame';
 import SimonGame from './SimonGame';
+import CorsiGame from './CorsiGame';
 
 interface CognitiveLabProps {
   onClose: () => void;
@@ -14,7 +15,7 @@ interface CognitiveLabProps {
 }
 
 export const CognitiveLab: React.FC<CognitiveLabProps> = ({ onClose, onAwardStars, language }) => {
-  const [activeGame, setActiveGame] = useState<'memory' | 'spot' | 'attention' | 'stroop' | 'simon' | null>(null);
+  const [activeGame, setActiveGame] = useState<'memory' | 'spot' | 'attention' | 'stroop' | 'simon' | 'corsi' | null>(null);
   const [dailyGamesPlayed, setDailyGamesPlayed] = useState(0);
   const maxDailyGames = 3;
 
@@ -26,6 +27,7 @@ export const CognitiveLab: React.FC<CognitiveLabProps> = ({ onClose, onAwardStar
     if (activeGame === 'attention') gameTitle = 'Treino: Escudo do Silêncio ☄️';
     if (activeGame === 'stroop') gameTitle = 'Treino: Cores Cósmicas 🌈';
     if (activeGame === 'simon') gameTitle = 'Treino: Ritmo Estelar 🎵';
+    if (activeGame === 'corsi') gameTitle = 'Treino: Cargas de Corsi 📦';
 
     // Sincronizar as estrelas conquistadas com o banco de dados e estado local do herói
     onAwardStars(bonusStars, gameTitle, scoreText, playTime);
@@ -38,6 +40,7 @@ export const CognitiveLab: React.FC<CognitiveLabProps> = ({ onClose, onAwardStar
     if (activeGame === 'attention') return 'Escudo do Silêncio';
     if (activeGame === 'stroop') return 'Cores Cósmicas';
     if (activeGame === 'simon') return 'Ritmo Estelar';
+    if (activeGame === 'corsi') return 'Cargas de Corsi';
     return 'Laboratório de Treino';
   };
 
@@ -186,6 +189,23 @@ export const CognitiveLab: React.FC<CognitiveLabProps> = ({ onClose, onAwardStar
                     <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
                   </button>
 
+                  {/* Card Jogo 6: Cargas de Corsi */}
+                  <button 
+                    onClick={() => setActiveGame('corsi')}
+                    className="group w-full p-5 bg-white/5 hover:bg-indigo-500/5 border border-white/10 hover:border-indigo-500/30 rounded-3xl transition-all duration-300 flex items-center justify-between text-left hover:scale-[1.02]"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-all">
+                        <Box className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black uppercase tracking-wider text-white group-hover:text-indigo-400 transition-colors">Cargas de Corsi</h3>
+                        <p className="text-[10px] text-white/50 font-bold mt-1">Treino de Memória de Trabalho Visoespacial e Planejamento</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                  </button>
+
                 </div>
               </motion.div>
             ) : (
@@ -222,6 +242,12 @@ export const CognitiveLab: React.FC<CognitiveLabProps> = ({ onClose, onAwardStar
                 )}
                 {activeGame === 'simon' && (
                   <SimonGame 
+                    onComplete={handleGameComplete} 
+                    onClose={() => setActiveGame(null)} 
+                  />
+                )}
+                {activeGame === 'corsi' && (
+                  <CorsiGame 
                     onComplete={handleGameComplete} 
                     onClose={() => setActiveGame(null)} 
                   />
