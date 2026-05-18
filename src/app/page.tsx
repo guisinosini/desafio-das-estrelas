@@ -50,6 +50,40 @@ import { translations, type Language } from "@/lib/translations";
 import AuthStage from "@/components/auth/AuthStage";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
 import { LandingPage } from "@/components/landing/LandingPage";
+import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
+
+const orbitalTransitionVariants = {
+  initial: { 
+    opacity: 0, 
+    scale: 0.1, 
+    rotate: 120, 
+    x: 300, 
+    y: -100 
+  },
+  animate: { 
+    opacity: 1, 
+    scale: 1, 
+    rotate: 0, 
+    x: 0, 
+    y: 0,
+    transition: { 
+      type: "spring",
+      stiffness: 50,
+      damping: 14
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 0.1, 
+    rotate: -120, 
+    x: -300, 
+    y: 100,
+    transition: { 
+      duration: 0.8,
+      ease: "easeInOut"
+    }
+  }
+};
 
 const ClockDisplay = memo(({ language }: { language: string }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -1229,286 +1263,318 @@ export default function DesafioEstrelas() {
           <SetupChildStage
             newChild={newChild}
             setNewChild={setNewChild}
-            setStage={setStage}
-            handleCreateChild={handleCreateChild}
-            hasChildren={children.length > 0}
-            t={t}
-          />
-        )}
-
-        {/* --- STAGE: SETUP AVATAR --- */}
+               {/* --- STAGE: SETUP AVATAR --- */}
         {stage === 'setup_avatar' && (
-          <motion.div key="setup_avatar" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 text-center">
-            <button onClick={() => setStage('setup_child')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
-            <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.chooseAvatar}</h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-6 bg-white/5 backdrop-blur-xl border border-white/10 p-4 md:p-10 rounded-3xl md:rounded-[50px] shadow-2xl overflow-y-auto max-h-[50vh] md:max-h-none">
-              {AVATARS.map(a => (
-                <button
-                  key={a.id}
-                  onClick={() => setNewChild({ ...newChild, avatar: a.id })}
-                  className={clsx(
-                    "w-full aspect-square rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl transition-all border-2",
-                    newChild.avatar === a.id ? "bg-primary/20 border-primary scale-105 shadow-[0_0_20px_rgba(45,212,191,0.3)]" : "bg-white/5 border-white/10 hover:border-white/30"
-                  )}
-                >
-                  {a.emoji}
-                </button>
-              ))}
+          <motion.div 
+            key="setup_avatar" 
+            variants={orbitalTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 text-center overflow-hidden"
+          >
+            <OrbitalPlanet type="purple" title="Nebula X" subtitle="Setor Nebulosa" />
+            <div className="relative z-10 space-y-8 flex flex-col justify-center">
+              <button onClick={() => setStage('setup_child')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.chooseAvatar}</h2>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-6 bg-white/5 backdrop-blur-xl border border-white/10 p-4 md:p-10 rounded-3xl md:rounded-[50px] shadow-2xl overflow-y-auto max-h-[50vh] md:max-h-none">
+                {AVATARS.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => setNewChild({ ...newChild, avatar: a.id })}
+                    className={clsx(
+                      "w-full aspect-square rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl transition-all border-2",
+                      newChild.avatar === a.id ? "bg-primary/20 border-primary scale-105 shadow-[0_0_20px_rgba(45,212,191,0.3)]" : "bg-white/5 border-white/10 hover:border-white/30 text-white/60"
+                    )}
+                  >
+                    {a.emoji}
+                  </button>
+                ))}
+              </div>
+              <button onClick={handleCreateChild} className="w-full py-6 bg-primary text-black font-black uppercase rounded-[28px] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.confirmHero}</button>
             </div>
-            <button onClick={handleCreateChild} className="w-full py-6 bg-primary text-black font-black uppercase rounded-[28px] shadow-lg shadow-primary/20">{t.confirmHero}</button>
           </motion.div>
         )}
 
         {/* --- STAGE: SETUP PLANETS --- */}
         {stage === 'setup_planets' && (
-          <motion.div key="setup_planets" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
-            <div className="text-center space-y-4">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.destinyPlanets}</h2>
-              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.planetExplainer }} />
-            </div>
-
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
-              <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createPlanet}</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Ex: Melhorar em Matemática"
-                    value={customPlanet.title}
-                    onChange={e => setCustomPlanet({ ...customPlanet, title: e.target.value })}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors"
-                  />
-                  <input
-                    type="text"
-                    value={customPlanet.icon}
-                    onChange={e => setCustomPlanet({ ...customPlanet, icon: e.target.value })}
-                    className="w-16 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary"
-                    placeholder="🪐"
-                  />
-                  <button
-                    onClick={() => {
-                      if (customPlanet.title) {
-                        addPlanet(customPlanet.title, customPlanet.icon || "🪐");
-                        setCustomPlanet({ title: "", icon: "🪐" });
-                      }
-                    }}
-                    disabled={!customPlanet.title}
-                    className="bg-primary/20 text-primary p-3 rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
+          <motion.div 
+            key="setup_planets" 
+            variants={orbitalTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
+          >
+            <OrbitalPlanet type="blue" title="Cosmos Blue" subtitle="Setor Cosmos" />
+            <div className="relative z-10 space-y-8 flex flex-col justify-center">
+              <button onClick={() => setStage('setup_avatar')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
+              <div className="text-center space-y-4">
+                <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.destinyPlanets}</h2>
+                <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.planetExplainer }} />
               </div>
 
-              <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
-                <div className="flex flex-wrap gap-2">
-                  {planetPresets.map((p: any) => (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createPlanet}</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ex: Melhorar em Matemática"
+                      value={customPlanet.title}
+                      onChange={e => setCustomPlanet({ ...customPlanet, title: e.target.value })}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white"
+                    />
+                    <input
+                      type="text"
+                      value={customPlanet.icon}
+                      onChange={e => setCustomPlanet({ ...customPlanet, icon: e.target.value })}
+                      className="w-16 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
+                      placeholder="🪐"
+                    />
                     <button
-                      key={p.title}
-                      onClick={() => addPlanet(p.title, p.icon)}
-                      className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:border-primary/50 transition-colors flex items-center gap-2"
+                      onClick={() => {
+                        if (customPlanet.title) {
+                          addPlanet(customPlanet.title, customPlanet.icon || "🪐");
+                          setCustomPlanet({ title: "", icon: "🪐" });
+                        }
+                      }}
+                      disabled={!customPlanet.title}
+                      className="bg-primary/20 text-primary p-3 rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
                     >
-                      <span>{p.icon}</span> {p.title} <Plus className="w-3 h-3 text-white/40" />
+                      <Plus className="w-5 h-5" />
                     </button>
-                  ))}
+                  </div>
                 </div>
-              </div>
 
-              {(activeChild?.planets?.length || 0) > 0 && (
-                <div className="pt-6 border-t border-white/10 space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.chosenPlanets}</p>
-                  <div className="space-y-2">
-                    {activeChild?.planets?.map((p: Planet) => (
-                      <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{p.icon}</span>
-                          <span className="font-bold text-sm">{p.title}</span>
-                        </div>
-                        <button onClick={() => removePlanet(p.id)} className="p-2 text-white/20 hover:text-red-400 transition-colors">
-                          <Trash className="w-4 h-4" />
-                        </button>
-                      </div>
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {planetPresets.map((p: any) => (
+                      <button
+                        key={p.title}
+                        onClick={() => addPlanet(p.title, p.icon)}
+                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:border-primary/50 transition-colors flex items-center gap-2 text-white/80"
+                      >
+                        <span>{p.icon}</span> {p.title} <Plus className="w-3 h-3 text-white/40" />
+                      </button>
                     ))}
                   </div>
                 </div>
-              )}
 
-              <button
-                onClick={() => setStage('setup_tasks')}
-                className="w-full py-5 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl mt-4"
-              >
-                {t.traceRoute}
-              </button>
+                {(activeChild?.planets?.length || 0) > 0 && (
+                  <div className="pt-6 border-t border-white/10 space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.chosenPlanets}</p>
+                    <div className="space-y-2">
+                      {activeChild?.planets?.map((p: Planet) => (
+                        <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{p.icon}</span>
+                            <span className="font-bold text-sm text-white">{p.title}</span>
+                          </div>
+                          <button onClick={() => removePlanet(p.id)} className="p-2 text-white/20 hover:text-red-400 transition-colors">
+                            <Trash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setStage('setup_tasks')}
+                  className="w-full py-5 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl mt-4 hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                >
+                  {t.traceRoute}
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
 
         {/* --- STAGE: SETUP TASKS --- */}
         {stage === 'setup_tasks' && (
-          <motion.div key="setup_tasks" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('setup_planets')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
-            <div className="text-center space-y-4">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
-              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.taskExplainer }} />
-            </div>
-
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
-              <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createMission}:</p>
-                <div className="flex flex-col gap-4">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Ex: Lavar louça..."
-                      value={customTask.title}
-                      onChange={e => setCustomTask({ ...customTask, title: e.target.value })}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={customTask.stars}
-                      onChange={e => setCustomTask({ ...customTask, stars: parseInt(e.target.value) || 0 })}
-                      className="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.linkPlanet}</p>
-                    <select
-                      value={customTask.planetId || ''}
-                      onChange={e => setCustomTask({ ...customTask, planetId: e.target.value })}
-                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white/80 appearance-none cursor-pointer"
-                    >
-                      <option value="" className="text-black">{t.generalPlanetOption}</option>
-                      {activeChild?.planets?.map((p: Planet) => (
-                        <option key={p.id} value={p.id} className="text-black">{p.icon} {p.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex bg-white/5 rounded-xl p-1 border border-white/10 flex-wrap gap-1">
-                      {['daily', 'weekly', 'monthly', 'once'].map((rec) => (
-                        <button
-                          key={rec}
-                          onClick={() => setCustomTask({ ...customTask, recurrence: rec as TaskRecurrence })}
-                          className={clsx(
-                            "px-3 py-2 text-[8px] md:text-[10px] font-black uppercase rounded-lg transition-all",
-                            customTask.recurrence === rec ? "bg-primary text-black" : "text-white/40 hover:text-white"
-                          )}
-                        >
-                          {rec === 'daily' ? t.daily : rec === 'weekly' ? t.weekly : rec === 'monthly' ? t.monthly : t.once}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      disabled={!customTask.title}
-                      onClick={() => { addTask(customTask.title, customTask.stars, customTask.recurrence, customTask.planetId); setCustomTask({ title: "", stars: 5, recurrence: 'daily', planetId: "" }); }}
-                      className="flex-1 py-3 bg-primary text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all"
-                    >
-                      {t.addMissionBtn}
-                    </button>
-                  </div>
-                </div>
+          <motion.div 
+            key="setup_tasks" 
+            variants={orbitalTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
+          >
+            <OrbitalPlanet type="gold" title="Helios Prime" subtitle="Setor Estelar" />
+            <div className="relative z-10 space-y-8 flex flex-col justify-center">
+              <button onClick={() => setStage('setup_planets')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
+              <div className="text-center space-y-4">
+                <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
+                <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.taskExplainer }} />
               </div>
 
-              <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
-                <div className="flex flex-wrap gap-2">
-                  {taskPresets.map((p: any) => (
-                    <button key={p.title} onClick={() => addTask(p.title, p.stars)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all">
-                      + {p.title} ({p.stars}⭐)
-                    </button>
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createMission}:</p>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Ex: Lavar louça..."
+                        value={customTask.title}
+                        onChange={e => setCustomTask({ ...customTask, title: e.target.value })}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={customTask.stars}
+                        onChange={e => setCustomTask({ ...customTask, stars: parseInt(e.target.value) || 0 })}
+                        className="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.linkPlanet}</p>
+                      <select
+                        value={customTask.planetId || ''}
+                        onChange={e => setCustomTask({ ...customTask, planetId: e.target.value })}
+                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white/85 appearance-none cursor-pointer"
+                      >
+                        <option value="" className="text-black">{t.generalPlanetOption}</option>
+                        {activeChild?.planets?.map((p: Planet) => (
+                          <option key={p.id} value={p.id} className="text-black">{p.icon} {p.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex bg-white/5 rounded-xl p-1 border border-white/10 flex-wrap gap-1">
+                        {['daily', 'weekly', 'monthly', 'once'].map((rec) => (
+                          <button
+                            key={rec}
+                            onClick={() => setCustomTask({ ...customTask, recurrence: rec as TaskRecurrence })}
+                            className={clsx(
+                              "px-3 py-2 text-[8px] md:text-[10px] font-black uppercase rounded-lg transition-all",
+                              customTask.recurrence === rec ? "bg-primary text-black" : "text-white/40 hover:text-white"
+                            )}
+                          >
+                            {rec === 'daily' ? t.daily : rec === 'weekly' ? t.weekly : rec === 'monthly' ? t.monthly : t.once}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        disabled={!customTask.title}
+                        onClick={() => { addTask(customTask.title, customTask.stars, customTask.recurrence, customTask.planetId); setCustomTask({ title: "", stars: 5, recurrence: 'daily', planetId: "" }); }}
+                        className="flex-1 py-3 bg-primary text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all"
+                      >
+                        {t.addMissionBtn}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {taskPresets.map((p: any) => (
+                      <button key={p.title} onClick={() => addTask(p.title, p.stars)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all text-white/80">
+                        + {p.title} ({p.stars}⭐)
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                  {tasks.map((t: Task) => (
+                    <div key={t.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary font-black">{t.stars}</div>
+                        <span className="font-bold uppercase tracking-tight italic text-white">{t.title}</span>
+                      </div>
+                      <button onClick={() => removeTask(t.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
+                    </div>
                   ))}
+                  {tasks.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.radarEmpty}</p>}
                 </div>
-              </div>
 
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                {tasks.map((t: Task) => (
-                  <div key={t.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary font-black">{t.stars}</div>
-                      <span className="font-bold uppercase tracking-tight italic">{t.title}</span>
-                    </div>
-                    <button onClick={() => removeTask(t.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
-                  </div>
-                ))}
-                {tasks.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.radarEmpty}</p>}
+                <button disabled={tasks.length === 0} onClick={() => setStage('setup_rewards')} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.continue}</button>
               </div>
-
-              <button disabled={tasks.length === 0} onClick={() => setStage('setup_rewards')} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">{t.continue}</button>
             </div>
           </motion.div>
         )}
 
         {/* --- STAGE: SETUP REWARDS --- */}
         {stage === 'setup_rewards' && (
-          <motion.div key="setup_rewards" className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-col justify-center p-6 space-y-8">
-            <button onClick={() => setStage('setup_tasks')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
-            <div className="text-center space-y-4">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
-              <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.rewardExplainer }} />
-            </div>
-
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
-              <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createTreasure}:</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Ex: Cinema com pipoca..."
-                    value={customReward.title}
-                    onChange={e => setCustomReward({ ...customReward, title: e.target.value })}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-yellow-400 transition-colors"
-                  />
-                  <input
-                    type="number"
-                    min="1"
-                    value={customReward.cost}
-                    onChange={e => setCustomReward({ ...customReward, cost: parseInt(e.target.value) || 0 })}
-                    className="w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-yellow-400"
-                  />
-                  <button
-                    disabled={!customReward.title}
-                    onClick={() => { addReward(customReward.title, customReward.cost); setCustomReward({ title: "", cost: 50 }); }}
-                    className="px-6 bg-yellow-400 text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all shadow-lg shadow-yellow-400/20"
-                  >
-                    {t.add}
-                  </button>
-                </div>
+          <motion.div 
+            key="setup_rewards" 
+            variants={orbitalTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
+          >
+            <OrbitalPlanet type="turquoise" title="Aurelia Turquesa" subtitle="Setor Relíquia" />
+            <div className="relative z-10 space-y-8 flex flex-col justify-center">
+              <button onClick={() => setStage('setup_tasks')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
+              <div className="text-center space-y-4">
+                <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
+                <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.rewardExplainer }} />
               </div>
 
-              <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Sugestões Rápidas:</p>
-                <div className="flex flex-wrap gap-2">
-                  {rewardPresets.map((p: any) => (
-                    <button key={p.title} onClick={() => addReward(p.title, p.cost)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-all">
-                      + {p.title} ({p.cost}⭐)
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createTreasure}:</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ex: Cinema com pipoca..."
+                      value={customReward.title}
+                      onChange={e => setCustomReward({ ...customReward, title: e.target.value })}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-yellow-400 transition-colors text-white"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      value={customReward.cost}
+                      onChange={e => setCustomReward({ ...customReward, cost: parseInt(e.target.value) || 0 })}
+                      className="w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-yellow-400 text-white"
+                    />
+                    <button
+                      disabled={!customReward.title}
+                      onClick={() => { addReward(customReward.title, customReward.cost); setCustomReward({ title: "", cost: 50 }); }}
+                      className="px-6 bg-yellow-400 text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all shadow-lg shadow-yellow-400/20"
+                    >
+                      {t.add}
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                {rewards.map((r: Reward) => (
-                  <div key={r.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-yellow-400/20 rounded-xl flex items-center justify-center text-yellow-400 font-black">{r.cost}</div>
-                      <span className="font-bold uppercase tracking-tight italic">{r.title}</span>
-                    </div>
-                    <button onClick={() => removeReward(r.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
                   </div>
-                ))}
-                {rewards.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.noRewardsAdded}</p>}
-              </div>
+                </div>
 
-              <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">{t.startChallenge}</button>
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Sugestões Rápidas:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {rewardPresets.map((p: any) => (
+                      <button key={p.title} onClick={() => addReward(p.title, p.cost)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-all text-white/80">
+                        + {p.title} ({p.cost}⭐)
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                  {rewards.map((r: Reward) => (
+                    <div key={r.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-yellow-400/20 rounded-xl flex items-center justify-center text-yellow-400 font-black">{r.cost}</div>
+                        <span className="font-bold uppercase tracking-tight italic text-white">{r.title}</span>
+                      </div>
+                      <button onClick={() => removeReward(r.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
+                    </div>
+                  ))}
+                  {rewards.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.noRewardsAdded}</p>}
+                </div>
+
+                <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.startChallenge}</button>
+              </div>
             </div>
           </motion.div>
         )}
-
         {/* --- DASHBOARD ADVENTURE --- */}
         {stage === 'adventure' && (
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
