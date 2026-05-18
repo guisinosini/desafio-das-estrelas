@@ -240,7 +240,11 @@ const AuthStage = memo(({
                     <h4 className="text-[10px] font-black uppercase tracking-wider text-emerald-300">Chancela e Responsabilidade Técnica</h4>
                     <p className="text-[11px] font-bold">
                       O aplicativo **Desafio das Estrelas** e seus algoritmos de incentivo comportamental são supervisionados pelo Responsável Técnico: **Guilherme Carvalho Sinosini (CRP 06/181084)**.
-                                   <div className="space-y-3">
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
                   <h3 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2">1. Termos de Uso (Terms of Service) e Licenciamento SaaS</h3>
                   <p>
                     O **Desafio das Estrelas** concede ao mentor uma licença de uso individual, revogável e não exclusiva de nossa plataforma SaaS (Software as a Service) educacional. 
