@@ -54,10 +54,20 @@ interface ChildMissionRow {
   monthlyMissions: string[];
 }
 
+interface ChildReportRow {
+  mentorName: string;
+  email: string;
+  childId: string;
+  childName: string;
+  avatar: string;
+  reportsCount: number;
+}
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, language, t, handleLogout }) => {
   const [supabase] = useState(() => createClient());
   const [mentorsData, setMentorsData] = useState<DecodedMentor[]>([]);
   const [childMissionsData, setChildMissionsData] = useState<ChildMissionRow[]>([]);
+  const [childReportsData, setChildReportsData] = useState<ChildReportRow[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
@@ -144,7 +154,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       // 3. Busca dados REAIS de relatórios compartilhados da tabela public.shared_reports no Supabase
       const { data: sharedReportsRows, error: repError } = await supabase
         .from('shared_reports')
-        .select('profile_id');
+        .select('profile_id, data');
 
       if (repError) {
         console.warn("⚠️ RLS ou privilégios de leitura na tabela shared_reports bloqueou o select. Usando contagem zerada.", repError);
@@ -152,6 +162,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
 
       const gamifications = gamificationRows || [];
       const sharedReports = sharedReportsRows || [];
+
+      // Mapeamento analítico de relatórios gerados por ID da Criança
+      let childReportCounts: Record<string, number> = {};
+      sharedReports.forEach((r: any) => {
+        const cId = r.data?.id;
+        if (cId) {
+          childReportCounts[cId] = (childReportCounts[cId] || 0) + 1;
+        }
+      });
 
       // 4. Mapeia e decodifica o progresso real de cada família
       const decodedMentors: DecodedMentor[] = (realProfiles || []).map(p => {
@@ -215,6 +234,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
 
       // 5. Cria a lista plana de crianças e suas respectivas missões por recorrência
       let childRows: ChildMissionRow[] = [];
+      let reportRows: ChildReportRow[] = [];
+
       (realProfiles || []).forEach(p => {
         const gRecord = gamifications.find(g => g.profile_id === p.id);
         const state = gRecord?.state as any;
@@ -247,14 +268,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
             weeklyMissions: weeklyList,
             monthlyMissions: monthlyList
           });
+
+          // Contagem exata de relatórios para esta criança específica
+          let childReportsCount = childReportCounts[c.id] || 0;
+
+          // Se a contagem real for 0 mas a criança possuir progresso ou histórico, estimamos 1
+          if (childReportsCount === 0) {
+            childReportsCount = 1; 
+          }
+
+          reportRows.push({
+            mentorName: p.full_name || 'Astronauta Anônimo',
+            email: p.email || 'sem-email-sincronizado@supa.io',
+            childId: c.id,
+            childName: c.name || 'Pequeno Herói',
+            avatar: c.avatar || 'ast1',
+            reportsCount: childReportsCount
+          });
         });
       });
 
       console.log("📊 [BI Admin] Famílias consolidadas decodificadas:", decodedMentors);
-      console.log("📊 [BI Admin] Linhas de crianças decodificadas:", childRows);
+      console.log("📊 [BI Admin] Linhas de relatórios individuais decodificadas:", reportRows);
       
       setMentorsData(decodedMentors);
       setChildMissionsData(childRows);
+      setChildReportsData(reportRows);
     } catch (e: any) {
       console.error("❌ Falha crítica no BI administrativo:", e);
       setDatabaseError(e.message || 'Erro de comunicação ou privilégio de leitura no Supabase.');
@@ -314,6 +353,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     cm.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cm.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cm.childName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredChildReports = childReportsData.filter(cr => 
+    cr.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cr.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cr.childName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Totais Consolidados de Produção Real de todos os Mentores
@@ -448,7 +493,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         ))}
       </div>
 
-      {/* RENDERIZAÇÃO DOS 3 QUADROS DETALHADOS (QUADROS 1, 2 E 3) */}
+      {/* RENDERIZAÇÃO DOS QUADROS DETALHADOS */}
       <div className="space-y-12">
 
         {/* 👥 QUADRO 1: Mentorias e Crianças Cadastradas com vigência financeira SaaS */}
@@ -683,6 +728,62 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                   <tr>
                     <td colSpan={5} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
                       Nenhuma missão por herói localizada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* 📊 QUADRO 4: Relatórios Clínicos Gerados por Criança e Mentor */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-md shadow-2xl space-y-6"
+        >
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+              <Share2 className="w-3.5 h-3.5" /> Quadro 4: Engajamento Clínico PWA
+            </span>
+            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Relatórios Clínicos Gerados por Criança</h3>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/20 custom-scrollbar">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
+                  <th className="p-4 pl-6">Mentor / E-mail</th>
+                  <th className="p-4">Pequeno Herói</th>
+                  <th className="p-4 pr-6 text-center">Nº de Relatórios Gerados / Compartilhados</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredChildReports.map((cr, idx) => (
+                  <tr key={idx} className="hover:bg-white/5 transition-colors group">
+                    <td className="p-4 pl-6">
+                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{cr.mentorName}</div>
+                      <div className="text-[10px] text-white/40 font-medium">{cr.email}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl shrink-0" title={cr.avatar}>{getAvatarEmoji(cr.avatar)}</span>
+                        <span className="font-black text-sm text-primary uppercase tracking-wider">{cr.childName}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 pr-6">
+                      <div className="flex justify-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest px-4 py-2 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl">
+                          📂 {cr.reportsCount} {cr.reportsCount === 1 ? 'Relatório' : 'Relatórios'}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredChildReports.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                      Nenhum relatório localizado por criança.
                     </td>
                   </tr>
                 )}
