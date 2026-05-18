@@ -36,9 +36,9 @@ interface DecodedMentor {
   subscriptionStatus: string;
   childrenCount: number;
   planets: string[];
-  dailyMissions: number;
-  weeklyMissions: number;
-  monthlyMissions: number;
+  dailyMissions: string[];
+  weeklyMissions: string[];
+  monthlyMissions: string[];
   missionsConcluded: number;
   negativeBehaviors: number;
   reportsShared: number;
@@ -85,9 +85,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
 
         let childrenCount = children.length;
         let planetNames: string[] = [];
-        let dailyCount = 0;
-        let weeklyCount = 0;
-        let monthlyCount = 0;
+        let dailyList: string[] = [];
+        let weeklyList: string[] = [];
+        let monthlyList: string[] = [];
         let completedCount = 0;
         let frictionCount = 0;
         let sharesCount = 0;
@@ -101,20 +101,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
               }
             });
           }
-          // Extração de Missões por recorrência e progresso
+          // Extração de Missões por recorrência (com nomes reais de tarefas!)
           if (c.tasks) {
             c.tasks.forEach((tk: any) => {
-              if (tk.recurrence === 'daily') dailyCount++;
-              else if (tk.recurrence === 'weekly') weeklyCount++;
-              else if (tk.recurrence === 'monthly') monthlyCount++;
+              const taskTitle = tk.title || 'Missão sem nome';
+              if (tk.recurrence === 'daily') {
+                if (!dailyList.includes(taskTitle)) dailyList.push(taskTitle);
+              } else if (tk.recurrence === 'weekly') {
+                if (!weeklyList.includes(taskTitle)) weeklyList.push(taskTitle);
+              } else if (tk.recurrence === 'monthly') {
+                if (!monthlyList.includes(taskTitle)) monthlyList.push(taskTitle);
+              }
 
               if (tk.status === 'done') completedCount++;
             });
           }
-          // Extração de Atritos e Compartilhamentos no histórico de transações
+          // Extração de Atritos (com o tipo 'loss' correto do Diário do Herói!)
           if (c.history) {
             c.history.forEach((h: any) => {
-              if (h.type === 'lose' || h.type === 'penalty' || (h.amount < 0 && h.type !== 'redeem')) {
+              if (h.type === 'loss' || h.type === 'penalty' || (h.amount < 0 && h.type !== 'redeem')) {
                 frictionCount++;
               }
               if (h.type === 'share' || h.title?.toLowerCase().includes('compartil') || h.title?.toLowerCase().includes('relatório')) {
@@ -136,9 +141,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           subscriptionStatus: p.subscription_status || 'inactive',
           childrenCount,
           planets: planetNames,
-          dailyMissions: dailyCount,
-          weeklyMissions: weeklyCount,
-          monthlyMissions: monthlyCount,
+          dailyMissions: dailyList,
+          weeklyMissions: weeklyList,
+          monthlyMissions: monthlyList,
           missionsConcluded: completedCount,
           negativeBehaviors: frictionCount,
           reportsShared: sharesCount
@@ -300,8 +305,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
           { label: 'Famílias Registradas', val: totalFamilies, desc: 'Mentores cadastrados no Supabase', icon: Users, color: 'text-primary bg-primary/10 border-primary/20' },
-          { label: 'Missões Concluídas', val: totalCompletedMissions, desc: 'Quadros 4: Missões cumpridas na plataforma', icon: Award, color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' },
-          { label: 'Atritos e Comportamentos Negativos', val: totalFrictionBehaviors, desc: 'Quadro 5: Penalidades atribuídas no diário', icon: Zap, color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
+          { label: 'Missões Concluídas', val: totalCompletedMissions, desc: 'Quadro 4: Missões cumpridas na plataforma', icon: Award, color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' },
+          { label: 'Atritos e Comportamentos Negativos', val: totalFrictionBehaviors, desc: 'Quadro 5: Deduções por atritos (histórico)', icon: Zap, color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
           { label: 'Relatórios Compartilhados', val: totalSharedReports, desc: 'Quadro 6: Links clínicos com profissionais', icon: Share2, color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' }
         ].map((kpi, idx) => (
           <motion.div 
@@ -465,7 +470,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           </div>
         </motion.div>
 
-        {/* 📜 QUADRO 3: Missões Cadastradas Separadas por Recorrência */}
+        {/* 📜 QUADRO 3: Missões Cadastradas Separadas por Recorrência com Nomes das Missões */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -475,46 +480,70 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
             <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5" /> Quadro 3: Missões da Frota Estelar
             </span>
-            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Missões por Recorrência</h3>
+            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Nomes das Missões Cadastradas por Recorrência</h3>
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/20 custom-scrollbar">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
-                  <th className="p-4 pl-6">Nome do Mentor / E-mail</th>
-                  <th className="p-4 text-center">Missões Diárias ☀️</th>
-                  <th className="p-4 text-center">Missões Semanais 🌙</th>
-                  <th className="p-4 text-center">Missões Mensais 🪐</th>
-                  <th className="p-4 text-center">Total de Missões</th>
+                  <th className="p-4 pl-6 w-[200px] shrink-0">Nome do Mentor / E-mail</th>
+                  <th className="p-4 text-center w-[300px]">Missões Diárias ☀️</th>
+                  <th className="p-4 text-center w-[300px]">Missões Semanais 🌙</th>
+                  <th className="p-4 text-center w-[300px]">Missões Mensais 🪐</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredMentors.map(m => {
-                  const total = m.dailyMissions + m.weeklyMissions + m.monthlyMissions;
-                  return (
-                    <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
-                      <td className="p-4 pl-6">
-                        <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
-                        <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
-                      </td>
-                      <td className="p-4 text-center text-sm font-black text-cyan-400">{m.dailyMissions}</td>
-                      <td className="p-4 text-center text-sm font-black text-amber-400">{m.weeklyMissions}</td>
-                      <td className="p-4 text-center text-sm font-black text-purple-400">{m.monthlyMissions}</td>
-                      <td className="p-4 text-center">
-                        <span className={clsx(
-                          "text-xs font-black px-3.5 py-1.5 rounded-xl border",
-                          total > 0 ? "bg-primary/10 text-primary border-primary/20" : "bg-white/5 text-white/20 border-white/5"
-                        )}>
-                          {total} Missões
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {filteredMentors.map(m => (
+                  <tr key={m.profileId} className="hover:bg-white/5 transition-colors group">
+                    <td className="p-4 pl-6 align-top">
+                      <div className="font-bold text-sm text-white group-hover:text-primary transition-colors">{m.mentorName}</div>
+                      <div className="text-[10px] text-white/40 font-medium">{m.email}</div>
+                    </td>
+                    <td className="p-4 align-top">
+                      {m.dailyMissions.length === 0 ? (
+                        <div className="text-center text-[9px] font-bold text-white/20 uppercase tracking-widest py-2">Nenhuma</div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {m.dailyMissions.map((title, i) => (
+                            <span key={i} className="text-[9px] font-black uppercase px-2.5 py-1 bg-cyan-400/10 text-cyan-400 rounded-md border border-cyan-400/20 text-center">
+                              ☀️ {title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-4 align-top">
+                      {m.weeklyMissions.length === 0 ? (
+                        <div className="text-center text-[9px] font-bold text-white/20 uppercase tracking-widest py-2">Nenhuma</div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {m.weeklyMissions.map((title, i) => (
+                            <span key={i} className="text-[9px] font-black uppercase px-2.5 py-1 bg-amber-400/10 text-amber-400 rounded-md border border-amber-400/20 text-center">
+                              🌙 {title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-4 align-top">
+                      {m.monthlyMissions.length === 0 ? (
+                        <div className="text-center text-[9px] font-bold text-white/20 uppercase tracking-widest py-2">Nenhuma</div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {m.monthlyMissions.map((title, i) => (
+                            <span key={i} className="text-[9px] font-black uppercase px-2.5 py-1 bg-purple-400/10 text-purple-400 rounded-md border border-purple-400/20 text-center">
+                              🪐 {title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
                 {filteredMentors.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                    <td colSpan={4} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
                       Nenhuma missão localizada.
                     </td>
                   </tr>
