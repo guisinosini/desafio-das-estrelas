@@ -538,6 +538,91 @@ export default function DesafioEstrelas() {
     return () => clearTimeout(timer);
   }, [children, activeChildId, stage, parentPin, fleetId, language]);
 
+  const checkAndResetTasks = (currentChildren: ChildData[]): ChildData[] | null => {
+    let hasChanges = false;
+    const today = new Date();
+
+    const getMostRecentMonday = (date: Date) => {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      const day = d.getDay();
+      const diff = day === 0 ? 6 : day - 1;
+      d.setDate(d.getDate() - diff);
+      return d;
+    };
+
+    const getFirstOfCurrentMonth = (date: Date) => {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(1);
+      return d;
+    };
+
+    const updatedChildren = currentChildren.map(child => {
+      let childHasChanges = false;
+
+      const updatedTasks = child.tasks.map(task => {
+        if (task.status !== 'done' || !task.lastCompleted) return task;
+
+        const lastCompletedDate = new Date(task.lastCompleted);
+        let shouldReset = false;
+
+        if (task.recurrence === 'daily') {
+          shouldReset = today.getFullYear() !== lastCompletedDate.getFullYear() ||
+                       today.getMonth() !== lastCompletedDate.getMonth() ||
+                       today.getDate() !== lastCompletedDate.getDate();
+        } else if (task.recurrence === 'weekly') {
+          const monday = getMostRecentMonday(today);
+          shouldReset = lastCompletedDate < monday;
+        } else if (task.recurrence === 'monthly') {
+          const firstOfMonth = getFirstOfCurrentMonth(today);
+          shouldReset = lastCompletedDate < firstOfMonth;
+        }
+
+        if (shouldReset) {
+          hasChanges = true;
+          childHasChanges = true;
+          return { ...task, status: 'available' as const };
+        }
+
+        return task;
+      });
+
+      if (childHasChanges) {
+        return { ...child, tasks: updatedTasks };
+      }
+
+      return child;
+    });
+
+    return hasChanges ? updatedChildren : null;
+  };
+
+  // Efeito de inicialização e mudança de herói
+  useEffect(() => {
+    if (children.length === 0) return;
+    const updated = checkAndResetTasks(children);
+    if (updated) {
+      console.log("♻️ Missões reativadas automaticamente no carregamento!");
+      setChildren(updated);
+    }
+  }, [activeChildId]);
+
+  // Efeito de polling de background (60s)
+  useEffect(() => {
+    if (children.length === 0) return;
+
+    const interval = setInterval(() => {
+      const updated = checkAndResetTasks(children);
+      if (updated) {
+        console.log("⏰ Missões reativadas pelo relógio de background (00h)!");
+        setChildren(updated);
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [children]);
+
   const updateActiveChild = (updates: Partial<ChildData>) => {
     setChildren((prev: ChildData[]) => prev.map(c => c.id === activeChildId ? { ...c, ...updates } : c));
   };
