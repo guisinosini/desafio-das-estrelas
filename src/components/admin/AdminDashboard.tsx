@@ -37,10 +37,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
+  const [databaseError, setDatabaseError] = useState('');
 
   const loadProfiles = async () => {
     setLoading(true);
     setSyncMessage('');
+    setDatabaseError('');
     try {
       // 1. Busca os perfis de mentores reais diretamente no Supabase em tempo real
       const { data: realProfiles, error } = await supabase
@@ -49,10 +51,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.log("📡 Dados crus retornados pelo Supabase:", realProfiles);
       setProfiles(realProfiles || []);
     } catch (e: any) {
-      console.error("Erro RLS/Supabase:", e.message);
-      setSyncMessage('Certifique-se de aplicar a política SQL no painel do Supabase!');
+      console.error("❌ Erro ao ler base de dados:", e);
+      setDatabaseError(e.message || 'Erro de conexão ou privilégio no Supabase.');
     } finally {
       setLoading(false);
     }
@@ -86,7 +90,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       setTimeout(() => setSyncMessage(''), 3000);
     } catch (e: any) {
       alert(`Falha ao sincronizar com o banco de dados: ${e.message}`);
-      // Reverte se der erro
       loadProfiles();
     }
   };
@@ -142,6 +145,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           <span className="hidden md:inline text-[10px] font-black uppercase tracking-widest text-white/40">Setor Alfa Produção</span>
         </div>
       </div>
+
+      {/* BANNER DE DIAGNÓSTICO DE ERRO REAL DO SUPABASE */}
+      <AnimatePresence>
+        {databaseError && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="p-6 bg-red-500/10 border-2 border-red-500/30 rounded-[24px] flex gap-4 items-start text-red-400 backdrop-blur-md shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-2 h-full bg-red-500 animate-pulse" />
+            <AlertCircle className="w-6 h-6 shrink-0 mt-0.5 text-red-500" />
+            <div className="space-y-1">
+              <h4 className="text-sm font-black uppercase tracking-wider text-red-300">Falha de Comunicação Supabase (Depuração Direta)</h4>
+              <p className="text-xs font-bold leading-relaxed">{databaseError}</p>
+              <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest pt-2">
+                Dica técnica: Verifique se o nome de todas as colunas no select confere com o schema do seu banco de dados ou se a tabela public.profiles está criada.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* KPIs Estelares Reais */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -213,7 +238,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         <div className="lg:col-span-2 p-8 bg-white/5 border border-white/10 rounded-[40px] space-y-6 backdrop-blur-md shadow-2xl">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Controle de Produção</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Controle de Production</span>
               <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Famílias na Galáxia</h3>
             </div>
             
