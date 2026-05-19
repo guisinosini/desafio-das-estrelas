@@ -83,18 +83,7 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
 
   const customization: any = {
     visual: {
-      style: {
-        customVariables: {
-          theme: 'dark',
-          textPrimaryColor: '#ffffff',
-          textSecondaryColor: 'rgba(255,255,255,0.5)',
-          inputBackgroundColor: 'rgba(255,255,255,0.05)',
-          inputBorderColor: 'rgba(255,255,255,0.1)',
-          inputFocusedBorderColor: '#2dd4bf',
-          buttonBackground: '#2dd4bf',
-          buttonTextColor: '#000000',
-        },
-      },
+      theme: 'dark',
     },
   };
 
@@ -104,29 +93,29 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="relative z-10 max-w-5xl mx-auto min-h-screen flex flex-col justify-center p-6 py-12"
+      className="relative z-10 max-w-5xl mx-auto min-h-screen flex flex-col justify-center p-4 py-8 sm:p-6 sm:py-12 md:p-8"
     >
       {/* Botão voltar */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit mb-8"
+        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit mb-6 sm:mb-8"
       >
         <ChevronLeft className="w-4 h-4" /> Escolher outro plano
       </button>
 
-      <div className="space-y-2 mb-8">
+      <div className="space-y-2 mb-6 sm:mb-8">
         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Checkout Seguro</span>
-        <h2 className="text-4xl font-black italic uppercase tracking-tighter">
+        <h2 className="text-3xl sm:text-4xl font-black italic uppercase tracking-tighter">
           Ativar sua <span className="text-primary">Licença Galáctica</span>
         </h2>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8 items-start">
+      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-start">
 
         {/* ——— Coluna Esquerda: Resumo do Plano ——— */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className={clsx(
-            "bg-white/5 backdrop-blur-xl border rounded-[32px] p-8 relative overflow-hidden",
+            "bg-white/5 backdrop-blur-xl border rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 relative overflow-hidden",
             selectedPlan === 'yearly' ? "border-primary/40 shadow-[0_0_40px_-10px_rgba(45,212,191,0.3)]" : "border-white/10"
           )}>
             <div className="absolute -top-16 -right-16 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
@@ -141,66 +130,66 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{plan.subtitle}</span>
               <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">{plan.title}</h3>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black italic text-primary">{plan.price}</span>
-                <span className="text-white/40 font-bold">{plan.period}</span>
+                <span className="text-3xl sm:text-4xl font-black italic text-primary">{plan.price}</span>
+                <span className="text-white/40 font-bold text-xs sm:text-sm">{plan.period}</span>
               </div>
               <p className="text-[11px] text-white/40 leading-relaxed pt-1">{plan.description}</p>
             </div>
 
             <div className="space-y-3 relative z-10">
               {plan.features.map((feat, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-sm font-bold text-white/80">{feat}</span>
+                <div key={i} className="flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <span className="text-xs sm:text-sm font-bold text-white/80">{feat}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Selos de segurança */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span className="text-[10px] font-black uppercase text-white/60">Dados Criptografados</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">Dados Criptografados</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl">
-              <Lock className="w-4 h-4 text-blue-400" />
-              <span className="text-[10px] font-black uppercase text-white/60">Mercado Pago Seguro</span>
+              <Lock className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">Mercado Pago Seguro</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl">
-              <Rocket className="w-4 h-4 text-primary" />
-              <span className="text-[10px] font-black uppercase text-white/60">Cancele Quando Quiser</span>
+              <Rocket className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">Cancele Quando Quiser</span>
             </div>
           </div>
         </div>
 
         {/* ——— Coluna Direita: Formulário de Pagamento ——— */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 relative overflow-hidden">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 relative overflow-hidden">
           <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-primary/5 rounded-full blur-[80px]" />
 
           {status === 'success' ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-16 gap-6 text-center"
+              className="flex flex-col items-center justify-center py-12 sm:py-16 gap-6 text-center"
             >
-              <div className="w-20 h-20 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-full flex items-center justify-center">
-                <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-emerald-400">Decolagem Autorizada!</h3>
-                <p className="text-white/60 text-sm mt-2">Sua assinatura foi ativada com sucesso. Preparando o painel...</p>
+                <h3 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter text-emerald-400">Decolagem Autorizada!</h3>
+                <p className="text-white/60 text-xs sm:text-sm mt-2">Sua assinatura foi ativada com sucesso. Preparando o painel...</p>
               </div>
               <div className="flex items-center gap-2 text-white/40">
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span className="text-xs font-bold uppercase tracking-widest">Liberando acesso...</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">Liberando acesso...</span>
               </div>
             </motion.div>
           ) : (
             <>
-              <div className="space-y-1 mb-6 relative z-10">
+              <div className="space-y-1 mb-5 sm:mb-6 relative z-10">
                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Dados do Pagamento</span>
-                <h3 className="text-lg font-black italic uppercase tracking-tight text-white">Cartão de Crédito ou Débito</h3>
+                <h3 className="text-base sm:text-lg font-black italic uppercase tracking-tight text-white">Cartão de Crédito ou Débito</h3>
               </div>
 
               {status === 'error' && (
@@ -223,22 +212,22 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
                   />
                 </div>
               ) : (
-                <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-[24px] text-center space-y-4 relative z-10 my-6">
-                  <Lock className="w-12 h-12 text-red-400 mx-auto" />
-                  <h4 className="text-white font-black uppercase tracking-wider text-sm">Chave Galáctica Indisponível</h4>
-                  <p className="text-white/60 text-xs leading-relaxed max-w-sm mx-auto">
-                    A chave pública <code className="bg-black/40 px-1.5 py-0.5 rounded text-primary font-mono text-[10px]">NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY</code> não está configurada no seu painel da Vercel. 
+                <div className="p-6 sm:p-8 bg-red-500/10 border border-red-500/20 rounded-[20px] sm:rounded-[24px] text-center space-y-4 relative z-10 my-4 sm:my-6">
+                  <Lock className="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto" />
+                  <h4 className="text-white font-black uppercase tracking-wider text-xs sm:text-sm">Chave Galáctica Indisponível</h4>
+                  <p className="text-white/60 text-[11px] sm:text-xs leading-relaxed max-w-sm mx-auto">
+                    A chave pública <code className="bg-black/40 px-1.5 py-0.5 rounded text-primary font-mono text-[9px] sm:text-[10px]">NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY</code> não está configurada no seu painel da Vercel. 
                   </p>
-                  <p className="text-white/40 text-[10px] leading-relaxed max-w-xs mx-auto">
+                  <p className="text-white/40 text-[9px] sm:text-[10px] leading-relaxed max-w-xs mx-auto">
                     Adicione essa variável nas configurações de ambiente do seu projeto Vercel para liberar o formulário do cartão.
                   </p>
                 </div>
               )}
 
               {status === 'processing' && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-[32px] flex flex-col items-center justify-center gap-4 z-20">
-                  <RefreshCw className="w-10 h-10 text-primary animate-spin" />
-                  <p className="text-white font-black uppercase tracking-widest text-sm">Processando pagamento...</p>
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center gap-4 z-20">
+                  <RefreshCw className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
+                  <p className="text-white font-black uppercase tracking-widest text-xs sm:text-sm">Processando pagamento...</p>
                 </div>
               )}
             </>
