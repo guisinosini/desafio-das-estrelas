@@ -251,8 +251,8 @@ const AuthStage = memo(({
                   </p>
                   <ul className="list-disc list-inside space-y-1.5 pl-2 text-zinc-400">
                     <li>**Disponibilidade e SLA:** Nossa infraestrutura tecnológica é integrada aos servidores em nuvem do **Supabase**, usufruindo de acordos de SLA (Service Level Agreement) de disponibilidade padrão de mercado de **99,9%**, com backups redundantes e proteção de integridade.</li>
-                    <li>**Limites da Licença:** O acesso às ferramentas administrativas de mentoria (Quadro de Missões, Emissão de Relatórios Compartilhados e Diário de Bordo) é concedido sob o regime de assinatura via **Stripe**. Os limites de crianças cadastradas e recursos de BI seguem estritamente o plano ativo escolhido.</li>
-                    <li>**Cancelamento:** A assinatura pode ser revogada ou alterada a qualquer momento, sem taxas de cancelamento, diretamente no Portal de Faturamento do Cliente fornecido pelo Stripe.</li>
+                    <li>**Limites da Licença:** O acesso às ferramentas administrativas de mentoria (Quadro de Missões, Emissão de Relatórios Compartilhados e Diário de Bordo) é concedido sob o regime de assinatura via **Mercado Pago**. Os limites de crianças cadastradas e recursos de BI seguem estritamente o plano ativo escolhido.</li>
+                    <li>**Cancelamento:** A assinatura pode ser revogada ou alterada a qualquer momento, sem taxas de cancelamento, diretamente no Portal do Mercado Pago.</li>
                   </ul>
                 </div>
 

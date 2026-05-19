@@ -68,37 +68,6 @@ const currencyMap: Record<string, { symbol: string, monthly: string, yearly: str
   'zh': { symbol: '¥', monthly: '26,65', yearly: '265,00' },
 };
 
-const stripePriceMap: Record<string, { monthly: string | undefined, yearly: string | undefined }> = {
-  'pt-BR': {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_BRL,
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_BRL,
-  },
-  'en': {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_USD,
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_USD,
-  },
-  'es': {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
-  },
-  'fr': {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
-  },
-  'it': {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
-  },
-  'pt-PT': {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_EUR,
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_EUR,
-  },
-  'zh': {
-    monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY_CNY,
-    yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY_CNY,
-  },
-};
-
 export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart, deferredPrompt, onInstall }) => {
   const t = translations[language];
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
@@ -121,18 +90,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
     try {
       const interval = planType === 'cadet' ? 'monthly' : 'yearly';
       
-      // Obtém o priceId de forma 100% segura usando o mapa estático compilado no cliente
-      const langConfig = stripePriceMap[language] || stripePriceMap['en'];
-      const priceId = interval === 'monthly' ? langConfig.monthly : langConfig.yearly;
-
-      if (!priceId) {
-        throw new Error(`ID de preço do Stripe não configurado para o idioma ${language} e plano ${planType}`);
-      }
-
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, interval }),
+        body: JSON.stringify({ language, interval, planType }),
       });
 
       const data = await response.json();
