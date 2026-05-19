@@ -52,7 +52,7 @@ export default async function SharedReportPage({ params }: { params: Promise<{ i
         </div>
         
         <div className="bg-[#16213e]/60 backdrop-blur-2xl border-2 border-white/5 rounded-[40px] shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden">
-          <ClinicalReport activeChild={childData} language={language} />
+          <ClinicalReport activeChild={childData} language={language} isSharedView={true} />
         </div>
 
         <div className="mt-12 text-center flex flex-col items-center gap-4 print:hidden">

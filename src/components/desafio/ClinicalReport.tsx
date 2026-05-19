@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import {
@@ -15,7 +15,14 @@ import {
   ExternalLink,
   X,
   Copy,
-  ShieldCheck
+  ShieldCheck,
+  MessageCircle,
+  Linkedin,
+  Facebook,
+  Twitter,
+  Send,
+  Mail,
+  Heart
 } from 'lucide-react';
 import type { ChildData, Task, Reward } from '@/types/desafio';
 import { Language, translations } from '@/lib/translations';
@@ -23,16 +30,19 @@ import { Language, translations } from '@/lib/translations';
 interface ClinicalReportProps {
   activeChild?: ChildData | null;
   language: Language;
+  isSharedView?: boolean;
 }
 
-export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, language }) => {
+export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, language, isSharedView = false }) => {
   const t = translations[language];
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [copyReferralSuccess, setCopyReferralSuccess] = useState(false);
 
   if (!activeChild) {
     return (
@@ -49,45 +59,66 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
   const startTs = startDate ? new Date(startDate).getTime() : null;
   const endTs   = endDate   ? new Date(endDate + 'T23:59:59').getTime() : null;
 
-  const isInRange = (isoStr: string): boolean => {
-    if (!startTs && !endTs) return true;
-    const dateObj = new Date(isoStr);
-    const t = dateObj.getTime();
-    if (startTs && t < startTs) return false;
-    if (endTs   && t > endTs)   return false;
-    return true;
-  };
+  const isInRange = useMemo(() => {
+    return (isoStr: string): boolean => {
+      if (!startTs && !endTs) return true;
+      const dateObj = new Date(isoStr);
+      const tVal = dateObj.getTime();
+      if (startTs && tVal < startTs) return false;
+      if (endTs   && tVal > endTs)   return false;
+      return true;
+    };
+  }, [startTs, endTs]);
 
-  const missionCounts: Record<string, number> = {};
-  tasks.forEach(task => {
-    if (task.completionLog && task.completionLog.length > 0) {
-      const countInRange = task.completionLog.filter(isInRange).length;
-      if (countInRange > 0) {
-        missionCounts[task.title] = (missionCounts[task.title] || 0) + countInRange;
+  const {
+    missionCounts,
+    missionMax,
+    totalMissionsInPeriod,
+    taskCompletionRate,
+    behaviorDeductions,
+    totalDeductionsCount,
+    punishCounts,
+    punishMax
+  } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    tasks.forEach(task => {
+      if (task.completionLog && task.completionLog.length > 0) {
+        const countInRange = task.completionLog.filter(isInRange).length;
+        if (countInRange > 0) {
+          counts[task.title] = (counts[task.title] || 0) + countInRange;
+        }
+      } else if (task.status === 'done' && task.lastCompleted) {
+        if (isInRange(task.lastCompleted)) {
+          counts[task.title] = (counts[task.title] || 0) + 1;
+        }
       }
-    } else if (task.status === 'done' && task.lastCompleted) {
-      if (isInRange(task.lastCompleted)) {
-        missionCounts[task.title] = (missionCounts[task.title] || 0) + 1;
-      }
-    }
-  });
-  const missionMax = Math.max(...Object.values(missionCounts), 1);
+    });
+    const maxVal = Math.max(...Object.values(counts), 1);
+    const totalMissions = Object.values(counts).reduce((a, b) => a + b, 0);
+    const rate = tasks.length > 0 ? Math.round((totalMissions / tasks.length) * 100) : 0;
 
-  const totalMissionsInPeriod = Object.values(missionCounts).reduce((a, b) => a + b, 0);
-  const totalTasks = tasks.length;
-  const taskCompletionRate = totalTasks > 0 ? Math.round((totalMissionsInPeriod / totalTasks) * 100) : 0;
+    const deductions = history.filter(h =>
+      (h.type === 'loss' || h.amount < 0) && isInRange(h.date)
+    );
+    const deductionsCount = deductions.length;
 
-  const behaviorDeductions = history.filter(h =>
-    (h.type === 'loss' || h.amount < 0) &&
-    isInRange(h.date)
-  );
-  const totalDeductionsCount = behaviorDeductions.length;
+    const punishes: Record<string, number> = {};
+    deductions.forEach(b => {
+      punishes[b.title] = (punishes[b.title] || 0) + 1;
+    });
+    const punishesMax = Math.max(...Object.values(punishes), 1);
 
-  const punishCounts: Record<string, number> = {};
-  behaviorDeductions.forEach(b => {
-    punishCounts[b.title] = (punishCounts[b.title] || 0) + 1;
-  });
-  const punishMax = Math.max(...Object.values(punishCounts), 1);
+    return {
+      missionCounts: counts,
+      missionMax: maxVal,
+      totalMissionsInPeriod: totalMissions,
+      taskCompletionRate: rate,
+      behaviorDeductions: deductions,
+      totalDeductionsCount: deductionsCount,
+      punishCounts: punishes,
+      punishMax: punishesMax
+    };
+  }, [tasks, history, isInRange]);
 
   const getPlanetStats = (planetId: string) => {
     const planetTasks = tasks.filter(task => task.planetId === planetId);
@@ -106,12 +137,10 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
     return { planetTasks, completedCounts, totalCompleted, planetRate };
   };
 
-  // Cálculo da Atividade Semanal (Missões por dia) - Responsivo ao filtro de datas
-  const getWeeklyData = () => {
+  const weeklyData = useMemo(() => {
     let chartStart: Date;
     let chartEnd: Date;
 
-    // Determinar o intervalo do gráfico baseado nos filtros
     if (startDate && endDate) {
       chartStart = new Date(startDate + 'T12:00:00');
       chartEnd = new Date(endDate + 'T12:00:00');
@@ -124,9 +153,8 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
       chartEnd = new Date(chartStart);
       chartEnd.setDate(chartStart.getDate() + 6);
     } else {
-      // Padrão: semana atual (Segunda a Domingo)
       const now = new Date();
-      const day = now.getDay(); // 0 (Dom) a 6 (Sáb)
+      const day = now.getDay();
       const diffToMonday = day === 0 ? -6 : 1 - day;
       chartStart = new Date(now);
       chartStart.setDate(now.getDate() + diffToMonday);
@@ -137,7 +165,6 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
       chartEnd.setHours(12, 0, 0, 0);
     }
 
-    // Pré-processar contagens para evitar loops aninhados pesados
     const countsPerDate: Record<string, number> = {};
     tasks.forEach(task => {
       const logs = task.completionLog || (task.status === 'done' && task.lastCompleted ? [task.lastCompleted] : []);
@@ -153,7 +180,6 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
     };
     
     const current = new Date(chartStart);
-    // Limite de segurança de 31 dias para o gráfico não quebrar visualmente
     const limit = new Date(chartStart);
     limit.setDate(limit.getDate() + 31);
     const finalEnd = chartEnd < limit ? chartEnd : limit;
@@ -172,10 +198,11 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
       current.setDate(current.getDate() + 1);
     }
     return days;
-  };
+  }, [tasks, startDate, endDate, t.reportDays]);
 
-  const weeklyData = getWeeklyData();
-  const maxWeekly = Math.max(...weeklyData.map(w => w.count), 1);
+  const maxWeekly = useMemo(() => {
+    return Math.max(...weeklyData.map(w => w.count), 1);
+  }, [weeklyData]);
 
   const handlePrint = () => window.print();
 
@@ -209,6 +236,67 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
 
   return (
     <div className="space-y-8 clinical-report-container" style={{ background: 'transparent' }}>
+      {/* BANNER DE BOAS-VINDAS E APRESENTAÇÃO PARA O PROFISSIONAL */}
+      {isSharedView && (
+        <div className="bg-gradient-to-r from-indigo-950/70 to-purple-950/70 border-2 border-indigo-500/20 p-6 md:p-8 rounded-[40px] backdrop-blur-2xl shadow-2xl relative overflow-hidden group print:hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-3xl rounded-full -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 blur-3xl rounded-full -ml-32 -mb-32" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-4 max-w-2xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-indigo-500/20 rounded-2xl border border-indigo-400/30 text-indigo-400 shrink-0">
+                  <Brain className="w-8 h-8" />
+                </div>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-indigo-300">
+                    Olá, Profissional do Desenvolvimento!
+                  </h2>
+                  <p className="text-xs text-white/50 font-bold uppercase tracking-wider">
+                    Portal de Acompanhamento Clínico & Pedagógico
+                  </p>
+                </div>
+              </div>
+              
+              <p className="text-xs md:text-sm text-white/70 leading-relaxed font-medium">
+                Seja muito bem-vindo ao Desafio das Estrelas. Este relatório consolida os dados de hábitos, rotina de missões, comportamento e engajamento da criança no laboratório cognitivo de maneira gamificada e estruturada.
+              </p>
+
+              {/* Disclaimer do Diagnóstico */}
+              <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex gap-3 items-start">
+                <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 block">
+                    Aviso Importante de Responsabilidade Técnica
+                  </span>
+                  <p className="text-[11px] text-amber-200/80 leading-relaxed font-medium">
+                    Este documento constitui um consolidado pedagógico-comportamental complementar baseado nas missões e rotinas realizadas. <strong>Não constitui diagnóstico clínico, anamnese, nem deve ser interpretado como ferramenta de avaliação psicológica ou médica oficial</strong>, devendo ser utilizado como suporte e interpretado exclusivamente sob supervisão técnica profissional.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Ação de Indicar o App */}
+            <div className="w-full md:w-auto shrink-0 flex flex-col items-center bg-white/5 border border-white/10 p-6 rounded-3xl text-center space-y-4 md:max-w-[280px]">
+              <div className="w-12 h-12 rounded-full bg-indigo-500/20 border border-indigo-400/20 flex items-center justify-center text-indigo-400">
+                <Heart className="w-6 h-6 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs font-black uppercase tracking-wider text-white">Recomende o App</h4>
+                <p className="text-[10px] text-white/40 leading-normal font-medium">
+                  Indique o Desafio das Estrelas para outros pais e mentores que buscam fortalecer rotinas positivas.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowReferralModal(true)}
+                className="w-full py-3.5 px-6 bg-indigo-500 hover:bg-indigo-600 text-white font-black uppercase tracking-[0.1em] text-[10px] rounded-2xl shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" /> Indicar o Desafio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-indigo-500/10 border-2 border-indigo-500/20 p-8 rounded-[40px] backdrop-blur-2xl print:hidden shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full -mr-32 -mt-32" />
         
@@ -331,6 +419,130 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Indicação com Redes Sociais */}
+      {showReferralModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/90 backdrop-blur-xl">
+          <div className="w-full max-w-lg bg-[#16213e] border-2 border-indigo-500/20 rounded-[40px] shadow-2xl overflow-hidden text-white relative">
+            <div className="p-8 border-b border-white/10 flex justify-between items-center bg-indigo-500/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black uppercase italic tracking-tighter">Recomende o Desafio</h2>
+                  <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest leading-none mt-1">Indicar para Pais & Mentores</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => { setShowReferralModal(false); setCopyReferralSuccess(false); }} 
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-6">
+              <p className="text-white/60 text-xs md:text-sm leading-relaxed font-medium">
+                Sua recomendação faz a diferença! Selecione uma rede social abaixo para enviar uma recomendação pronta ou copie o texto preparado para compartilhar em qualquer lugar.
+              </p>
+
+              {/* Botões de Redes Sociais */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {/* WhatsApp */}
+                <a
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                    "Olá! Gostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), uma ferramenta maravilhosa de gamificação galáctica e neurociência que auxilia pais e mentores no desenvolvimento de comportamentos positivos, rotinas saudáveis e treino cognitivo infantil de forma muito afetiva. Vale muito a pena conhecer!"
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-emerald-400"
+                >
+                  <MessageCircle className="w-4 h-4 shrink-0" /> WhatsApp
+                </a>
+
+                {/* LinkedIn */}
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://www.desafioestrelas.com')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-sky-400"
+                >
+                  <Linkedin className="w-4 h-4 shrink-0" /> LinkedIn
+                </a>
+
+                {/* Telegram */}
+                <a
+                  href={`https://t.me/share/url?url=${encodeURIComponent('https://www.desafioestrelas.com')}&text=${encodeURIComponent(
+                    "Recomendo o Desafio das Estrelas: Um aplicativo incrível de gamificação que ajuda no desenvolvimento de rotinas infantis de forma positiva e gamificada!"
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-blue-400"
+                >
+                  <Send className="w-4 h-4 shrink-0" /> Telegram
+                </a>
+
+                {/* Facebook */}
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.desafioestrelas.com')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-indigo-400"
+                >
+                  <Facebook className="w-4 h-4 shrink-0" /> Facebook
+                </a>
+
+                {/* Twitter / X */}
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                    "Recomendo o Desafio das Estrelas, uma ferramenta incrível de gamificação e rotinas para apoiar no desenvolvimento de crianças através de reforço positivo! https://www.desafioestrelas.com"
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-zinc-800/50 hover:bg-zinc-800 border border-white/5 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-white"
+                >
+                  <Twitter className="w-4 h-4 shrink-0" /> Twitter / X
+                </a>
+
+                {/* Email */}
+                <a
+                  href={`mailto:?subject=${encodeURIComponent('Recomendação: Desafio das Estrelas')}&body=${encodeURIComponent(
+                    "Olá!\n\nGostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), um aplicativo incrível de gamificação galáctica e neurociência cognitiva para auxiliar no desenvolvimento infantil, ajudando pais e mentores a fortalecerem rotinas, hábitos e habilidades socioemocionais através do reforço positivo.\n\nTenho certeza de que será de grande valor!\n\nAbraços."
+                  )}`}
+                  className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-rose-400"
+                >
+                  <Mail className="w-4 h-4 shrink-0" /> E-mail
+                </a>
+              </div>
+
+              {/* Mensagem Formatada Pronta para Copiar */}
+              <div className="space-y-3 pt-2 border-t border-white/5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block">Texto de indicação</span>
+                <div className="relative">
+                  <textarea
+                    readOnly
+                    value="Olá! Gostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), uma ferramenta maravilhosa de gamificação galáctica e neurociência que auxilia pais e mentores no desenvolvimento de comportamentos positivos, rotinas saudáveis e treino cognitivo infantil de forma muito afetiva. Vale muito a pena conhecer!"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-medium text-white/70 outline-none h-24 resize-none pr-12 leading-relaxed"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        "Olá! Gostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), uma ferramenta maravilhosa de gamificação galáctica e neurociência que auxilia pais e mentores no desenvolvimento de comportamentos positivos, rotinas saudáveis e treino cognitivo infantil de forma muito afetiva. Vale muito a pena conhecer!"
+                      );
+                      setCopyReferralSuccess(true);
+                      setTimeout(() => setCopyReferralSuccess(false), 2000);
+                    }}
+                    className="absolute right-3 top-3 p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all"
+                  >
+                    {copyReferralSuccess ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
