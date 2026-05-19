@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 import clsx from 'clsx';
 import type { ChildData } from '@/types/desafio';
@@ -14,7 +14,7 @@ interface SetupChildStageProps {
   t: any;
 }
 
-const orbitalTransitionVariants = {
+const orbitalTransitionVariants: Variants = {
   initial: { 
     opacity: 0, 
     scale: 0.1, 
