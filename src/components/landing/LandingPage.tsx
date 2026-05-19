@@ -101,6 +101,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
   const t = translations[language];
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isLangOpen, setIsLangOpen] = React.useState(false);
 
   const currentConfig = React.useMemo(() => {
     return currencyMap[language] || currencyMap['en'];
@@ -167,22 +168,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
         </div>
 
         {/* Right Side: Language & Login */}
-        <div className="flex items-center gap-2 md:gap-3 justify-end">
-          <div className="relative group">
-            <button className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 md:px-4 py-2 rounded-full text-[10px] md:text-sm font-bold hover:bg-white/10 transition-all">
+        <div className="flex items-center gap-2 md:gap-3 justify-end relative z-[110]">
+          <div className="relative">
+            <button 
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 md:px-4 py-2 rounded-full text-[10px] md:text-sm font-bold hover:bg-white/10 transition-all cursor-pointer"
+            >
               {languages.find(l => l.code === language)?.flag} <span className="hidden sm:inline">{languages.find(l => l.code === language)?.label}</span> <ChevronDown className="w-3 h-3 md:w-4 md:h-4 opacity-40" />
             </button>
-            <div className="absolute right-0 top-full mt-2 w-48 bg-[#1e293b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110]">
-              {languages.map(lang => (
-                <button
-                  key={lang.code}
-                  onClick={() => onLanguageChange(lang.code)}
-                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-primary/10 hover:text-primary transition-colors text-left text-[11px] md:text-sm font-bold border-b border-white/5 last:border-0"
-                >
-                  <span className="text-lg">{lang.flag}</span> {lang.label}
-                </button>
-              ))}
-            </div>
+            
+            {isLangOpen && (
+              <>
+                {/* Invisible fullscreen backdrop to close the dropdown naturally on click outside */}
+                <div 
+                  className="fixed inset-0 z-[115] bg-transparent cursor-default" 
+                  onClick={() => setIsLangOpen(false)}
+                />
+                
+                <div className="absolute right-0 top-full mt-2 w-48 bg-[#1e293b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden transition-all z-[120]">
+                  {languages.map(lang => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        onLanguageChange(lang.code);
+                        setIsLangOpen(false);
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-primary/10 hover:text-primary transition-colors text-left text-[11px] md:text-sm font-bold border-b border-white/5 last:border-0 cursor-pointer"
+                    >
+                      <span className="text-lg">{lang.flag}</span> {lang.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           <button onClick={onStart} className="bg-primary text-black px-4 md:px-8 py-2 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/30">
             {t.login}
