@@ -128,42 +128,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
   const [behaviorNote, setBehaviorNote] = useState('');
 
-  // Função placeholder para envio de e‑mail (substituir por serviço real)
-  const sendEmail = async (to: string, subject: string, body: string) => {
-    try {
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, subject, body }),
-      });
-    } catch (e) {
-      console.error('Falha ao enviar e‑mail de lembrete:', e);
-    }
-  };
+  // TODO (futura implementação): Alertas de missões atrasadas por e-mail.
+  // Esta funcionalidade requer adicionar o campo `mentorEmail: string` ao tipo ChildData
+  // e à lógica de persistência no banco. O campo (activeChild as any).mentorEmail
+  // não existe no modelo atual, tornando este bloco inativo.
 
-  // Verifica missões atrasadas (≥ 3 dias sem conclusão) e envia alerta ao mentor
-  useEffect(() => {
-    if (!activeChild) return;
-    const now = new Date();
-    const threeDays = 3 * 24 * 60 * 60 * 1000;
-    tasks.forEach((task) => {
-      // Ignora missões já concluídas
-      if (task.status === 'done') return;
-      // Se nunca foi completada, use a data de criação (assumida como lastCompleted undefined)
-      const last = task.lastCompleted ? new Date(task.lastCompleted) : null;
-      if (last) {
-        if (now.getTime() - last.getTime() >= threeDays) {
-          const subject = t.email_reminder_subject.replace('{title}', task.title);
-          const body = t.email_reminder_body
-            .replace('{title}', task.title)
-            .replace('{name}', activeChild.name);
-          // Placeholder: usar e‑mail do mentor armazenado na aplicação (ex.: parentPin ou outro campo)
-          const mentorEmail = (activeChild as any).mentorEmail || '';
-          if (mentorEmail) sendEmail(mentorEmail, subject, body);
-        }
-      }
-    });
-  }, [activeChild?.id, tasks]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 md:gap-12 relative z-10">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, memo, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, memo, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star,
@@ -267,13 +267,10 @@ export default function DesafioEstrelas() {
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
 
-  const loadFromCloud = async (existingUser?: any) => {
-    console.log("☁️ Tentando carregar dados da nuvem...");
+  // useCallback garante referência estável e evita closure stale nos effects que chamam esta função (I1)
+  const loadFromCloud = useCallback(async (existingUser?: any) => {
     const user = existingUser || (await supabase.auth.getUser()).data.user;
-    if (!user) {
-      console.log("⚠️ Nenhum usuário logado para carregar nuvem.");
-      return null;
-    }
+    if (!user) return null;
 
     try {
       // Busca o estado do jogo E o status da assinatura simultaneamente
@@ -293,14 +290,13 @@ export default function DesafioEstrelas() {
       }
 
       if (gamificationRes.data?.state) {
-        console.log("📦 Dados encontrados na nuvem!");
         return gamificationRes.data.state;
       }
     } catch (e) {
       console.error("💥 Erro ao carregar dados:", e);
     }
     return null;
-  };
+  }, [supabase, setIsPremium, setSubscriptionPriceId]);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
@@ -671,30 +667,34 @@ export default function DesafioEstrelas() {
     return hasChanges ? updatedChildren : null;
   };
 
+  // Ref para o valor mais recente de children — evita closure stale e reinício
+  // desnecessário do intervalo de polling a cada tarefa completada (I2)
+  const childrenRef = useRef(children);
+  useEffect(() => {
+    childrenRef.current = children;
+  }, [children]);
+
   // Efeito de inicialização e mudança de herói
   useEffect(() => {
     if (children.length === 0) return;
     const updated = checkAndResetTasks(children);
     if (updated) {
-      console.log("♻️ Missões reativadas automaticamente no carregamento!");
       setChildren(updated);
     }
   }, [activeChildId]);
 
-  // Efeito de polling de background (60s)
+  // Efeito de polling de background (60s) — intervalo estável, não reinicia a cada tarefa
   useEffect(() => {
-    if (children.length === 0) return;
-
     const interval = setInterval(() => {
-      const updated = checkAndResetTasks(children);
+      if (childrenRef.current.length === 0) return;
+      const updated = checkAndResetTasks(childrenRef.current);
       if (updated) {
-        console.log("⏰ Missões reativadas pelo relógio de background (00h)!");
         setChildren(updated);
       }
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [children]);
+  }, []); // Sem dependências: o intervalo vive durante toda a sessão ativa
 
   const updateActiveChild = (updates: Partial<ChildData>) => {
     setChildren((prev: ChildData[]) => prev.map(c => c.id === activeChildId ? { ...c, ...updates } : c));
@@ -781,11 +781,14 @@ export default function DesafioEstrelas() {
           return;
         }
 
-        fetch("/api/auth/welcome-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: user?.id, full_name: parentName, source: 'desafio_estrelas' })
-        }).catch(err => console.error("Erro e-mail:", err));
+        // I4: Guard explícito — só envia welcome-email se o user.id existir
+        if (user?.id) {
+          fetch("/api/auth/welcome-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: user.id, full_name: parentName, source: 'desafio_estrelas' })
+          }).catch(err => console.error("Erro e-mail:", err));
+        }
       }
 
       if (!user) throw new Error("Usuário não retornado pelo servidor.");
@@ -1063,9 +1066,19 @@ export default function DesafioEstrelas() {
       console.warn("Erro ao invalidar sessão na API do Supabase:", err);
     } finally {
       // Limpeza manual absoluta de tokens e cookies locais (independente de falha de API ou internet)
-      const lang = localStorage.getItem('app_language');
+      // I3: Preserva a preferência de idioma usando a chave correta antes de limpar
+      let savedLanguage: string | null = null;
+      try {
+        const stored = localStorage.getItem('desafio_estrelas_v2');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          savedLanguage = parsed.language || null;
+        }
+      } catch {}
       localStorage.clear();
-      if (lang) localStorage.setItem('app_language', lang);
+      if (savedLanguage) {
+        localStorage.setItem('desafio_estrelas_v2', JSON.stringify({ language: savedLanguage }));
+      }
       
       if (typeof document !== 'undefined') {
         document.cookie.split(";").forEach((c) => {
