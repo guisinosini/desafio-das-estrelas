@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { Preference } from 'mercadopago';
+import { PreApproval } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
 
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ requireAuth: true });
+    }
 
     let { language, interval, planType } = await req.json();
 
@@ -22,36 +26,25 @@ export async function POST(req: Request) {
     const amount = interval === 'yearly' ? prices.yearly : prices.monthly;
     const title = interval === 'yearly' ? 'Desafio das Estrelas - Plano Comandante (Anual)' : 'Desafio das Estrelas - Plano Cadete (Mensal)';
 
-    const preference = new Preference(mpClient);
+    const preApproval = new PreApproval(mpClient);
     
-    const response = await preference.create({
+    const response = await preApproval.create({
       body: {
-        items: [
-          {
-            id: interval,
-            title: title,
-            quantity: 1,
-            unit_price: amount,
-            currency_id: 'BRL',
-          }
-        ],
-        payer: {
-          email: user?.email || undefined,
+        reason: title,
+        auto_recurring: {
+          frequency: interval === 'yearly' ? 12 : 1,
+          frequency_type: 'months',
+          transaction_amount: amount,
+          currency_id: 'BRL',
         },
-        back_urls: {
-          success: `${origin}/?stage=register&mp_success=true`,
-          failure: `${origin}/#pricing`,
-          pending: `${origin}/#pricing`,
-        },
-        auto_return: 'approved',
-        // Passamos o user ID ou o email para podermos identificar no webhook
-        external_reference: user?.id || 'anonymous',
-        // notification_url: 'https://www.desafioestrelas.com/api/webhooks/mercadopago' // <- IMPORTANTE EM PRODUÇÃO
+        back_url: `${origin}/?stage=register&mp_success=true`,
+        payer_email: user.email,
+        external_reference: user.id,
+        status: 'pending',
       }
     });
 
-    // init_point é a URL do checkout padrão, sandbox_init_point é para testes
-    const checkoutUrl = process.env.NODE_ENV === 'development' ? response.sandbox_init_point : response.init_point;
+    const checkoutUrl = response.init_point;
 
     return NextResponse.json({ url: checkoutUrl });
   } catch (error: any) {

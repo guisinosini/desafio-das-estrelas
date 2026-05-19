@@ -13,32 +13,47 @@ export async function POST(req: Request) {
   try {
     const url = new URL(req.url);
     const id = url.searchParams.get('data.id') || url.searchParams.get('id');
-    const type = url.searchParams.get('type');
+    // 'topic' pode vir no body em algumas versões, mas via query params é 'type' ou 'topic'
+    const type = url.searchParams.get('type') || url.searchParams.get('topic');
 
-    if (type === 'payment' && id) {
+    if (!id) return new NextResponse('OK', { status: 200 });
+
+    if (type === 'subscription_preapproval') {
+      const preApproval = new PreApproval(mpClient);
+      const data = await preApproval.get({ id });
+
+      if (data.status === 'authorized') {
+        const userId = data.external_reference;
+        const reason = data.reason?.toLowerCase() || '';
+        const planType = reason.includes('comandante') || reason.includes('anual') ? 'commander' : 'cadet';
+
+        if (userId && userId !== 'anonymous') {
+          const { error } = await supabase
+            .from('profiles')
+            .update({
+              is_premium: true,
+              plan_type: planType,
+            })
+            .eq('id', userId);
+
+          if (error) console.error('Erro ao atualizar usuário via assinatura:', error);
+        }
+      }
+    } else if (type === 'payment') {
       const payment = new Payment(mpClient);
       const paymentData = await payment.get({ id });
 
       if (paymentData.status === 'approved') {
         const userId = paymentData.external_reference;
-        const intervalId = paymentData.additional_info?.items?.[0]?.id; // 'monthly' ou 'yearly'
-
+        
         if (userId && userId !== 'anonymous') {
-          // Atualizar o plano do usuário no Supabase
+          // Atualiza se for um pagamento independente ou renovação que envia a referência
           const { error } = await supabase
             .from('profiles')
-            .update({
-              is_premium: true,
-              plan_type: intervalId === 'yearly' ? 'commander' : 'cadet',
-              // idealmente você salvaria a data de validade também
-            })
+            .update({ is_premium: true })
             .eq('id', userId);
 
-          if (error) {
-            console.error('Erro ao atualizar usuário no banco:', error);
-            // Retorna 200 pro MP não tentar reenviar
-            return new NextResponse('Database Error', { status: 200 });
-          }
+          if (error) console.error('Erro ao atualizar usuário via pagamento:', error);
         }
       }
     }

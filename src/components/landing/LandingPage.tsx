@@ -97,6 +97,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       });
 
       const data = await response.json();
+      
+      if (data.requireAuth) {
+        alert('Por favor, crie sua conta gratuitamente (ou faça login) antes de assinar o plano premium!');
+        onStart();
+        return;
+      }
+
       if (data.error) throw new Error(data.error);
       window.location.href = data.url;
     } catch (err: any) {
