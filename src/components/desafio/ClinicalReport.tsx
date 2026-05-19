@@ -74,6 +74,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
     missionCounts,
     missionMax,
     totalMissionsInPeriod,
+    totalTasks,
     taskCompletionRate,
     behaviorDeductions,
     totalDeductionsCount,
@@ -95,7 +96,8 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
     });
     const maxVal = Math.max(...Object.values(counts), 1);
     const totalMissions = Object.values(counts).reduce((a, b) => a + b, 0);
-    const rate = tasks.length > 0 ? Math.round((totalMissions / tasks.length) * 100) : 0;
+    const totalTks = tasks.length;
+    const rate = totalTks > 0 ? Math.round((totalMissions / totalTks) * 100) : 0;
 
     const deductions = history.filter(h =>
       (h.type === 'loss' || h.amount < 0) && isInRange(h.date)
@@ -112,6 +114,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
       missionCounts: counts,
       missionMax: maxVal,
       totalMissionsInPeriod: totalMissions,
+      totalTasks: totalTks,
       taskCompletionRate: rate,
       behaviorDeductions: deductions,
       totalDeductionsCount: deductionsCount,
