@@ -58,8 +58,8 @@ const AuthStage = memo(({
         <button onClick={() => setStage('welcome')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
         
         <div className="space-y-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{isLogin ? t.login : 'CADASTRO DE MENTOR'}</span>
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{isLogin ? t.mentorIdentification : 'Crie sua Conta Galáctica'}</h2>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{isLogin ? t.login : t.mentorRegistration || 'CADASTRO DE MENTOR'}</span>
+          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{isLogin ? t.mentorIdentification : t.createGalacticAccount || 'Crie sua Conta Galáctica'}</h2>
         </div>
 
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-[40px] md:rounded-[50px] space-y-8 shadow-2xl relative overflow-hidden">
@@ -183,7 +183,7 @@ const AuthStage = memo(({
                   <RefreshCw className="w-5 h-5 animate-spin" /> {t.processing}
                 </>
               ) : (
-                isLogin ? t.continue : 'Cadastrar e decolar 🚀'
+                isLogin ? t.continue : t.registerAndTakeoff || 'Cadastrar e decolar 🚀'
               )}
             </button>
           </form>
@@ -302,13 +302,13 @@ const AuthStage = memo(({
                   onClick={() => setShowTermsModal(false)}
                   className="w-full sm:w-auto px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
                 >
-                  Fechar Termos
+                  {t.closeTerms || 'Fechar Termos'}
                 </button>
                 <button 
                   onClick={handleAcceptTermsInModal}
                   className="w-full sm:w-auto px-8 py-3.5 bg-primary text-black font-black uppercase rounded-2xl text-[10px] tracking-widest transition-all hover:scale-[1.02] shadow-lg shadow-primary/15 flex items-center justify-center gap-2"
                 >
-                  <Lock className="w-4 h-4" /> Entendi e Aceito
+                  <Lock className="w-4 h-4" /> {t.understandAndAccept || 'Entendi e Aceito'}
                 </button>
               </div>
 

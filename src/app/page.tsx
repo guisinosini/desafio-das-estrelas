@@ -55,10 +55,14 @@ import { SearchingSignal } from "@/components/auth/SearchingSignal";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
+import { SetupPlanetsStage } from "@/components/desafio/SetupPlanetsStage";
+import { SetupTasksStage } from "@/components/desafio/SetupTasksStage";
+import { SetupRewardsStage } from "@/components/desafio/SetupRewardsStage";
 import { AppHeader } from "@/components/shared/AppHeader";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { Footer } from "@/components/Footer";
 import { YEARLY_PRICE_IDS } from "@/lib/constants";
+import { useCloudSync } from "@/hooks/useCloudSync";
 
 const orbitalTransitionVariants = {
   initial: { 
@@ -163,47 +167,13 @@ export default function DesafioEstrelas() {
   const [isSad, setIsSad] = useState(false);
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const saveToCloud = async (state: any) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // TRAVA DE SEGURANÇA: Não salva se a lista de filhos estiver vazia 
-    // e o usuário acabou de logar (isso evita sobrescrever dados da nuvem com um estado inicial vazio)
-    if (state.children.length === 0) {
-      console.log("Sincronização abortada: lista de heróis vazia para evitar perda de dados.");
-      return;
-    }
-
-    setIsSyncing(true);
-    try {
-      const payload: any = {
-        profile_id: user.id,
-        state: state,
-        updated_at: new Date().toISOString()
-      };
-
-      if (state.fleetId) {
-        payload.fleet_id = state.fleetId;
-      }
-
-      const { error } = await supabase
-        .from('patient_gamification')
-        .upsert(payload);
-
-      if (error) {
-        if (error.message.includes('fleet_id')) {
-          delete payload.fleet_id;
-          await supabase.from('patient_gamification').upsert(payload);
-        }
-      }
-    } catch (e) {
-      console.error("Erro na sincronização:", e);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
+  
+  // Utiliza o hook extraído para sincronização na nuvem
+  const { isSyncing, loadFromCloud, saveToCloud } = useCloudSync({
+    supabase,
+    setIsPremium,
+    setSubscriptionPriceId
+  });
 
   const loadFleetRanking = async () => {
     if (!fleetId) {
@@ -262,36 +232,6 @@ export default function DesafioEstrelas() {
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
 
-  // useCallback garante referência estável e evita closure stale nos effects que chamam esta função (I1)
-  const loadFromCloud = useCallback(async (existingUser?: any) => {
-    const user = existingUser || (await supabase.auth.getUser()).data.user;
-    if (!user) return null;
-
-    try {
-      // Busca o estado do jogo E o status da assinatura simultaneamente
-      const [gamificationRes, profileRes] = await Promise.all([
-        supabase.from('patient_gamification').select('state').eq('profile_id', user.id).maybeSingle(),
-        supabase.from('profiles').select('subscription_status, subscription_price_id').eq('id', user.id).maybeSingle()
-      ]);
-
-      if (profileRes.data?.subscription_status === 'active') {
-        setIsPremium(true);
-        if (profileRes.data.subscription_price_id) {
-          setSubscriptionPriceId(profileRes.data.subscription_price_id);
-        }
-      } else {
-        setIsPremium(false);
-        setSubscriptionPriceId(null);
-      }
-
-      if (gamificationRes.data?.state) {
-        return gamificationRes.data.state;
-      }
-    } catch (e) {
-      console.error("💥 Erro ao carregar dados:", e);
-    }
-    return null;
-  }, [supabase, setIsPremium, setSubscriptionPriceId]);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
@@ -1597,279 +1537,48 @@ export default function DesafioEstrelas() {
 
         {/* --- STAGE: SETUP PLANETS --- */}
         {stage === 'setup_planets' && (
-          <motion.div 
-            key="setup_planets" 
-            variants={orbitalTransitionVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
-          >
-            <OrbitalPlanet type="blue" title="Cosmos Blue" subtitle="Setor Cosmos" />
-            <div className="relative z-10 space-y-8 flex flex-col justify-center">
-              <div className="text-center space-y-4">
-                <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.destinyPlanets}</h2>
-                <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.planetExplainer }} />
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createPlanet}</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Ex: Melhorar em Matemática"
-                      value={customPlanet.title}
-                      onChange={e => setCustomPlanet({ ...customPlanet, title: e.target.value })}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white"
-                    />
-                    <input
-                      type="text"
-                      value={customPlanet.icon}
-                      onChange={e => setCustomPlanet({ ...customPlanet, icon: e.target.value })}
-                      className="w-16 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
-                      placeholder="🪐"
-                    />
-                    <button
-                      onClick={() => {
-                        if (customPlanet.title) {
-                          addPlanet(customPlanet.title, customPlanet.icon || "🪐");
-                          setCustomPlanet({ title: "", icon: "🪐" });
-                        }
-                      }}
-                      disabled={!customPlanet.title}
-                      className="bg-primary/20 text-primary p-3 rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {planetPresets.map((p: any) => (
-                      <button
-                        key={p.title}
-                        onClick={() => addPlanet(p.title, p.icon)}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold hover:border-primary/50 transition-colors flex items-center gap-2 text-white/80"
-                      >
-                        <span>{p.icon}</span> {p.title} <Plus className="w-3 h-3 text-white/40" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {(activeChild?.planets?.length || 0) > 0 && (
-                  <div className="pt-6 border-t border-white/10 space-y-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.chosenPlanets}</p>
-                    <div className="space-y-2">
-                      {activeChild?.planets?.map((p: Planet) => (
-                        <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl">{p.icon}</span>
-                            <span className="font-bold text-sm text-white">{p.title}</span>
-                          </div>
-                          <button onClick={() => removePlanet(p.id)} className="p-2 text-white/20 hover:text-red-400 transition-colors">
-                            <Trash className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setStage('setup_tasks')}
-                  className="w-full py-5 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-xl mt-4 hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                >
-                  {t.traceRoute}
-                </button>
-              </div>
-            </div>
-          </motion.div>
+          <SetupPlanetsStage
+            orbitalTransitionVariants={orbitalTransitionVariants}
+            t={t}
+            customPlanet={customPlanet}
+            setCustomPlanet={setCustomPlanet}
+            addPlanet={addPlanet}
+            planetPresets={t.planetPresets}
+            activeChild={activeChild}
+            removePlanet={removePlanet}
+            setStage={setStage}
+          />
         )}
 
         {/* --- STAGE: SETUP TASKS --- */}
         {stage === 'setup_tasks' && (
-          <motion.div 
-            key="setup_tasks" 
-            variants={orbitalTransitionVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
-          >
-            <OrbitalPlanet type="gold" title="Helios Prime" subtitle="Setor Estelar" />
-            <div className="relative z-10 space-y-8 flex flex-col justify-center">
-              <div className="text-center space-y-4">
-                <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
-                <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.taskExplainer }} />
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createMission}:</p>
-                  <div className="flex flex-col gap-4">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Ex: Lavar louça..."
-                        value={customTask.title}
-                        onChange={e => setCustomTask({ ...customTask, title: e.target.value })}
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        max="100"
-                        value={customTask.stars}
-                        onChange={e => setCustomTask({ ...customTask, stars: parseInt(e.target.value) || 0 })}
-                        className="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.linkPlanet}</p>
-                      <select
-                        value={customTask.planetId || ''}
-                        onChange={e => setCustomTask({ ...customTask, planetId: e.target.value })}
-                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white/85 appearance-none cursor-pointer"
-                      >
-                        <option value="" className="text-black">{t.generalPlanetOption}</option>
-                        {activeChild?.planets?.map((p: Planet) => (
-                          <option key={p.id} value={p.id} className="text-black">{p.icon} {p.title}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex bg-white/5 rounded-xl p-1 border border-white/10 flex-wrap gap-1">
-                        {['daily', 'weekly', 'monthly', 'once'].map((rec) => (
-                          <button
-                            key={rec}
-                            onClick={() => setCustomTask({ ...customTask, recurrence: rec as TaskRecurrence })}
-                            className={clsx(
-                              "px-3 py-2 text-[8px] md:text-[10px] font-black uppercase rounded-lg transition-all",
-                              customTask.recurrence === rec ? "bg-primary text-black" : "text-white/40 hover:text-white"
-                            )}
-                          >
-                            {rec === 'daily' ? t.daily : rec === 'weekly' ? t.weekly : rec === 'monthly' ? t.monthly : t.once}
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        disabled={!customTask.title}
-                        onClick={() => { addTask(customTask.title, customTask.stars, customTask.recurrence, customTask.planetId); setCustomTask({ title: "", stars: 5, recurrence: 'daily', planetId: "" }); }}
-                        className="flex-1 py-3 bg-primary text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all"
-                      >
-                        {t.addMissionBtn}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {taskPresets.map((p: any) => (
-                      <button key={p.title} onClick={() => addTask(p.title, p.stars)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all text-white/80">
-                        + {p.title} ({p.stars}⭐)
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                  {tasks.map((t: Task) => (
-                    <div key={t.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary font-black">{t.stars}</div>
-                        <span className="font-bold uppercase tracking-tight italic text-white">{t.title}</span>
-                      </div>
-                      <button onClick={() => removeTask(t.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
-                    </div>
-                  ))}
-                  {tasks.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.radarEmpty}</p>}
-                </div>
-
-                <button disabled={tasks.length === 0} onClick={() => setStage('setup_rewards')} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.continue}</button>
-              </div>
-            </div>
-          </motion.div>
+          <SetupTasksStage
+            orbitalTransitionVariants={orbitalTransitionVariants}
+            t={t}
+            customTask={customTask}
+            setCustomTask={setCustomTask}
+            addTask={addTask}
+            taskPresets={t.taskPresets}
+            activeChild={activeChild}
+            tasks={tasks}
+            removeTask={removeTask}
+            setStage={setStage}
+          />
         )}
 
         {/* --- STAGE: SETUP REWARDS --- */}
         {stage === 'setup_rewards' && (
-          <motion.div 
-            key="setup_rewards" 
-            variants={orbitalTransitionVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
-          >
-            <OrbitalPlanet type="turquoise" title="Aurelia Turquesa" subtitle="Setor Relíquia" />
-            <div className="relative z-10 space-y-8 flex flex-col justify-center">
-              <div className="text-center space-y-4">
-                <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
-                <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.rewardExplainer }} />
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createTreasure}:</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Ex: Cinema com pipoca..."
-                      value={customReward.title}
-                      onChange={e => setCustomReward({ ...customReward, title: e.target.value })}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-yellow-400 transition-colors text-white"
-                    />
-                    <input
-                      type="number"
-                      min="1"
-                      value={customReward.cost}
-                      onChange={e => setCustomReward({ ...customReward, cost: parseInt(e.target.value) || 0 })}
-                      className="w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-yellow-400 text-white"
-                    />
-                    <button
-                      disabled={!customReward.title}
-                      onClick={() => { addReward(customReward.title, customReward.cost); setCustomReward({ title: "", cost: 50 }); }}
-                      className="px-6 bg-yellow-400 text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all shadow-lg shadow-yellow-400/20"
-                    >
-                      {t.add}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {rewardPresets.map((p: any) => (
-                      <button key={p.title} onClick={() => addReward(p.title, p.cost)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-all text-white/80">
-                        + {p.title} ({p.cost}⭐)
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                  {rewards.map((r: Reward) => (
-                    <div key={r.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl group">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-yellow-400/20 rounded-xl flex items-center justify-center text-yellow-400 font-black">{r.cost}</div>
-                        <span className="font-bold uppercase tracking-tight italic text-white">{r.title}</span>
-                      </div>
-                      <button onClick={() => removeReward(r.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-5 h-5" /></button>
-                    </div>
-                  ))}
-                  {rewards.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.noRewardsAdded}</p>}
-                </div>
-
-                <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.startChallenge}</button>
-              </div>
-            </div>
-          </motion.div>
+          <SetupRewardsStage
+            orbitalTransitionVariants={orbitalTransitionVariants}
+            t={t}
+            customReward={customReward}
+            setCustomReward={setCustomReward}
+            addReward={addReward}
+            rewardPresets={t.rewardPresets}
+            rewards={rewards}
+            removeReward={removeReward}
+            handleStartAdventure={handleStartAdventure}
+          />
         )}
         {/* --- DASHBOARD ADVENTURE --- */}
         {stage === 'adventure' && (
