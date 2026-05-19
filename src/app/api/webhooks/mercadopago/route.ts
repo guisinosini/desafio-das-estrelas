@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { Payment } from 'mercadopago';
+import { Payment, PreApproval } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
 
 // Instância do Supabase Service Role para ignorar RLS e poder atualizar a tabela
