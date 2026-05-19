@@ -22,7 +22,8 @@ import {
   Twitter,
   Send,
   Mail,
-  Heart
+  Heart,
+  Instagram
 } from 'lucide-react';
 import type { ChildData, Task, Reward } from '@/types/desafio';
 import { Language, translations } from '@/lib/translations';
@@ -262,7 +263,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
               </div>
               
               <p className="text-xs md:text-sm text-white/70 leading-relaxed font-medium">
-                Seja muito bem-vindo ao Desafio das Estrelas. Este relatório consolida os dados de hábitos, rotina de missões, comportamento e engajamento da criança no laboratório cognitivo de maneira gamificada e estruturada.
+                Seja muito bem-vindo ao Desafio das Estrelas. Este relatório consolida os dados de hábitos, rotina de missões, comportamento e engajamento da criança no laboratório cognitivo de maneira gamificada e estruturada. Acompanhe nossas novidades e artigos em <a href="https://www.instagram.com/desafioestrelasapp/" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 font-bold hover:underline inline-flex items-center gap-0.5">@desafioestrelasapp</a>.
               </p>
 
               {/* Disclaimer do Diagnóstico */}
@@ -867,9 +868,22 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
             <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 print:text-zinc-500 leading-relaxed">
               © 2026 DESAFIO DAS ESTRELAS. TODOS OS DIREITOS RESERVADOS. <span className="text-primary print:text-zinc-700 font-black">MARCA REGISTRADA</span>.
             </div>
-            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-emerald-400 print:text-emerald-700 bg-emerald-500/5 print:bg-zinc-100 px-4 py-1.5 rounded-lg border border-emerald-500/10 print:border-zinc-300 w-fit">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 print:text-emerald-600 shrink-0" />
-              <span>Responsável Técnico: Guilherme Carvalho Sinosini – CRP 06/181084</span>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-emerald-400 print:text-emerald-700 bg-emerald-500/5 print:bg-zinc-100 px-4 py-1.5 rounded-lg border border-emerald-500/10 print:border-zinc-300 w-fit">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 print:text-emerald-600 shrink-0" />
+                <span>Responsável Técnico: Guilherme Carvalho Sinosini – CRP 06/181084</span>
+              </div>
+              
+              <a
+                href="https://www.instagram.com/desafioestrelasapp/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-pink-400 hover:text-pink-300 bg-pink-500/5 px-4 py-1.5 rounded-lg border border-pink-500/10 w-fit transition-all hover:scale-105 print:hidden"
+              >
+                <Instagram className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                <span>Siga-nos: @desafioestrelasapp</span>
+              </a>
             </div>
           </div>
         </div>
