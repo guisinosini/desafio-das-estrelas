@@ -32,6 +32,7 @@ interface LandingPageProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
   onStart: () => void;
+  onSubscribe: (plan: 'monthly' | 'yearly') => void;
   deferredPrompt?: any;
   onInstall?: () => void;
 }
@@ -68,10 +69,9 @@ const currencyMap: Record<string, { symbol: string, monthly: string, yearly: str
   'zh': { symbol: '¥', monthly: '26,65', yearly: '265,00' },
 };
 
-export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart, deferredPrompt, onInstall }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart, onSubscribe, deferredPrompt, onInstall }) => {
   const t = translations[language];
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isLangOpen, setIsLangOpen] = React.useState(false);
 
   const currentConfig = React.useMemo(() => {
@@ -85,34 +85,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
     };
   }, [currentConfig, billingInterval]);
 
-  const handleSubscribe = async (planType: 'cadet' | 'commander') => {
-    setIsSubmitting(true);
-    try {
-      const interval = planType === 'cadet' ? 'monthly' : 'yearly';
-      
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language, interval, planType }),
-      });
-
-      const data = await response.json();
-      
-      if (data.requireAuth) {
-        alert('Por favor, crie sua conta gratuitamente (ou faça login) antes de assinar o plano premium!');
-        onStart();
-        return;
-      }
-
-      if (data.error) throw new Error(data.error);
-      window.location.href = data.url;
-    } catch (err: any) {
-      console.error('Erro ao iniciar checkout:', err);
-      alert(`Erro ao conectar com o sistema de pagamento: ${err?.message || err}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="bg-[#020617] text-white font-sans selection:bg-primary/20 overflow-x-hidden relative">
@@ -745,16 +717,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </div>
 
                 <button 
-                  onClick={() => handleSubscribe('cadet')} 
-                  disabled={isSubmitting}
+                  onClick={() => onSubscribe('monthly')} 
                   className={clsx(
-                    "w-full py-5 md:py-6 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all disabled:opacity-50",
+                    "w-full py-5 md:py-6 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all",
                     billingInterval === 'monthly'
                       ? "bg-primary text-black hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/20"
                       : "bg-white/5 border border-white/10 hover:bg-white/10 text-white"
                   )}
                 >
-                    {isSubmitting ? t.processing : t.lp_subscribe}
+                    {t.lp_subscribe}
                 </button>
                 </div>
             </FadeInWhenVisible>
@@ -810,16 +781,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </div>
 
                 <button 
-                  onClick={() => handleSubscribe('commander')} 
-                  disabled={isSubmitting}
+                  onClick={() => onSubscribe('yearly')} 
                   className={clsx(
-                    "w-full py-5 md:py-7 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all disabled:opacity-50",
+                    "w-full py-5 md:py-7 rounded-2xl md:rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all",
                     billingInterval === 'yearly'
                       ? "bg-primary text-black hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/20"
                       : "bg-white/5 border border-white/10 hover:bg-white/10 text-white"
                   )}
                 >
-                    {isSubmitting ? t.processing : t.lp_subscribe}
+                    {t.lp_subscribe}
                 </button>
                 </div>
             </FadeInWhenVisible>

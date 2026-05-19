@@ -37,4 +37,4 @@ export type ChildData = {
     scoreText?: string;
   }[];
 };
-export type Stage = 'landing' | 'welcome' | 'auth' | 'enter_code' | 'reset_password' | 'select_child' | 'setup_child' | 'setup_avatar' | 'setup_planets' | 'setup_tasks' | 'setup_rewards' | 'adventure' | 'no_subscription' | 'searching_signal';
+export type Stage = 'landing' | 'welcome' | 'auth' | 'enter_code' | 'reset_password' | 'select_child' | 'setup_child' | 'setup_avatar' | 'setup_planets' | 'setup_tasks' | 'setup_rewards' | 'adventure' | 'no_subscription' | 'searching_signal' | 'checkout';

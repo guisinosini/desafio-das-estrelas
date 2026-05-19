@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
 import { PreApproval } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
+
+// Supabase Admin para atualizar perfil com service role (ignora RLS)
+const supabaseAdmin = createSupabaseAdmin(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
   try {
@@ -12,22 +19,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ requireAuth: true });
     }
 
-    let { language, interval, planType } = await req.json();
+    const {
+      interval,
+      cardTokenId,
+      paymentMethodId,
+      issuerId,
+      installments,
+      identificationType,
+      identificationNumber,
+    } = await req.json();
 
-    const origin = req.headers.get('origin') || 'http://localhost:3000';
-
-    // Para o Mercado Pago no Brasil, cobraremos em BRL.
-    // Você pode adaptar esta lógica se for usar contas do MP em outros países.
     const prices = {
-      monthly: 19.90, // BRL
-      yearly: 199.00 // BRL
+      monthly: 19.90,
+      yearly: 199.00,
     };
 
     const amount = interval === 'yearly' ? prices.yearly : prices.monthly;
-    const title = interval === 'yearly' ? 'Desafio das Estrelas - Plano Comandante (Anual)' : 'Desafio das Estrelas - Plano Cadete (Mensal)';
+    const title = interval === 'yearly'
+      ? 'Desafio das Estrelas - Plano Comandante (Anual)'
+      : 'Desafio das Estrelas - Plano Cadete (Mensal)';
 
     const preApproval = new PreApproval(mpClient);
-    
+
     const response = await preApproval.create({
       body: {
         reason: title,
@@ -37,18 +50,43 @@ export async function POST(req: Request) {
           transaction_amount: amount,
           currency_id: 'BRL',
         },
-        back_url: `${origin}/?stage=register&mp_success=true`,
-        payer_email: user.email,
+        card_token_id: cardTokenId,
+        payer_email: user.email!,
         external_reference: user.id,
-        status: 'pending',
+        status: 'authorized',
+        // Dados de identificação do pagador (necessário para cartão transparente)
+        ...(identificationType && identificationNumber && {
+          payer: {
+            identification: {
+              type: identificationType,
+              number: identificationNumber,
+            },
+          },
+        }),
       }
     });
 
-    const checkoutUrl = response.init_point;
+    if (response.status === 'authorized') {
+      const planType = interval === 'yearly' ? 'commander' : 'cadet';
 
-    return NextResponse.json({ url: checkoutUrl });
+      await supabaseAdmin
+        .from('profiles')
+        .update({
+          is_premium: true,
+          plan_type: planType,
+          subscription_status: 'active',
+          subscription_price_id: interval,
+        })
+        .eq('id', user.id);
+    }
+
+    return NextResponse.json({
+      success: true,
+      status: response.status,
+      id: response.id,
+    });
   } catch (error: any) {
-    console.error('Checkout Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Checkout Transparente Error:', error);
+    return NextResponse.json({ error: error.message || 'Erro ao processar pagamento.' }, { status: 500 });
   }
 }

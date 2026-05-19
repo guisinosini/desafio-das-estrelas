@@ -56,6 +56,7 @@ import { ParentDashboard } from "@/components/desafio/ParentDashboard";
 import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/types/desafio";
 import { translations, type Language } from "@/lib/translations";
 import AuthStage from "@/components/auth/AuthStage";
+import CheckoutStage from "@/components/auth/CheckoutStage";
 import CognitiveLab from "@/components/desafio/CognitiveLab";
 import { SearchingSignal } from "@/components/auth/SearchingSignal";
 import SetupChildStage from "@/components/desafio/SetupChildStage";
@@ -180,6 +181,7 @@ export default function DesafioEstrelas() {
   
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
   
   // Utiliza o hook extraído para sincronização na nuvem
   const { isSyncing, loadFromCloud, saveToCloud } = useCloudSync({
@@ -577,7 +579,12 @@ export default function DesafioEstrelas() {
       if (!result.active) {
         setIsPremium(false);
         setSubscriptionPriceId(null);
-        setStage('no_subscription');
+        // Se o usuário veio de um plano escolhido na LP, vai direto pro checkout transparente
+        if (selectedPlan) {
+          setStage('checkout');
+        } else {
+          setStage('no_subscription');
+        }
         setAuthLoading(false);
         return;
       }
@@ -970,10 +977,21 @@ export default function DesafioEstrelas() {
 
         {/* --- STAGE: LANDING --- */}
         {stage === 'landing' && (
-          <LandingPage 
+        <LandingPage 
             language={language} 
             onLanguageChange={setLanguage} 
             onStart={() => setStage('auth')} 
+            onSubscribe={async (plan) => {
+              const { data: { user } } = await supabase.auth.getUser();
+              setSelectedPlan(plan);
+              if (user) {
+                // Já logado → vai direto pro checkout transparente
+                setStage('checkout');
+              } else {
+                // Não logado → manda pro cadastro, checkout vem depois do login
+                setStage('auth');
+              }
+            }}
             deferredPrompt={deferredPrompt}
             onInstall={handleInstall}
           />
@@ -1200,20 +1218,8 @@ export default function DesafioEstrelas() {
                     <p className="text-3xl font-black italic text-white">R$ 19,90<span className="text-xs font-normal text-white/40">/mês</span></p>
                     <p className="text-[10px] text-white/50">Cobrado mensalmente. Acesso total a todas as ferramentas.</p>
                   </div>
-                  <button 
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/api/checkout', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ priceId: 'price_1TXjmrPc1qFQfvf5QSImZPsd' })
-                        });
-                        const data = await res.json();
-                        if (data.url) window.location.href = data.url;
-                      } catch (err) {
-                        console.error("Erro ao ir para o checkout:", err);
-                      }
-                    }}
+                  <button
+                    onClick={() => { setSelectedPlan('monthly'); setStage('checkout'); }}
                     className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
                   >
                     Ativar Plano Cadete
@@ -1231,20 +1237,8 @@ export default function DesafioEstrelas() {
                     <p className="text-3xl font-black italic text-white">R$ 199,00<span className="text-xs font-normal text-white/40">/ano</span></p>
                     <p className="text-[10px] text-white/50">Cobrado anualmente. Menos de R$ 17 por mês no ano.</p>
                   </div>
-                  <button 
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/api/checkout', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ priceId: 'price_1TXjo1Pc1qFQfvf50bPNi3i7' })
-                        });
-                        const data = await res.json();
-                        if (data.url) window.location.href = data.url;
-                      } catch (err) {
-                        console.error("Erro ao ir para o checkout:", err);
-                      }
-                    }}
+                  <button
+                    onClick={() => { setSelectedPlan('yearly'); setStage('checkout'); }}
                     className="w-full mt-6 py-4 bg-primary text-black hover:bg-teal-300 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-lg shadow-primary/10"
                   >
                     Ativar Plano Comandante
@@ -1253,6 +1247,24 @@ export default function DesafioEstrelas() {
               </div>
             </div>
           </motion.div>
+        )}
+
+        {/* --- STAGE: CHECKOUT TRANSPARENTE --- */}
+        {stage === 'checkout' && (
+          <CheckoutStage
+            selectedPlan={selectedPlan}
+            onBack={() => setStage('no_subscription')}
+            onSuccess={async () => {
+              setIsPremium(true);
+              setSubscriptionPriceId(selectedPlan);
+              const cloudData = await loadFromCloud();
+              if (cloudData?.children) {
+                setChildren(cloudData.children);
+                setActiveChildId(cloudData.activeChildId || null);
+              }
+              setStage(children.length > 0 ? 'select_child' : 'setup_child');
+            }}
+          />
         )}
 
         {/* --- STAGE: SELECT CHILD --- */}

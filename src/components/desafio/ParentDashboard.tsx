@@ -552,40 +552,31 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                   {isPremium ? (
                     <>
                       <button
-                        onClick={async () => {
-                          try {
-                            const res = await fetch('/api/portal', { method: 'POST' });
-                            const data = await res.json();
-                            if (data.url) {
-                              window.location.href = data.url;
-                            } else {
-                              throw new Error(data.error || 'Não foi possível carregar o portal');
-                            }
-                          } catch (e: any) {
-                            alert(`Erro ao abrir portal de gerenciamento: ${e.message}`);
-                          }
+                        onClick={() => {
+                          alert('Sua assinatura é processada de forma segura pelo Mercado Pago. Caso queira alterar seu cartão de crédito ou dados de cobrança, você pode fazer diretamente pelo aplicativo ou site oficial do Mercado Pago.');
                         }}
-                        className="px-8 py-4 bg-primary text-black font-black uppercase rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 text-xs tracking-widest"
+                        className="px-8 py-4 bg-white/5 border border-white/10 text-white/80 font-black uppercase rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-xs tracking-widest"
                       >
-                        Gerenciar Assinatura
+                        Alterar Cartão/Dados
                       </button>
                       <button
                         onClick={async () => {
-                          if (confirm('Você será redirecionado para o portal seguro do Stripe onde poderá cancelar a sua assinatura com um clique. Deseja prosseguir?')) {
+                          if (confirm('Você tem certeza que deseja cancelar sua assinatura do Desafio das Estrelas? O acesso premium aos relatórios clínicos, novos planetas e missões ilimitadas será suspenso no fim do período pago.')) {
                             try {
                               const res = await fetch('/api/portal', { method: 'POST' });
                               const data = await res.json();
-                              if (data.url) {
-                                window.location.href = data.url;
+                              if (data.success) {
+                                alert('Sua assinatura foi cancelada com sucesso. Obrigado por navegar conosco!');
+                                window.location.reload();
                               } else {
-                                throw new Error(data.error || 'Não foi possível carregar o portal');
+                                throw new Error(data.error || 'Erro ao processar o cancelamento');
                               }
                             } catch (e: any) {
-                              alert(`Erro ao abrir portal de cancelamento: ${e.message}`);
+                              alert(`Erro ao cancelar assinatura: ${e.message}`);
                             }
                           }
                         }}
