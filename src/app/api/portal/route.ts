@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
+import { stripe } from '@/lib/stripe';
 
 const supabaseAdmin = createSupabaseAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,56 +17,76 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    let cancelledOnGateway = false;
 
-    if (!accessToken) {
-      return NextResponse.json({ error: 'Token do Mercado Pago não configurado' }, { status: 500 });
-    }
+    // ——— TENTATIVA 1: CANCELAR ASSINATURA NA STRIPE (SE HOUVER) ———
+    try {
+      const customers = await stripe.customers.list({
+        email: user.email!,
+        limit: 1,
+      });
 
-    // Buscamos as assinaturas ativas do usuário pelo e-mail
-    const searchRes = await fetch(
-      `https://api.mercadopago.com/preapproval/search?payer_email=${encodeURIComponent(user.email!)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+      if (customers.data.length > 0) {
+        const activeSubs = await stripe.subscriptions.list({
+          customer: customers.data[0].id,
+          status: 'active',
+        });
+
+        if (activeSubs.data.length > 0) {
+          // Cancela imediatamente a assinatura no Stripe
+          await stripe.subscriptions.cancel(activeSubs.data[0].id);
+          cancelledOnGateway = true;
+        }
       }
-    );
-
-    if (!searchRes.ok) {
-      const errText = await searchRes.text();
-      console.error('Erro ao buscar assinatura no MP:', errText);
-      throw new Error('Falha ao buscar assinatura ativa.');
+    } catch (stripeErr) {
+      console.warn('Nenhuma assinatura ativa encontrada na Stripe ou erro na busca:', stripeErr);
     }
 
-    const searchData = await searchRes.json();
-    const activeSub = searchData.results?.find(
-      (sub: any) => sub.status === 'authorized' || sub.status === 'pending'
-    );
+    // ——— TENTATIVA 2: CANCELAR NO MERCADO PAGO (SE NÃO TIVER SIDO CANCELADA NA STRIPE) ———
+    if (!cancelledOnGateway) {
+      const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
 
-    if (!activeSub) {
-      return NextResponse.json({ error: 'Nenhuma assinatura ativa encontrada no Mercado Pago.' }, { status: 404 });
-    }
+      if (accessToken) {
+        try {
+          const searchRes = await fetch(
+            `https://api.mercadopago.com/preapproval/search?payer_email=${encodeURIComponent(user.email!)}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
 
-    // Cancelamos a assinatura no Mercado Pago
-    const cancelRes = await fetch(
-      `https://api.mercadopago.com/preapproval/${activeSub.id}`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: 'cancelled',
-        }),
+          if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            const activeSub = searchData.results?.find(
+              (sub: any) => sub.status === 'authorized' || sub.status === 'pending'
+            );
+
+            if (activeSub) {
+              const cancelRes = await fetch(
+                `https://api.mercadopago.com/preapproval/${activeSub.id}`,
+                {
+                  method: 'PUT',
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    status: 'cancelled',
+                  }),
+                }
+              );
+
+              if (cancelRes.ok) {
+                cancelledOnGateway = true;
+              }
+            }
+          }
+        } catch (mpErr) {
+          console.warn('Nenhuma assinatura ativa encontrada no Mercado Pago ou erro na busca:', mpErr);
+        }
       }
-    );
-
-    if (!cancelRes.ok) {
-      const errText = await cancelRes.text();
-      console.error('Erro ao cancelar assinatura no MP:', errText);
-      throw new Error('Falha ao cancelar assinatura no Mercado Pago.');
     }
 
     // Atualizamos o banco de dados local imediatamente
@@ -81,7 +102,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Assinatura cancelada com sucesso no Mercado Pago e localmente.',
+      message: cancelledOnGateway 
+        ? 'Assinatura cancelada com sucesso no gateway correspondente e localmente.'
+        : 'Assinatura desativada no banco local (nenhum contrato ativo encontrado nos gateways).',
     });
   } catch (error: any) {
     console.error('Portal Error:', error);

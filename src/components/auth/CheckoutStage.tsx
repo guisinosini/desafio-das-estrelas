@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { initMercadoPago, CardPayment } from '@mercadopago/sdk-react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ShieldCheck, Sparkles, Rocket, CheckCircle2, RefreshCw, Lock } from 'lucide-react';
 import clsx from 'clsx';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // Inicializa o SDK do Mercado Pago de forma segura evitando chamadas repetidas devido ao Hot Reload (HMR) do Next.js
 const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || '';
@@ -14,6 +16,12 @@ if (MP_PUBLIC_KEY && typeof window !== 'undefined') {
     initMercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
     win.__mercadopago_initialized__ = true;
   }
+}
+
+// Inicializa a Stripe de forma preguiçosa para evitar erros de compilação estática
+let stripePromise: any = null;
+if (typeof window !== 'undefined') {
+  stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 }
 
 interface CheckoutStageProps {
@@ -45,13 +53,217 @@ const PLANS = {
   }
 };
 
+// Componente do Formulário Transparente da Stripe
+function StripeForm({
+  clientSecret,
+  planAmount,
+  planCurrency,
+  selectedPlan,
+  onSuccess,
+  setErrorMessage,
+  setStatus,
+}: {
+  clientSecret: string;
+  planAmount: number;
+  planCurrency: string;
+  selectedPlan: 'monthly' | 'yearly';
+  onSuccess: () => void;
+  setErrorMessage: (msg: string) => void;
+  setStatus: (status: any) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setLoading(true);
+    setStatus('processing');
+    setErrorMessage('');
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      console.error('Stripe Elements Confirm Error:', error);
+      setErrorMessage(error.message || 'Falha ao processar pagamento.');
+      setStatus('idle');
+      setLoading(false);
+      return;
+    }
+
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      try {
+        const res = await fetch('/api/checkout/stripe-success', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentIntentId: paymentIntent.id,
+            selectedPlan,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        setStatus('success');
+        setTimeout(() => {
+          onSuccess();
+        }, 2000);
+      } catch (err: any) {
+        setErrorMessage(err.message || 'Erro ao ativar sua licença galáctica.');
+        setStatus('error');
+        setLoading(false);
+      }
+    } else {
+      setErrorMessage('Pagamento não autorizado. Tente outro cartão.');
+      setStatus('error');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 relative z-10 mt-4">
+      <PaymentElement
+        options={{
+          layout: 'tabs',
+        }}
+      />
+
+      <button
+        type="submit"
+        disabled={!stripe || loading}
+        className="w-full py-3.5 sm:py-4 bg-primary text-black font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none mt-6 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(212,175,55,0.3)] text-xs sm:text-sm"
+      >
+        {loading ? (
+          <>
+            <RefreshCw className="w-5 h-5 animate-spin" />
+            Processando Pagamento...
+          </>
+        ) : (
+          `Ativar Licença Galáctica (${planCurrency === 'EUR' ? '€' : '$'} ${planAmount})`
+        )}
+      </button>
+    </form>
+  );
+}
+
 export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: CheckoutStageProps) {
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [isBrickReady, setIsBrickReady] = useState(false);
-  const plan = PLANS[selectedPlan];
 
-  const handleSubmit = async (cardFormData: any) => {
+  // Stripe States
+  const [stripeClientSecret, setStripeClientSecret] = useState('');
+  const [stripeCurrency, setStripeCurrency] = useState('USD');
+  const [stripeAmount, setStripeAmount] = useState(0);
+  const [loadingStripeIntent, setLoadingStripeIntent] = useState(false);
+
+  // Detecção Automática de Idioma
+  const language = useMemo((): string => {
+    if (typeof window === 'undefined') return 'pt-BR';
+    const saved = localStorage.getItem('desafio_estrelas_v2');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.language) return parsed.language;
+      } catch (e) {}
+    }
+    const browserLang = navigator.language || (navigator as any).userLanguage;
+    if (browserLang.startsWith('pt')) return browserLang.includes('PT') ? 'pt-PT' : 'pt-BR';
+    if (browserLang.startsWith('es')) return 'es';
+    if (browserLang.startsWith('fr')) return 'fr';
+    if (browserLang.startsWith('it')) return 'it';
+    if (browserLang.startsWith('zh')) return 'zh';
+    return 'en';
+  }, []);
+
+  const isInternational = language !== 'pt-BR' && language !== 'pt-PT';
+
+  // Buscar Intenção da Stripe se for internacional
+  useEffect(() => {
+    if (!isInternational) return;
+
+    const fetchStripeIntent = async () => {
+      setLoadingStripeIntent(true);
+      setErrorMessage('');
+      try {
+        const res = await fetch('/api/checkout/stripe-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ selectedPlan, language }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        setStripeClientSecret(data.clientSecret);
+        setStripeCurrency(data.currency);
+        setStripeAmount(data.amount);
+      } catch (err: any) {
+        console.error('Erro ao inicializar Stripe:', err);
+        setErrorMessage(language === 'zh' ? '加载 Stripe 支付失败。' : 'Failed to load Stripe payment gateway.');
+      } finally {
+        setLoadingStripeIntent(false);
+      }
+    };
+
+    fetchStripeIntent();
+  }, [isInternational, selectedPlan, language]);
+
+  // Plano traduzido dinamicamente de acordo com o idioma do usuário
+  const plan = useMemo(() => {
+    if (!isInternational) {
+      return PLANS[selectedPlan];
+    }
+
+    const symbol = stripeCurrency === 'EUR' ? '€' : '$';
+
+    if (selectedPlan === 'yearly') {
+      return {
+        title: language === 'zh' ? '星际指挥官计划' : (language === 'es' ? 'Plan Comandante' : (language === 'fr' ? 'Plan Commandant' : (language === 'it' ? 'Piano Comandante' : 'Commander Plan'))),
+        subtitle: language === 'zh' ? '年费 • 最划算' : (language === 'es' ? 'Anual • Mejor valor' : (language === 'fr' ? 'Annuel • Meilleur rapport' : (language === 'it' ? 'Annuale • Miglior valore' : 'Annual • Best value'))),
+        price: `${symbol} 99.00`,
+        period: language === 'zh' ? '/年' : (language === 'es' ? '/año' : (language === 'fr' ? '/an' : (language === 'it' ? '/anno' : '/year'))),
+        description: language === 'zh'
+          ? `按年计费。相当于每月 ${symbol} 8.25。节省 17%！`
+          : (language === 'es' ? `Facturado una vez al año. Equivalente a ${symbol} 8.25/mes. ¡Ahorra 17%!` : (language === 'fr' ? `Facturé une fois par an. Équivaut à ${symbol} 8.25/mois. Économisez 17%!` : `Billed once a year. Equivalent to ${symbol} 8.25/month. Save 17%!`)),
+        features: language === 'zh'
+          ? ['包含所有小兵特权', '赠送2个月免费使用', '优先体验新功能', '专属指挥官勋章']
+          : (language === 'es'
+            ? ['Todo lo del Plan Cadete', '2 meses gratis incluidos', 'Acceso anticipado a novedades', 'Medalla exclusiva de Comandante']
+            : (language === 'fr'
+              ? ['Tout du Plan Cadet', '2 mois gratuits inclus', 'Accès anticipé aux nouveautés', 'Badge exclusif de Commandant']
+              : ['All Cadet features', '2 free months included', 'Early access to new features', 'Exclusive Commander badge'])),
+        badge: language === 'zh' ? '🚀 节省 17%' : (language === 'es' ? '🚀 Ahorra 17%' : (language === 'fr' ? '🚀 Économisez 17%' : '🚀 Save 17%')),
+        amount: 99.00,
+      };
+    } else {
+      return {
+        title: language === 'zh' ? '星际小兵计划' : (language === 'es' ? 'Plan Cadete' : (language === 'fr' ? 'Plan Cadet' : (language === 'it' ? 'Piano Cadetto' : 'Cadet Plan'))),
+        subtitle: language === 'zh' ? '月费 • 自动续订' : (language === 'es' ? 'Mensual • Recurrente automático' : 'Monthly • Automatic recurring'),
+        price: `${symbol} 9.90`,
+        period: language === 'zh' ? '/月' : (language === 'es' ? '/mes' : (language === 'fr' ? '/mois' : (language === 'it' ? '/mese' : '/month'))),
+        description: language === 'zh'
+          ? '每月自动计费。随时取消。'
+          : (language === 'es' ? 'Facturado automáticamente cada mes. Cancela cuando quieras.' : (language === 'fr' ? 'Facturé mensuellement. Annulez à tout moment.' : 'Billed automatically monthly. Cancel anytime.')),
+        features: language === 'zh'
+          ? ['无限个孩子档案', '所有任务和星球', '共享临床报告', '完整的导师面板', '优先技术支持']
+          : (language === 'es'
+            ? ['Niños ilimitados', 'Todas las misiones y planetas', 'Informes clínicos compartidos', 'Dashboard completo de mentor', 'Soporte prioritario']
+            : (language === 'fr'
+              ? ['Enfants illimités', 'Toutes les missions & planètes', 'Rapports cliniques partagés', 'Dashboard complet du mentor', 'Support prioritaire']
+              : ['Unlimited children', 'All missions & planets', 'Shared clinical reports', 'Full mentor dashboard', 'Priority support'])),
+        badge: null,
+        amount: 9.90,
+      };
+    }
+  }, [isInternational, selectedPlan, stripeCurrency, language]);
+
+  const handleSubmitMercadoPago = async (cardFormData: any) => {
     setStatus('processing');
     setErrorMessage('');
 
@@ -75,7 +287,6 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       if (data.error) throw new Error(data.error);
 
       setStatus('success');
-      // Aguarda 2s para o usuário ver o sucesso e então chama onSuccess
       setTimeout(() => {
         onSuccess();
       }, 2000);
@@ -86,11 +297,49 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     }
   };
 
-  const customization: any = {
+  const customizationMercadoPago: any = {
     visual: {
       theme: 'dark',
     },
   };
+
+  // Configuração Estética Premium da Stripe
+  const stripeOptions = useMemo(() => {
+    return {
+      clientSecret: stripeClientSecret,
+      appearance: {
+        theme: 'night' as const,
+        variables: {
+          colorPrimary: '#d4af37', // Ouro Kamaleon
+          colorBackground: '#111827', // Gray 900
+          colorText: '#ffffff',
+          colorDanger: '#f87171',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          spacingUnit: '4px',
+          borderRadius: '16px',
+        },
+        rules: {
+          '.Input': {
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            transition: 'border 0.2s, box-shadow 0.2s',
+          },
+          '.Input:focus': {
+            border: '1px solid #d4af37',
+            boxShadow: '0 0 12px rgba(212, 175, 55, 0.25)',
+          },
+          '.Label': {
+            fontWeight: '600',
+            fontSize: '11px',
+            textTransform: 'uppercase' as const,
+            letterSpacing: '0.1em',
+            color: 'rgba(255, 255, 255, 0.5)',
+            marginBottom: '6px',
+          }
+        }
+      }
+    };
+  }, [stripeClientSecret]);
 
   return (
     <motion.div
@@ -103,15 +352,18 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       {/* Botão voltar */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit mb-6 sm:mb-8"
+        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit mb-6 sm:mb-8 cursor-pointer"
       >
-        <ChevronLeft className="w-4 h-4" /> Escolher outro plano
+        <ChevronLeft className="w-4 h-4" /> {language === 'zh' ? '返回选择计划' : (language === 'es' ? 'Elegir otro plan' : (language === 'fr' ? 'Choisir un autre plan' : 'Escolher outro plano'))}
       </button>
 
       <div className="space-y-2 mb-6 sm:mb-8">
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Checkout Seguro</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">
+          {language === 'zh' ? '安全结账' : (language === 'es' ? 'Pago Seguro' : (language === 'fr' ? 'Paiement Sécurisé' : 'Checkout Seguro'))}
+        </span>
         <h2 className="text-3xl sm:text-4xl font-black italic uppercase tracking-tighter">
-          Ativar sua <span className="text-primary">Licença Galáctica</span>
+          {language === 'zh' ? '激活您的' : (language === 'es' ? 'Activa tu' : (language === 'fr' ? 'Activez votre' : 'Ativar sua'))}{' '}
+          <span className="text-primary">{language === 'zh' ? '星际授权' : (language === 'es' ? 'Licencia Galáctica' : (language === 'fr' ? 'Licence Galactique' : 'Licença Galáctica'))}</span>
         </h2>
       </div>
 
@@ -121,7 +373,7 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
         <div className="space-y-4 sm:space-y-6">
           <div className={clsx(
             "bg-white/5 backdrop-blur-xl border rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 relative overflow-hidden",
-            selectedPlan === 'yearly' ? "border-primary/40 shadow-[0_0_40px_-10px_rgba(45,212,191,0.3)]" : "border-white/10"
+            selectedPlan === 'yearly' ? "border-primary/40 shadow-[0_0_40px_-10px_rgba(212,175,55,0.3)]" : "border-white/10"
           )}>
             <div className="absolute -top-16 -right-16 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
 
@@ -155,15 +407,21 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">Dados Criptografados</span>
+              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">
+                {language === 'zh' ? '加密数据' : (language === 'es' ? 'Datos Encriptados' : (language === 'fr' ? 'Données Chiffrées' : 'Dados Criptografados'))}
+              </span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl">
               <Lock className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">Mercado Pago Seguro</span>
+              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">
+                {isInternational ? 'Stripe Secure' : 'Mercado Pago Seguro'}
+              </span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl">
               <Rocket className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">Cancele Quando Quiser</span>
+              <span className="text-[9px] sm:text-[10px] font-black uppercase text-white/60">
+                {language === 'zh' ? '随时取消' : (language === 'es' ? 'Cancela cuando quieras' : (language === 'fr' ? 'Annuler à tout moment' : 'Cancele Quando Quiser'))}
+              </span>
             </div>
           </div>
         </div>
@@ -182,96 +440,138 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
                 <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter text-emerald-400">Decolagem Autorizada!</h3>
-                <p className="text-white/60 text-xs sm:text-sm mt-2">Sua assinatura foi ativada com sucesso. Preparando o painel...</p>
+                <h3 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter text-emerald-400">
+                  {language === 'zh' ? '发射许可授权！' : (language === 'es' ? '¡Despegue Autorizado!' : (language === 'fr' ? 'Décollage Autorisé !' : 'Decolagem Autorizada!'))}
+                </h3>
+                <p className="text-white/60 text-xs sm:text-sm mt-2">
+                  {language === 'zh' ? '您的订阅已激活。正在准备控制台...' : (language === 'es' ? 'Tu suscripción ha sido activada. Preparando el panel...' : (language === 'fr' ? 'Votre abonnement a été activé. Préparation du panneau...' : 'Sua assinatura foi ativada com sucesso. Preparando o painel...'))}
+                </p>
               </div>
               <div className="flex items-center gap-2 text-white/40">
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">Liberando acesso...</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                  {language === 'zh' ? '正在解锁访问权限...' : (language === 'es' ? 'Liberando acceso...' : (language === 'fr' ? 'Libération de l\'accès...' : 'Liberando acesso...'))}
+                </span>
               </div>
             </motion.div>
           ) : (
             <>
               <div className="space-y-1 mb-5 sm:mb-6 relative z-10">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Dados do Pagamento</span>
-                <h3 className="text-base sm:text-lg font-black italic uppercase tracking-tight text-white">Cartão de Crédito ou Débito</h3>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+                  {language === 'zh' ? '付款信息' : (language === 'es' ? 'Datos del Pago' : (language === 'fr' ? 'Détails du Paiement' : 'Dados do Pagamento'))}
+                </span>
+                <h3 className="text-base sm:text-lg font-black italic uppercase tracking-tight text-white">
+                  {language === 'zh' ? '信用卡或借记卡' : (language === 'es' ? 'Tarjeta de Crédito o Débito' : (language === 'fr' ? 'Carte de Crédit ou Débit' : 'Cartão de Crédito ou Débito'))}
+                </h3>
               </div>
 
-              {status === 'error' && (
-                <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
+              {errorMessage && (
+                <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl relative z-10">
                   <p className="text-red-400 text-[11px] font-bold">{errorMessage}</p>
                 </div>
               )}
 
-              {MP_PUBLIC_KEY ? (
-                <>
-                  {/* Esqueleto de carregamento premium com pulso cósmico */}
-                  {!isBrickReady && (
-                    <div className="space-y-4 animate-pulse relative z-10">
-                      {/* Campo Número do Cartão */}
-                      <div className="space-y-2">
-                        <div className="h-3 w-28 bg-white/10 rounded-full" />
-                        <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
-                      </div>
-                      {/* Grid Vencimento e CVV */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <div className="h-3 w-20 bg-white/10 rounded-full" />
-                          <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="h-3 w-16 bg-white/10 rounded-full" />
-                          <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
-                        </div>
-                      </div>
-                      {/* Nome do Titular */}
-                      <div className="space-y-2">
-                        <div className="h-3 w-32 bg-white/10 rounded-full" />
-                        <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
-                      </div>
-                      {/* CPF/CNPJ */}
-                      <div className="space-y-2">
-                        <div className="h-3 w-24 bg-white/10 rounded-full" />
-                        <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
-                      </div>
-                      {/* Botão de Pagar */}
-                      <div className="h-12 bg-primary/20 border border-primary/30 rounded-xl mt-6 flex items-center justify-center">
-                        <div className="h-3 w-28 bg-primary/30 rounded-full" />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className={clsx("relative z-10 transition-opacity duration-300", !isBrickReady ? "opacity-0 absolute inset-0 pointer-events-none" : "opacity-100")}>
-                    <CardPayment
-                      initialization={{ amount: plan.amount }}
-                      customization={customization}
-                      onSubmit={handleSubmit}
-                      onReady={() => setIsBrickReady(true)}
-                      onError={(err) => {
-                        console.error('Erro no formulário MP:', err);
-                        setErrorMessage('Erro ao processar o formulário. Verifique os dados do cartão.');
-                        setStatus('error');
-                      }}
-                    />
+              {/* ROTEADOR DE GATEWAY: INTERNACIONAL -> STRIPE // BRASIL -> MERCADO PAGO */}
+              {isInternational ? (
+                // —————— INTERFACE STRIPE ELEMENTS ——————
+                loadingStripeIntent ? (
+                  <div className="space-y-4 animate-pulse relative z-10 py-12 text-center flex flex-col items-center justify-center gap-3">
+                    <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                      {language === 'zh' ? '正在链接安全网关...' : (language === 'es' ? 'Conectando con Stripe...' : (language === 'fr' ? 'Connexion à Stripe...' : 'Conectando com a Stripe...'))}
+                    </p>
                   </div>
-                </>
+                ) : stripeClientSecret ? (
+                  <Elements stripe={stripePromise} options={stripeOptions}>
+                    <StripeForm
+                      clientSecret={stripeClientSecret}
+                      planAmount={stripeAmount}
+                      planCurrency={stripeCurrency}
+                      selectedPlan={selectedPlan}
+                      onSuccess={onSuccess}
+                      setErrorMessage={setErrorMessage}
+                      setStatus={setStatus}
+                    />
+                  </Elements>
+                ) : (
+                  <div className="p-6 text-center text-white/40 text-xs">
+                    {language === 'zh' ? '无法初始化安全网关。' : 'Unable to initialize secure gateway.'}
+                  </div>
+                )
               ) : (
-                <div className="p-6 sm:p-8 bg-red-500/10 border border-red-500/20 rounded-[20px] sm:rounded-[24px] text-center space-y-4 relative z-10 my-4 sm:my-6">
-                  <Lock className="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto" />
-                  <h4 className="text-white font-black uppercase tracking-wider text-xs sm:text-sm">Chave Galáctica Indisponível</h4>
-                  <p className="text-white/60 text-[11px] sm:text-xs leading-relaxed max-w-sm mx-auto">
-                    A chave pública <code className="bg-black/40 px-1.5 py-0.5 rounded text-primary font-mono text-[9px] sm:text-[10px]">NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY</code> não está configurada no seu painel da Vercel. 
-                  </p>
-                  <p className="text-white/40 text-[9px] sm:text-[10px] leading-relaxed max-w-xs mx-auto">
-                    Adicione essa variável nas configurações de ambiente do seu projeto Vercel para liberar o formulário do cartão.
-                  </p>
-                </div>
+                // —————— INTERFACE MERCADO PAGO BRICKS ——————
+                MP_PUBLIC_KEY ? (
+                  <>
+                    {/* Esqueleto de carregamento premium com pulso cósmico */}
+                    {!isBrickReady && (
+                      <div className="space-y-4 animate-pulse relative z-10">
+                        {/* Campo Número do Cartão */}
+                        <div className="space-y-2">
+                          <div className="h-3 w-28 bg-white/10 rounded-full" />
+                          <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                        </div>
+                        {/* Grid Vencimento e CVV */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="h-3 w-20 bg-white/10 rounded-full" />
+                            <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="h-3 w-16 bg-white/10 rounded-full" />
+                            <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                          </div>
+                        </div>
+                        {/* Nome do Titular */}
+                        <div className="space-y-2">
+                          <div className="h-3 w-32 bg-white/10 rounded-full" />
+                          <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                        </div>
+                        {/* CPF/CNPJ */}
+                        <div className="space-y-2">
+                          <div className="h-3 w-24 bg-white/10 rounded-full" />
+                          <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                        </div>
+                        {/* Botão de Pagar */}
+                        <div className="h-12 bg-primary/20 border border-primary/30 rounded-xl mt-6 flex items-center justify-center">
+                          <div className="h-3 w-28 bg-primary/30 rounded-full" />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={clsx("relative z-10 transition-opacity duration-300", !isBrickReady ? "opacity-0 absolute inset-0 pointer-events-none" : "opacity-100")}>
+                      <CardPayment
+                        initialization={{ amount: plan.amount }}
+                        customization={customizationMercadoPago}
+                        onSubmit={handleSubmitMercadoPago}
+                        onReady={() => setIsBrickReady(true)}
+                        onError={(err) => {
+                          console.error('Erro no formulário MP:', err);
+                          setErrorMessage('Erro ao processar o formulário. Verifique os dados do cartão.');
+                          setStatus('error');
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-6 sm:p-8 bg-red-500/10 border border-red-500/20 rounded-[20px] sm:rounded-[24px] text-center space-y-4 relative z-10 my-4 sm:my-6">
+                    <Lock className="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto" />
+                    <h4 className="text-white font-black uppercase tracking-wider text-xs sm:text-sm">Chave Galáctica Indisponível</h4>
+                    <p className="text-white/60 text-[11px] sm:text-xs leading-relaxed max-w-sm mx-auto">
+                      A chave pública <code className="bg-black/40 px-1.5 py-0.5 rounded text-primary font-mono text-[9px] sm:text-[10px]">NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY</code> não está configurada no seu painel da Vercel.
+                    </p>
+                    <p className="text-white/40 text-[9px] sm:text-[10px] leading-relaxed max-w-xs mx-auto">
+                      Adicione essa variável nas configurações de ambiente do seu projeto Vercel para liberar o formulário do cartão.
+                    </p>
+                  </div>
+                )
               )}
 
               {status === 'processing' && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center gap-4 z-20">
                   <RefreshCw className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
-                  <p className="text-white font-black uppercase tracking-widest text-xs sm:text-sm">Processando pagamento...</p>
+                  <p className="text-white font-black uppercase tracking-widest text-xs sm:text-sm">
+                    {language === 'zh' ? '正在处理付款...' : (language === 'es' ? 'Procesando pago...' : (language === 'fr' ? 'Traitement du paiement...' : 'Processando pagamento...'))}
+                  </p>
                 </div>
               )}
             </>
