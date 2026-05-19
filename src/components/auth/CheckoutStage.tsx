@@ -6,10 +6,14 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ShieldCheck, Sparkles, Rocket, CheckCircle2, RefreshCw, Lock } from 'lucide-react';
 import clsx from 'clsx';
 
-// Inicializa o SDK do Mercado Pago de forma segura
+// Inicializa o SDK do Mercado Pago de forma segura evitando chamadas repetidas devido ao Hot Reload (HMR) do Next.js
 const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || '';
-if (MP_PUBLIC_KEY) {
-  initMercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+if (MP_PUBLIC_KEY && typeof window !== 'undefined') {
+  const win = window as any;
+  if (!win.__mercadopago_initialized__) {
+    initMercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+    win.__mercadopago_initialized__ = true;
+  }
 }
 
 interface CheckoutStageProps {
