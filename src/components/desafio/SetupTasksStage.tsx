@@ -110,7 +110,7 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
             <div className="flex flex-wrap gap-2">
               {taskPresets.map((p: any) => (
-                <button key={p.title} onClick={() => addTask(p.title, p.stars)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all text-white/80">
+                <button key={p.title} onClick={() => addTask(p.title, p.stars, p.recurrence || 'daily')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all text-white/80">
                   + {p.title} ({p.stars}⭐)
                 </button>
               ))}
