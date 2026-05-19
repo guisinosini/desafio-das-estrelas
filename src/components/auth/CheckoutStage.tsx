@@ -79,15 +79,11 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     }
   };
 
-  const customization = {
-    paymentMethods: {
-      creditCard: 'all' as const,
-      debitCard: 'all' as const,
-    },
+  const customization: any = {
     visual: {
       style: {
         customVariables: {
-          theme: 'dark' as const,
+          theme: 'dark',
           textPrimaryColor: '#ffffff',
           textSecondaryColor: 'rgba(255,255,255,0.5)',
           inputBackgroundColor: 'rgba(255,255,255,0.05)',
