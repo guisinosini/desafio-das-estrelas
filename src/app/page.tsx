@@ -58,6 +58,7 @@ import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
 import { AppHeader } from "@/components/shared/AppHeader";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { Footer } from "@/components/Footer";
+import { YEARLY_PRICE_IDS } from "@/lib/constants";
 
 const orbitalTransitionVariants = {
   initial: { 
@@ -113,12 +114,6 @@ const ClockDisplay = memo(({ language }: { language: string }) => {
 });
 ClockDisplay.displayName = 'ClockDisplay';
 
-const YEARLY_PRICE_IDS = new Set([
-  'price_1TXjo1Pc1qFQfvf50bPNi3i7', // BRL
-  'price_1TXjv3Pc1qFQfvf5wps2BmFU', // USD
-  'price_1TXjw5Pc1qFQfvf5cfszDbqI', // EUR
-  'price_1TXjy3Pc1qFQfvf5pCgaPX8Q', // CNY
-]);
 
 export default function DesafioEstrelas() {
   const getPlanName = () => {
@@ -254,7 +249,7 @@ export default function DesafioEstrelas() {
     if (stage === 'adventure' || parentSubView === 'ranking') {
       loadFleetRanking();
     }
-  }, [fleetId, stage, parentSubView, children]);
+  }, [fleetId, stage, parentSubView]); // M8: 'children' removido — evita re-fetch a cada tarefa completada
 
   const BADGES = [
     { id: 'first_star', icon: '⭐', label: 'Primeiro Brilho', description: 'Ganhou sua primeira estrela', condition: (c: ChildData) => c.stars > 0 },
@@ -338,7 +333,6 @@ export default function DesafioEstrelas() {
     // Sincronização inteligente de assinatura em background
     const syncSubscription = async () => {
       try {
-        console.log("🔄 [BackgroundSync] Sincronizando detalhes da assinatura no Stripe...");
         const res = await fetch('/api/subscription-sync', { method: 'POST' });
         const data = await res.json();
         if (data.priceId) {
@@ -348,7 +342,6 @@ export default function DesafioEstrelas() {
           setIsPremium(true);
           // Se estava bloqueado na tela de assinatura, libera o acesso automaticamente em tempo real!
           if (stage === 'no_subscription') {
-            console.log("🔓 [BackgroundSync] Assinatura ativa detectada! Liberando acesso...");
             const cloudData = await loadFromCloud();
             if (cloudData && cloudData.children) {
               setChildren(cloudData.children);
@@ -381,7 +374,7 @@ export default function DesafioEstrelas() {
 
       // 2. Tentar detectar pelo navegador
       const browserLang = navigator.language || (navigator as any).userLanguage;
-      console.log("🌐 Idioma detectado no navegador:", browserLang);
+
 
       if (browserLang.startsWith('pt')) {
         return browserLang.includes('PT') ? 'pt-PT' : 'pt-BR';
@@ -449,13 +442,11 @@ export default function DesafioEstrelas() {
           .maybeSingle();
 
         if (profile?.subscription_status !== 'active') {
-          console.log("🔍 Perfil inativo no banco. Sincronizando ativamente com o Stripe...");
           try {
             const syncRes = await fetch('/api/subscription-sync', { method: 'POST' });
             if (syncRes.ok) {
               const syncData = await syncRes.json();
               if (syncData.status === 'active') {
-                console.log("✅ Assinatura ativa identificada no Stripe! Liberando acesso...");
                 setIsPremium(true);
                 if (syncData.priceId) setSubscriptionPriceId(syncData.priceId);
                 
@@ -543,7 +534,6 @@ export default function DesafioEstrelas() {
     initData();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Evento Auth:", event);
       if (event === 'PASSWORD_RECOVERY') setStage('reset_password');
       if (event === 'SIGNED_IN' && session?.user) {
         if (session?.user?.user_metadata?.full_name) setParentName(session.user.user_metadata.full_name);
@@ -741,7 +731,6 @@ export default function DesafioEstrelas() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("🚀 Iniciando handleAuth...");
     setAuthLoading(true);
     setAuthError("");
     setAuthSuccess("");
@@ -754,7 +743,6 @@ export default function DesafioEstrelas() {
       let user = null;
 
       if (isLogin) {
-        console.log("🔑 Tentando login para:", email);
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           console.error("❌ Erro no signIn:", error);
@@ -762,7 +750,6 @@ export default function DesafioEstrelas() {
         }
         user = data.user;
       } else {
-        console.log("📝 Tentando cadastro para:", email);
         if (!parentName) throw new Error("Por favor, digite seu nome.");
 
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -856,14 +843,12 @@ export default function DesafioEstrelas() {
         setSubscriptionPriceId(result.profileData.subscription_price_id);
       }
 
-      console.log("✅ Autenticado com sucesso, carregando dados para:", user.id);
       const cloudData = result.cloudData;
 
       if (cloudData) {
         // TRAVA DE SEGURANÇA: Só atualiza se houver dados reais na nuvem
         // Isso evita que um erro de RLS ou novo login limpe o progresso local
         if (cloudData.children && cloudData.children.length > 0) {
-          console.log("Dados recuperados da nuvem com sucesso.");
           setChildren(cloudData.children);
           setActiveChildId(cloudData.activeChildId || null);
           if (cloudData.parentPin) setParentPin(cloudData.parentPin);
@@ -874,11 +859,9 @@ export default function DesafioEstrelas() {
           setStage(nextStage);
           if (nextStage === 'adventure') setView('child');
         } else {
-          console.log("Nuvem vazia ou protegida. Mantendo dados locais para segurança.");
           setStage(children.length > 0 ? 'select_child' : 'setup_child');
         }
       } else {
-        console.log("🆕 Novo usuário detectado, indo para setup...");
         setStage(children.length > 0 ? 'select_child' : 'setup_child');
       }
 
@@ -1059,7 +1042,6 @@ export default function DesafioEstrelas() {
   };
 
   const handleLogout = async () => {
-    console.log("🚪 Encerrando sessão no Supabase e limpando dados galácticos...");
     try {
       await supabase.auth.signOut();
     } catch (err) {
@@ -1861,7 +1843,7 @@ export default function DesafioEstrelas() {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Sugestões Rápidas:</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.quickSuggestions}:</p>
                   <div className="flex flex-wrap gap-2">
                     {rewardPresets.map((p: any) => (
                       <button key={p.title} onClick={() => addReward(p.title, p.cost)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-all text-white/80">

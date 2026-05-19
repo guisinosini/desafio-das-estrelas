@@ -191,8 +191,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         }
       }
       
-      console.log("📡 [BI Admin] Perfis reais carregados:", realProfiles);
-
       // 2. Busca dados de gamificação dos mentores (com tratamento de erro estrito)
       const { data: gamificationRows, error: gamError } = await supabase
         .from('patient_gamification')
@@ -338,9 +336,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         });
       });
 
-      console.log("📊 [BI Admin] Famílias consolidadas decodificadas:", decodedMentors);
-      console.log("📊 [BI Admin] Linhas de relatórios individuais decodificadas:", reportRows);
-      
       setMentorsData(decodedMentors);
       setChildMissionsData(childRows);
       setChildReportsData(reportRows);

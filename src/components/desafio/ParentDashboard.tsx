@@ -22,6 +22,7 @@ import {
 import type { Task, Reward, ChildData, TaskRecurrence } from '@/types/desafio';
 import { AVATARS } from '@/components/desafio/HeroElements';
 import { ClinicalReport } from './ClinicalReport';
+import { YEARLY_PRICE_IDS } from '@/lib/constants';
 
 interface ParentDashboardProps {
   parentSubView: string;
@@ -112,12 +113,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 }) => {
   const getPlanName = () => {
     if (!isPremium) return 'Sem Plano';
-    const YEARLY_PRICE_IDS = new Set([
-      'price_1TXjo1Pc1qFQfvf50bPNi3i7', // BRL
-      'price_1TXjv3Pc1qFQfvf5wps2BmFU', // USD
-      'price_1TXjw5Pc1qFQfvf5cfszDbqI', // EUR
-      'price_1TXjy3Pc1qFQfvf5pCgaPX8Q', // CNY
-    ]);
     if (subscriptionPriceId && YEARLY_PRICE_IDS.has(subscriptionPriceId)) {
       return 'Plano Comandante Estelar (Anual)';
     }
