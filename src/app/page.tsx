@@ -38,7 +38,6 @@ import {
   Lightbulb,
   Share2,
   Instagram,
-  Tiktok,
   Facebook,
   MessageCircle,
   Copy,
@@ -1852,7 +1851,9 @@ export default function DesafioEstrelas() {
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-[#010101] border-2 border-cyan-400/30 hover:border-cyan-400 text-cyan-400 font-bold hover:scale-[1.03] transition-all text-xs uppercase tracking-wider cursor-pointer"
                         >
-                          <Tiktok className="w-4 h-4 shrink-0 text-cyan-400" /> TikTok
+                          <svg className="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24">
+                            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.59 4.23.94 1.15 2.27 1.93 3.73 2.18.01 1.29 0 2.58-.01 3.87-.94-.09-1.87-.33-2.73-.75-.82-.41-1.54-.99-2.11-1.72-.02 2.22 0 4.43-.01 6.65-.05 1.53-.45 3.05-1.19 4.37-.81 1.4-2.02 2.52-3.48 3.19-1.46.68-3.11.91-4.71.66-1.59-.22-3.09-.97-4.24-2.11-1.15-1.12-1.89-2.61-2.12-4.19-.24-1.58-.02-3.21.64-4.66.67-1.47 1.81-2.67 3.25-3.37.93-.45 1.95-.7 2.97-.73 0 1.34.01 2.69.01 4.03-.68.02-1.36.19-1.95.53-.6.34-1.07.86-1.34 1.49-.28.62-.35 1.32-.21 2 .13.68.49 1.29.98 1.76.51.49 1.17.78 1.86.85.7.07 1.4-.07 2-.42.6-.34 1.05-.88 1.27-1.52.12-.39.16-.8.16-1.21-.01-3.69-.01-7.37-.01-11.06z"/>
+                          </svg> TikTok
                         </a>
 
                         {/* E-mail */}
