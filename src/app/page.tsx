@@ -58,6 +58,7 @@ import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
 import { SetupPlanetsStage } from "@/components/desafio/SetupPlanetsStage";
 import { SetupTasksStage } from "@/components/desafio/SetupTasksStage";
 import { SetupRewardsStage } from "@/components/desafio/SetupRewardsStage";
+import { useAppInitializer } from "@/hooks/useAppInitializer";
 import { AppHeader } from "@/components/shared/AppHeader";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { Footer } from "@/components/Footer";
@@ -302,228 +303,21 @@ export default function DesafioEstrelas() {
     }
   }, [stage]);
 
-  useEffect(() => {
-    // Detecção Automática de Idioma e Região
-    const detectUserLanguage = () => {
-      // 1. Tentar pegar do LocalStorage (preferência salva anteriormente)
-      const saved = localStorage.getItem('desafio_estrelas_v2');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.language) return parsed.language;
-      }
-
-      // 2. Tentar detectar pelo navegador
-      const browserLang = navigator.language || (navigator as any).userLanguage;
-
-
-      if (browserLang.startsWith('pt')) {
-        return browserLang.includes('PT') ? 'pt-PT' : 'pt-BR';
-      } else if (browserLang.startsWith('es')) {
-        return 'es';
-      } else if (browserLang.startsWith('fr')) {
-        return 'fr';
-      } else if (browserLang.startsWith('it')) {
-        return 'it';
-      } else if (browserLang.startsWith('zh')) {
-        return 'zh';
-      }
-
-      return 'en'; // Fallback para Inglês
-    };
-
-    const initialLang = detectUserLanguage();
-    setLanguage(initialLang);
-
-    const initData = async () => {
-      // Captura o redirecionamento de cadastro vindo do Stripe
-      if (typeof window !== 'undefined') {
-        const params = new URLSearchParams(window.location.search);
-        const urlStage = params.get('stage');
-        if (urlStage === 'register' || urlStage === 'auth') {
-          setStage('auth');
-          setIsLogin(false); // Força tela de cadastro
-        }
-      }
-
-      // Verifica primeiro se o usuário está logado e se tem assinatura ativa
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // BYPASS MESTRE DE SEGURANÇA E RECARREGAMENTO F5 DO ADMIN GLOBAL
-        const isAdmin = isAdminEmail(user.email);
-        
-        if (isAdmin) {
-          setIsPremium(true);
-          setView('admin');
-          setStage('adventure');
-          
-          const cloudData = await loadFromCloud(user);
-          if (cloudData) {
-            if (cloudData.children) setChildren(cloudData.children);
-            if (cloudData.activeChildId) setActiveChildId(cloudData.activeChildId);
-            if (cloudData.fleetId) setFleetId(cloudData.fleetId);
-            if (cloudData.language) setLanguage(cloudData.language);
-          }
-          return; // Finaliza bypassando qualquer restrição
-        }
-
-        // Sincroniza preventivamente o e-mail no Supabase para garantir webhooks de alta precisão
-        if (user.email) {
-          await supabase
-            .from('profiles')
-            .update({ email: user.email })
-            .eq('id', user.id)
-            .is('email', null);
-        }
-
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_status, subscription_price_id')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profile?.subscription_status !== 'active') {
-          try {
-            const syncRes = await fetch('/api/subscription-sync', { method: 'POST' });
-            if (syncRes.ok) {
-              const syncData = await syncRes.json();
-              if (syncData.status === 'active') {
-                setIsPremium(true);
-                if (syncData.priceId) setSubscriptionPriceId(syncData.priceId);
-                
-                const cloudData = await loadFromCloud(user);
-                if (cloudData) {
-                  if (cloudData.children) setChildren(cloudData.children);
-                  if (cloudData.activeChildId) setActiveChildId(cloudData.activeChildId);
-                  if (cloudData.fleetId) setFleetId(cloudData.fleetId);
-                  if (cloudData.language) setLanguage(cloudData.language);
-                }
-                setStage('adventure');
-                return;
-              }
-            }
-          } catch (syncErr) {
-            console.error("Falha ao tentar sincronizar assinatura na inicialização:", syncErr);
-          }
-
-          setIsPremium(false);
-          setSubscriptionPriceId(null);
-          setStage('no_subscription');
-          return; // Para a inicialização normal
-        } else {
-          setIsPremium(true);
-          if (profile.subscription_price_id) {
-            setSubscriptionPriceId(profile.subscription_price_id);
-          }
-        }
-      }
-
-      const cloudData = await loadFromCloud();
-      const saved = localStorage.getItem('desafio_estrelas_v2');
-      let finalData = null;
-
-      if (cloudData) {
-        finalData = cloudData;
-      } else if (saved) {
-        finalData = JSON.parse(saved);
-      }
-
-      if (finalData) {
-        const savedChildren: ChildData[] = finalData.children || [];
-        if (finalData.language) setLanguage(finalData.language);
-
-        const now = new Date();
-        const todayStr = now.toLocaleDateString();
-
-        const getWeekId = (date: Date) => {
-          const d = new Date(date);
-          d.setHours(0, 0, 0, 0);
-          d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-          const yearStart = new Date(d.getFullYear(), 0, 1);
-          const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-          return `${d.getFullYear()}-${weekNo}`;
-        };
-
-        const currentWeekId = getWeekId(now);
-        const currentMonthId = `${now.getFullYear()}-${now.getMonth()}`;
-
-        const updatedChildren = savedChildren.map((child: ChildData) => ({
-          ...child,
-          tasks: (child.tasks || []).map((task: Task) => {
-            if (task.status === 'done' && task.lastCompleted) {
-              const completedDate = new Date(task.lastCompleted);
-              const completedDateStr = completedDate.toLocaleDateString();
-              const completedWeekId = getWeekId(completedDate);
-              const completedMonthId = `${completedDate.getFullYear()}-${completedDate.getMonth()}`;
-
-              if (task.recurrence === 'daily' && completedDateStr !== todayStr) return { ...task, status: 'available' as const };
-              if (task.recurrence === 'weekly' && completedWeekId !== currentWeekId) return { ...task, status: 'available' as const };
-              if (task.recurrence === 'monthly' && completedMonthId !== currentMonthId) return { ...task, status: 'available' as const };
-            }
-            return task;
-          })
-        }));
-
-        setChildren(updatedChildren);
-        setActiveChildId(finalData.activeChildId || null);
-        if (finalData.parentPin) setParentPin(finalData.parentPin);
-        if (finalData.fleetId) setFleetId(finalData.fleetId);
-        if (finalData.stage) setStage(finalData.stage);
-      }
-    };
-
-    initData();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'PASSWORD_RECOVERY') setStage('reset_password');
-      if (event === 'SIGNED_IN' && session?.user) {
-        if (session?.user?.user_metadata?.full_name) setParentName(session.user.user_metadata.full_name);
-        
-        // BYPASS MESTRE DE SEGURANÇA: Se for e-mail de admin global
-        if (isAdminEmail(session.user.email)) {
-          setIsPremium(true);
-          setView('admin');
-          setStage('adventure');
-          const cloudData = await loadFromCloud(session.user);
-          if (cloudData && cloudData.children) {
-            setChildren(cloudData.children);
-            setActiveChildId(cloudData.activeChildId || null);
-            if (cloudData.fleetId) setFleetId(cloudData.fleetId);
-            if (cloudData.language) setLanguage(cloudData.language);
-          }
-          return;
-        }
-
-        // Verifica a assinatura
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_status, subscription_price_id')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        if (profile?.subscription_status !== 'active') {
-          setIsPremium(false);
-          setSubscriptionPriceId(null);
-          setStage('no_subscription');
-        } else {
-          setIsPremium(true);
-          if (profile.subscription_price_id) {
-            setSubscriptionPriceId(profile.subscription_price_id);
-          }
-          const cloudData = await loadFromCloud(session?.user);
-          if (cloudData && cloudData.children) {
-            setChildren(cloudData.children);
-            setActiveChildId(cloudData.activeChildId || null);
-            if (cloudData.fleetId) setFleetId(cloudData.fleetId);
-            if (cloudData.language) setLanguage(cloudData.language);
-          }
-        }
-      }
-    });
-
-    if (window.location.hash.includes('type=recovery')) setStage('reset_password');
-
-    return () => subscription.unsubscribe();
-  }, []);
+  useAppInitializer({
+    supabase,
+    setLanguage,
+    setStage,
+    setIsLogin,
+    setIsPremium,
+    setView,
+    loadFromCloud,
+    setChildren,
+    setActiveChildId,
+    setFleetId,
+    setSubscriptionPriceId,
+    setParentPin,
+    setParentName
+  });
 
   useEffect(() => {
     const dataToSave = { children, activeChildId, stage, parentPin, fleetId, language };
