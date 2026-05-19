@@ -84,11 +84,11 @@ export async function POST(req: Request) {
         },
       });
 
-      const invoice = subscription.latest_invoice as Stripe.Invoice;
-      const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
+      const invoice = subscription.latest_invoice as any;
+      const clientSecret = invoice?.payment_intent?.client_secret;
 
       return NextResponse.json({
-        clientSecret: paymentIntent.client_secret,
+        clientSecret: clientSecret,
         subscriptionId: subscription.id,
         amount: 9.90,
         currency: currency.toUpperCase(),
