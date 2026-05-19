@@ -6,9 +6,11 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ShieldCheck, Sparkles, Rocket, CheckCircle2, RefreshCw, Lock } from 'lucide-react';
 import clsx from 'clsx';
 
-// Inicializa o SDK do Mercado Pago com a Public Key (lado do cliente)
-const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!;
-initMercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+// Inicializa o SDK do Mercado Pago de forma segura
+const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || '';
+if (MP_PUBLIC_KEY) {
+  initMercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+}
 
 interface CheckoutStageProps {
   onBack: () => void;
@@ -207,18 +209,31 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
                 </div>
               )}
 
-              <div className="relative z-10 mp-checkout-wrapper">
-                <CardPayment
-                  initialization={{ amount: plan.amount }}
-                  customization={customization}
-                  onSubmit={handleSubmit}
-                  onError={(err) => {
-                    console.error('Erro no formulário MP:', err);
-                    setErrorMessage('Erro ao processar o formulário. Verifique os dados do cartão.');
-                    setStatus('error');
-                  }}
-                />
-              </div>
+              {MP_PUBLIC_KEY ? (
+                <div className="relative z-10 mp-checkout-wrapper">
+                  <CardPayment
+                    initialization={{ amount: plan.amount }}
+                    customization={customization}
+                    onSubmit={handleSubmit}
+                    onError={(err) => {
+                      console.error('Erro no formulário MP:', err);
+                      setErrorMessage('Erro ao processar o formulário. Verifique os dados do cartão.');
+                      setStatus('error');
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-[24px] text-center space-y-4 relative z-10 my-6">
+                  <Lock className="w-12 h-12 text-red-400 mx-auto" />
+                  <h4 className="text-white font-black uppercase tracking-wider text-sm">Chave Galáctica Indisponível</h4>
+                  <p className="text-white/60 text-xs leading-relaxed max-w-sm mx-auto">
+                    A chave pública <code className="bg-black/40 px-1.5 py-0.5 rounded text-primary font-mono text-[10px]">NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY</code> não está configurada no seu painel da Vercel. 
+                  </p>
+                  <p className="text-white/40 text-[10px] leading-relaxed max-w-xs mx-auto">
+                    Adicione essa variável nas configurações de ambiente do seu projeto Vercel para liberar o formulário do cartão.
+                  </p>
+                </div>
+              )}
 
               {status === 'processing' && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-[32px] flex flex-col items-center justify-center gap-4 z-20">
