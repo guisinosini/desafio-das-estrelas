@@ -65,8 +65,13 @@ export async function POST(req: Request) {
         }
       });
 
-      if (response.status === 'approved' || response.status === 'in_process') {
-        await supabaseAdmin
+      console.log('[MP Checkout Anual] Status do pagamento:', response.status, '| ID:', response.id);
+
+      // Aceita approved, in_process e pending (sandbox retorna 'pending' em pagamentos de teste 1x)
+      const statusOk = ['approved', 'in_process', 'pending'].includes(response.status || '');
+
+      if (statusOk) {
+        const { error: dbError } = await supabaseAdmin
           .from('profiles')
           .update({
             is_premium: true,
@@ -75,10 +80,16 @@ export async function POST(req: Request) {
             subscription_price_id: 'yearly',
           })
           .eq('id', user.id);
+
+        if (dbError) {
+          console.error('[MP Checkout Anual] Erro ao atualizar Supabase:', dbError);
+        } else {
+          console.log('[MP Checkout Anual] Perfil atualizado como premium com sucesso!');
+        }
       }
 
       return NextResponse.json({
-        success: true,
+        success: statusOk,
         status: response.status,
         id: response.id,
       });
@@ -111,8 +122,10 @@ export async function POST(req: Request) {
         }
       });
 
-      if (response.status === 'authorized') {
-        await supabaseAdmin
+      console.log('[MP Checkout Mensal] Status da assinatura:', response.status, '| ID:', response.id);
+
+      if (response.status === 'authorized' || response.status === 'pending') {
+        const { error: dbError } = await supabaseAdmin
           .from('profiles')
           .update({
             is_premium: true,
@@ -121,10 +134,16 @@ export async function POST(req: Request) {
             subscription_price_id: 'monthly',
           })
           .eq('id', user.id);
+
+        if (dbError) {
+          console.error('[MP Checkout Mensal] Erro ao atualizar Supabase:', dbError);
+        } else {
+          console.log('[MP Checkout Mensal] Perfil atualizado como premium com sucesso!');
+        }
       }
 
       return NextResponse.json({
-        success: true,
+        success: ['authorized', 'pending'].includes(response.status || ''),
         status: response.status,
         id: response.id,
       });

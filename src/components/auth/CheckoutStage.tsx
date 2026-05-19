@@ -286,6 +286,13 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
 
       if (data.error) throw new Error(data.error);
 
+      // Pagamento rejeitado explicitamente pelo MP
+      if (data.status === 'rejected') {
+        setErrorMessage('Pagamento recusado pela operadora. Verifique os dados do cartão ou tente outro.');
+        setStatus('error');
+        return;
+      }
+
       setStatus('success');
       setTimeout(() => {
         onSuccess();
@@ -297,14 +304,18 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     }
   };
 
+  // Customização separada: mensal NÃO tem paymentMethods (PreApproval não suporta, causa bug de token)
+  // anual TEM maxInstallments para habilitar parcelamento
   const customizationMercadoPago: any = {
     visual: {
       theme: 'dark',
     },
-    paymentMethods: {
-      minInstallments: 1,
-      maxInstallments: 12,
-    }
+    ...(selectedPlan === 'yearly' && {
+      paymentMethods: {
+        minInstallments: 1,
+        maxInstallments: 12,
+      }
+    })
   };
 
   // Configuração Estética Premium da Stripe
