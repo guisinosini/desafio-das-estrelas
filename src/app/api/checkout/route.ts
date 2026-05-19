@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    let { priceId } = await req.json();
+    let { priceId, interval } = await req.json();
 
     if (!priceId) {
       return NextResponse.json({ error: 'Price ID is required' }, { status: 400 });
@@ -33,6 +33,16 @@ export async function POST(req: Request) {
       allow_promotion_codes: true,
       billing_address_collection: 'required',
     };
+
+    if (interval === 'yearly') {
+      sessionParams.payment_method_options = {
+        card: {
+          installments: {
+            enabled: true,
+          },
+        },
+      };
+    }
 
     if (user && user.email) {
       sessionParams.customer_email = user.email;

@@ -132,7 +132,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ priceId, interval }),
       });
 
       const data = await response.json();
