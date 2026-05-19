@@ -48,6 +48,7 @@ const PLANS = {
 export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: CheckoutStageProps) {
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isBrickReady, setIsBrickReady] = useState(false);
   const plan = PLANS[selectedPlan];
 
   const handleSubmit = async (cardFormData: any) => {
@@ -203,18 +204,57 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
               )}
 
               {MP_PUBLIC_KEY ? (
-                <div className="relative z-10 mp-checkout-wrapper">
-                  <CardPayment
-                    initialization={{ amount: plan.amount }}
-                    customization={customization}
-                    onSubmit={handleSubmit}
-                    onError={(err) => {
-                      console.error('Erro no formulário MP:', err);
-                      setErrorMessage('Erro ao processar o formulário. Verifique os dados do cartão.');
-                      setStatus('error');
-                    }}
-                  />
-                </div>
+                <>
+                  {/* Esqueleto de carregamento premium com pulso cósmico */}
+                  {!isBrickReady && (
+                    <div className="space-y-4 animate-pulse relative z-10">
+                      {/* Campo Número do Cartão */}
+                      <div className="space-y-2">
+                        <div className="h-3 w-28 bg-white/10 rounded-full" />
+                        <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                      </div>
+                      {/* Grid Vencimento e CVV */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="h-3 w-20 bg-white/10 rounded-full" />
+                          <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-3 w-16 bg-white/10 rounded-full" />
+                          <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                        </div>
+                      </div>
+                      {/* Nome do Titular */}
+                      <div className="space-y-2">
+                        <div className="h-3 w-32 bg-white/10 rounded-full" />
+                        <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                      </div>
+                      {/* CPF/CNPJ */}
+                      <div className="space-y-2">
+                        <div className="h-3 w-24 bg-white/10 rounded-full" />
+                        <div className="h-11 bg-white/5 border border-white/10 rounded-xl" />
+                      </div>
+                      {/* Botão de Pagar */}
+                      <div className="h-12 bg-primary/20 border border-primary/30 rounded-xl mt-6 flex items-center justify-center">
+                        <div className="h-3 w-28 bg-primary/30 rounded-full" />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={clsx("relative z-10 transition-opacity duration-300", !isBrickReady ? "opacity-0 absolute inset-0 pointer-events-none" : "opacity-100")}>
+                    <CardPayment
+                      initialization={{ amount: plan.amount }}
+                      customization={customization}
+                      onSubmit={handleSubmit}
+                      onReady={() => setIsBrickReady(true)}
+                      onError={(err) => {
+                        console.error('Erro no formulário MP:', err);
+                        setErrorMessage('Erro ao processar o formulário. Verifique os dados do cartão.');
+                        setStatus('error');
+                      }}
+                    />
+                  </div>
+                </>
               ) : (
                 <div className="p-6 sm:p-8 bg-red-500/10 border border-red-500/20 rounded-[20px] sm:rounded-[24px] text-center space-y-4 relative z-10 my-4 sm:my-6">
                   <Lock className="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto" />
