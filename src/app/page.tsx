@@ -169,6 +169,9 @@ export default function DesafioEstrelas() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
+  const [isPremium, setIsPremium] = useState(false);
+  const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
+  
   // Utiliza o hook extraído para sincronização na nuvem
   const { isSyncing, loadFromCloud, saveToCloud } = useCloudSync({
     supabase,
@@ -230,8 +233,6 @@ export default function DesafioEstrelas() {
     { id: 'mission_master', icon: '🔥', label: 'Incansável', description: 'Completou 5 missões', condition: (c: ChildData) => c.history.filter(h => h.type === 'gain').length >= 5 },
   ];
 
-  const [isPremium, setIsPremium] = useState(false);
-  const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
 
 
   useEffect(() => {
