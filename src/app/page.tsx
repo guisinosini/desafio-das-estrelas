@@ -974,6 +974,8 @@ export default function DesafioEstrelas() {
             language={language} 
             onLanguageChange={setLanguage} 
             onStart={() => setStage('auth')} 
+            deferredPrompt={deferredPrompt}
+            onInstall={handleInstall}
           />
         )}
 

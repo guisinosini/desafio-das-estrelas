@@ -32,6 +32,8 @@ interface LandingPageProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
   onStart: () => void;
+  deferredPrompt?: any;
+  onInstall?: () => void;
 }
 
 const FadeInWhenVisible = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => (
@@ -97,7 +99,7 @@ const stripePriceMap: Record<string, { monthly: string | undefined, yearly: stri
   },
 };
 
-export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart, deferredPrompt, onInstall }) => {
   const t = translations[language];
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -202,6 +204,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               </>
             )}
           </div>
+          {deferredPrompt && (
+            <button 
+              onClick={onInstall} 
+              className="bg-yellow-400 text-black px-4 md:px-6 py-2 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-yellow-400/30 flex items-center gap-1.5 shrink-0 cursor-pointer"
+            >
+              <Star className="w-3.5 h-3.5 fill-black animate-pulse" />
+              Instalar App
+            </button>
+          )}
           <button onClick={onStart} className="bg-primary text-black px-4 md:px-8 py-2 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/30">
             {t.login}
           </button>
