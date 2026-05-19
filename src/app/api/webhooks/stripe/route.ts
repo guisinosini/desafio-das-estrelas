@@ -54,21 +54,44 @@ export async function POST(req: Request) {
         }
       }
 
-      if (customerEmail) {
-        // Atualiza o perfil do usuário baseado no e-mail
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            stripe_customer_id: stripeCustomerId,
-            subscription_id: subscriptionId,
-            subscription_status: 'active',
-            subscription_price_id: subscriptionPriceId, // Salva o priceId exato!
-            subscription_start: subscriptionStart,
-            subscription_end: subscriptionEnd,
-          })
-          .eq('email', customerEmail); // Nota: Certifique-se que a tabela profiles tem a coluna email ou use outro identificador
+      if (customerEmail || stripeCustomerId) {
+        const updatePayload = {
+          stripe_customer_id: stripeCustomerId,
+          subscription_id: subscriptionId,
+          subscription_status: 'active',
+          subscription_price_id: subscriptionPriceId,
+          subscription_start: subscriptionStart,
+          subscription_end: subscriptionEnd,
+        };
 
-        if (error) console.error('Error updating profile on checkout:', error);
+        let updated = false;
+
+        // Tentativa 1: Buscar por e-mail (campo pode ser null em usuários antigos)
+        if (customerEmail) {
+          const { data: byEmail, error: emailError } = await supabase
+            .from('profiles')
+            .update(updatePayload)
+            .eq('email', customerEmail)
+            .select('id');
+
+          if (!emailError && byEmail && byEmail.length > 0) {
+            updated = true;
+          } else if (emailError) {
+            console.error('Webhook: Erro ao atualizar perfil por email:', emailError);
+          }
+        }
+
+        // Fallback: Buscar por stripe_customer_id caso email não tenha encontrado registro
+        if (!updated && stripeCustomerId) {
+          const { error: customerError } = await supabase
+            .from('profiles')
+            .update(updatePayload)
+            .eq('stripe_customer_id', stripeCustomerId);
+
+          if (customerError) {
+            console.error('Webhook: Erro ao atualizar perfil por stripe_customer_id:', customerError);
+          }
+        }
       }
       break;
     }

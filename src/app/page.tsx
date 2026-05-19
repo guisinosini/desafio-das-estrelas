@@ -39,6 +39,7 @@ import {
   Share2
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { isAdminEmail } from "@/lib/supabase/roles";
 import confetti from "canvas-confetti";
 import clsx from "clsx";
 
@@ -419,7 +420,7 @@ export default function DesafioEstrelas() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         // BYPASS MESTRE DE SEGURANÇA E RECARREGAMENTO F5 DO ADMIN GLOBAL
-        const isAdmin = user.email === 'institutokamaleon@gmail.com';
+        const isAdmin = isAdminEmail(user.email);
         
         if (isAdmin) {
           setIsPremium(true);
@@ -551,8 +552,8 @@ export default function DesafioEstrelas() {
       if (event === 'SIGNED_IN' && session?.user) {
         if (session?.user?.user_metadata?.full_name) setParentName(session.user.user_metadata.full_name);
         
-        // BYPASS MESTRE DE SEGURANÇA: Se for o e-mail de admin global
-        if (session.user.email === 'institutokamaleon@gmail.com') {
+        // BYPASS MESTRE DE SEGURANÇA: Se for e-mail de admin global
+        if (isAdminEmail(session.user.email)) {
           setIsPremium(true);
           setView('admin');
           setStage('adventure');
@@ -822,8 +823,8 @@ export default function DesafioEstrelas() {
         await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
       }
 
-      // BYPASS MESTRE DE SEGURANÇA: Se for o e-mail de admin global
-      if (user.email === 'institutokamaleon@gmail.com') {
+      // BYPASS MESTRE DE SEGURANÇA: Se for e-mail de admin global
+      if (isAdminEmail(user.email)) {
         setIsPremium(true);
         setView('admin');
         setStage('adventure');

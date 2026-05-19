@@ -5,11 +5,10 @@ export function createClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Return a dummy client or handle as needed
+    throw new Error(
+      'ERRO CRÍTICO: NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY devem estar definidas nas variáveis de ambiente públicas.'
+    );
   }
 
-  return createBrowserClient(
-    supabaseUrl!,
-    supabaseAnonKey!
-  )
+  return createBrowserClient(supabaseUrl, supabaseAnonKey)
 }

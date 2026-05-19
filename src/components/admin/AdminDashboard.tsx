@@ -21,6 +21,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { isAdminEmail } from '@/lib/supabase/roles';
 
 interface AdminDashboardProps {
   setView: (view: 'child' | 'parent' | 'admin') => void;
@@ -106,8 +107,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       };
     }
 
-    // Bypass de Admin
-    if (mentorEmail === 'institutokamaleon@gmail.com') {
+    // Bypass de Admin — usa isAdminEmail() centralizado em roles.ts
+    if (isAdminEmail(mentorEmail)) {
       return {
         type: 'Premium Vitalício (Admin)',
         startDate: '01/01/2026',
