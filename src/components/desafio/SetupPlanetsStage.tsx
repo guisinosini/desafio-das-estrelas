@@ -13,7 +13,7 @@ interface SetupPlanetsStageProps {
   planetPresets: any[];
   activeChild: any;
   removePlanet: (id: string) => void;
-  setStage: (stage: string) => void;
+  setStage: (stage: any) => void;
 }
 
 export const SetupPlanetsStage: React.FC<SetupPlanetsStageProps> = ({

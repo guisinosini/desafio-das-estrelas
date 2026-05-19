@@ -15,7 +15,7 @@ interface SetupTasksStageProps {
   activeChild: any;
   tasks: Task[];
   removeTask: (id: string) => void;
-  setStage: (stage: string) => void;
+  setStage: (stage: any) => void;
 }
 
 export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
