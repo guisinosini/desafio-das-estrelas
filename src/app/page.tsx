@@ -46,6 +46,7 @@ import clsx from "clsx";
 import { AVATARS, StarField, SpaceShipVideo, HeroCharacter, DailyConquestCelebration } from "@/components/desafio/HeroElements";
 import { MissionList } from "@/components/desafio/MissionList";
 import { RewardShop } from "@/components/desafio/RewardShop";
+import { CognitiveBreathing } from "@/components/desafio/CognitiveBreathing";
 import { ParentDashboard } from "@/components/desafio/ParentDashboard";
 import type { ChildData, Stage, Task, Reward, TaskRecurrence, Planet } from "@/types/desafio";
 import { translations, type Language } from "@/lib/translations";
@@ -161,6 +162,7 @@ export default function DesafioEstrelas() {
   const [showPin, setShowPin] = useState(false);
   const [showRankingModal, setShowRankingModal] = useState(false);
   const [showCognitiveLab, setShowCognitiveLab] = useState(false);
+  const [showBreathingModal, setShowBreathingModal] = useState(false);
   const [pin, setPin] = useState("");
   const [laserTarget, setLaserTarget] = useState<{ x: number, y: number, taskId: string } | null>(null);
   const [animatingStar, setAnimatingStar] = useState<{ x: number, y: number } | null>(null);
@@ -1528,6 +1530,7 @@ export default function DesafioEstrelas() {
                       name={activeChild?.name || ''}
                       isFiring={!!laserTarget}
                       t={t}
+                      onFlightComplete={() => setShowBreathingModal(true)}
                     />
 
                     <div className="mt-8 w-full max-w-xs space-y-6">
@@ -1765,6 +1768,17 @@ export default function DesafioEstrelas() {
               {showCognitiveLab && (
                 <CognitiveLab
                   onClose={() => setShowCognitiveLab(false)}
+                  onAwardStars={handleAwardStars}
+                  language={language}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Modal do Exercício de Respiração Estelar */}
+            <AnimatePresence>
+              {showBreathingModal && (
+                <CognitiveBreathing
+                  onClose={() => setShowBreathingModal(false)}
                   onAwardStars={handleAwardStars}
                   language={language}
                 />

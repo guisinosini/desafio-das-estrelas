@@ -498,14 +498,19 @@ export const DailyConquestCelebration = memo(function DailyConquestCelebration({
 });
 DailyConquestCelebration.displayName = 'DailyConquestCelebration';
 
-export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCelebrating = false, isSad = false, isFiring = false, t }: { avatar: string, name: string, isCelebrating?: boolean, isSad?: boolean, isFiring?: boolean, t: any }) {
+export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCelebrating = false, isSad = false, isFiring = false, t, onFlightComplete }: { avatar: string, name: string, isCelebrating?: boolean, isSad?: boolean, isFiring?: boolean, t: any, onFlightComplete?: () => void }) {
   const selectedAvatar = AVATARS.find(a => a.id === avatar) || AVATARS[0];
   const [isFlying, setIsFlying] = useState(false);
 
   const handleFlight = () => {
     if (isFlying) return;
     setIsFlying(true);
-    setTimeout(() => setIsFlying(false), 4000);
+    setTimeout(() => {
+      setIsFlying(false);
+      if (onFlightComplete) {
+        onFlightComplete();
+      }
+    }, 4000);
   };
 
   return (
