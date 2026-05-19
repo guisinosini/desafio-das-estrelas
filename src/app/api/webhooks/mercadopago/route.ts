@@ -26,6 +26,7 @@ export async function POST(req: Request) {
         const userId = data.external_reference;
         const reason = data.reason?.toLowerCase() || '';
         const planType = reason.includes('comandante') || reason.includes('anual') ? 'commander' : 'cadet';
+        const priceId = reason.includes('comandante') || reason.includes('anual') ? 'yearly' : 'monthly';
 
         if (userId && userId !== 'anonymous') {
           const { error } = await supabase
@@ -33,6 +34,8 @@ export async function POST(req: Request) {
             .update({
               is_premium: true,
               plan_type: planType,
+              subscription_status: 'active',
+              subscription_price_id: priceId,
             })
             .eq('id', userId);
 
@@ -45,12 +48,19 @@ export async function POST(req: Request) {
 
       if (paymentData.status === 'approved') {
         const userId = paymentData.external_reference;
+        const description = paymentData.description?.toLowerCase() || '';
+        const planType = description.includes('comandante') || description.includes('anual') ? 'commander' : 'cadet';
+        const priceId = description.includes('comandante') || description.includes('anual') ? 'yearly' : 'monthly';
         
         if (userId && userId !== 'anonymous') {
-          // Atualiza se for um pagamento independente ou renovação que envia a referência
           const { error } = await supabase
             .from('profiles')
-            .update({ is_premium: true })
+            .update({
+              is_premium: true,
+              plan_type: planType,
+              subscription_status: 'active',
+              subscription_price_id: priceId,
+            })
             .eq('id', userId);
 
           if (error) console.error('Erro ao atualizar usuário via pagamento:', error);
