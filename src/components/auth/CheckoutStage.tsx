@@ -301,6 +301,10 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     visual: {
       theme: 'dark',
     },
+    paymentMethods: {
+      minInstallments: 1,
+      maxInstallments: 12,
+    }
   };
 
   // Configuração Estética Premium da Stripe
