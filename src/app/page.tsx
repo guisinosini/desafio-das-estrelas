@@ -36,7 +36,13 @@ import {
   Rocket,
   Milestone,
   Lightbulb,
-  Share2
+  Share2,
+  Instagram,
+  Tiktok,
+  Facebook,
+  MessageCircle,
+  Copy,
+  Heart
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { isAdminEmail } from "@/lib/supabase/roles";
@@ -163,6 +169,8 @@ export default function DesafioEstrelas() {
   const [showRankingModal, setShowRankingModal] = useState(false);
   const [showCognitiveLab, setShowCognitiveLab] = useState(false);
   const [showBreathingModal, setShowBreathingModal] = useState(false);
+  const [showRecruitModal, setShowRecruitModal] = useState(false);
+  const [copyRecruitSuccess, setCopyRecruitSuccess] = useState(false);
   const [pin, setPin] = useState("");
   const [laserTarget, setLaserTarget] = useState<{ x: number, y: number, taskId: string } | null>(null);
   const [animatingStar, setAnimatingStar] = useState<{ x: number, y: number } | null>(null);
@@ -1536,19 +1544,7 @@ export default function DesafioEstrelas() {
                     <div className="mt-8 w-full max-w-xs space-y-6">
                       {/* Botão de Convite Temático */}
                       <button
-                        onClick={() => {
-                          const inviteText = `🌟 Ei! Venha participar da Aliança Galáctica no Desafio das Estrelas! Transforme a rotina em conquistas épicas. Acesse: https://www.desafioestrelas.com/`;
-                          if (navigator.share) {
-                            navigator.share({
-                              title: 'Desafio das Estrelas',
-                              text: inviteText,
-                              url: 'https://www.desafioestrelas.com/',
-                            }).catch(err => console.log('Erro ao compartilhar:', err));
-                          } else {
-                            navigator.clipboard.writeText(inviteText);
-                            alert('Convite copiado para a área de transferência!');
-                          }
-                        }}
+                        onClick={() => setShowRecruitModal(true)}
                         className="w-full py-4 bg-primary/10 hover:bg-primary/20 border-2 border-primary/30 hover:border-primary text-primary rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-primary/5 hover:scale-105 active:scale-95 group shrink-0"
                       >
                         <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -1782,6 +1778,120 @@ export default function DesafioEstrelas() {
                   onAwardStars={handleAwardStars}
                   language={language}
                 />
+              )}
+            </AnimatePresence>
+
+            {/* Modal de Convocação de Recrutas */}
+            <AnimatePresence>
+              {showRecruitModal && (
+                <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-zinc-950/95 backdrop-blur-2xl">
+                  <div className="w-full max-w-md bg-[#0c1020] border-2 border-primary/20 rounded-[40px] shadow-2xl overflow-hidden text-white relative">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+                    
+                    <div className="p-8 border-b border-white/10 flex justify-between items-center bg-primary/5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Share2 className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-black uppercase italic tracking-tighter">Convocar Recrutas 🛰️</h2>
+                          <p className="text-[9px] font-bold text-primary uppercase tracking-widest leading-none mt-1">Indicar o Desafio das Estrelas</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => { setShowRecruitModal(false); setCopyRecruitSuccess(false); }} 
+                        className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer text-white border border-white/5"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                    </div>
+
+                    <div className="p-8 space-y-6">
+                      <p className="text-white/60 text-xs md:text-sm leading-relaxed font-medium">
+                        Sua convocação ajuda a espalhar o brilho do Desafio das Estrelas! Selecione uma plataforma para enviar ou copie o link pronto.
+                      </p>
+
+                      {/* Botões de Redes Sociais */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* WhatsApp */}
+                        <a
+                          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                            "Olá! Gostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), uma ferramenta maravilhosa de gamificação galáctica e neurociência que auxilia pais e mentores no desenvolvimento de comportamentos positivos, rotinas saudáveis e treino cognitivo infantil de forma muito afetiva. Vale muito a pena conhecer!"
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-emerald-400 cursor-pointer"
+                        >
+                          <MessageCircle className="w-4 h-4 shrink-0" /> WhatsApp
+                        </a>
+
+                        {/* Facebook */}
+                        <a
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.desafioestrelas.com')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-indigo-400 cursor-pointer"
+                        >
+                          <Facebook className="w-4 h-4 shrink-0" /> Facebook
+                        </a>
+
+                        {/* Instagram */}
+                        <a
+                          href="https://www.instagram.com/desafioestrelasapp/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white font-bold hover:scale-[1.03] transition-all text-xs uppercase tracking-wider cursor-pointer border-none"
+                        >
+                          <Instagram className="w-4 h-4 shrink-0 text-white" /> Instagram
+                        </a>
+
+                        {/* TikTok */}
+                        <a
+                          href="https://www.tiktok.com/@desafioestrelasapp"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-[#010101] border-2 border-cyan-400/30 hover:border-cyan-400 text-cyan-400 font-bold hover:scale-[1.03] transition-all text-xs uppercase tracking-wider cursor-pointer"
+                        >
+                          <Tiktok className="w-4 h-4 shrink-0 text-cyan-400" /> TikTok
+                        </a>
+
+                        {/* E-mail */}
+                        <a
+                          href={`mailto:?subject=${encodeURIComponent('Recomendação: Desafio das Estrelas')}&body=${encodeURIComponent(
+                            "Olá!\n\nGostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), um aplicativo incrível de gamificação galáctica e neurociência cognitiva para auxiliar no desenvolvimento infantil, ajudando pais e mentores a fortalecerem rotinas, hábitos e habilidades socioemocionais através do reforço positivo.\n\nTenho certeza de que será de grande valor!\n\nAbraços."
+                          )}`}
+                          className="flex items-center justify-center gap-2.5 p-3.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:scale-[1.03] transition-all text-xs font-black uppercase tracking-wider text-rose-400 cursor-pointer col-span-2"
+                        >
+                          <Mail className="w-4 h-4 shrink-0" /> E-mail
+                        </a>
+                      </div>
+
+                      {/* Mensagem Formatada Pronta para Copiar */}
+                      <div className="space-y-3 pt-2 border-t border-white/5">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block">Texto de indicação</span>
+                        <div className="relative">
+                          <textarea
+                            readOnly
+                            value="Olá! Gostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), uma ferramenta maravilhosa de gamificação galáctica e neurociência que auxilia pais e mentores no desenvolvimento de comportamentos positivos, rotinas saudáveis e treino cognitivo infantil de forma muito afetiva. Vale muito a pena conhecer!"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-medium text-white/70 outline-none h-24 resize-none pr-12 leading-relaxed"
+                          />
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                "Olá! Gostaria de recomendar o Desafio das Estrelas (https://www.desafioestrelas.com), uma ferramenta maravilhosa de gamificação galáctica e neurociência que auxilia pais e mentores no desenvolvimento de comportamentos positivos, rotinas saudáveis e treino cognitivo infantil de forma muito afetiva. Vale muito a pena conhecer!"
+                              );
+                              setCopyRecruitSuccess(true);
+                              setTimeout(() => setCopyRecruitSuccess(false), 2000);
+                            }}
+                            className="absolute right-3 top-3 p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all cursor-pointer"
+                          >
+                            {copyRecruitSuccess ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </AnimatePresence>
 
