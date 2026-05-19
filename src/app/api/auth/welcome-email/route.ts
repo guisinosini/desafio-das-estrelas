@@ -67,7 +67,7 @@ export async function POST(req: Request) {
             <p style="color: #cbd5e1; line-height: 1.6;">Você acaba de dar o primeiro passo para transformar a rotina do seu filho em uma aventura épica.</p>
           </div>
           <div style="text-align: center; margin-top: 40px;">
-            <a href="https://desafio-das-estrelas.vercel.app/" style="background-color: #2dd4bf; color: #000000; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold;">Decolar Agora</a>
+            <a href="https://www.desafioestrelas.com/" style="background-color: #2dd4bf; color: #000000; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold;">Decolar Agora</a>
           </div>
         </div>
       `;

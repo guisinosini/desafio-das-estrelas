@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Assinatura não encontrada' }, { status: 404 });
     }
 
-    const origin = req.headers.get('origin') || 'https://desafio-das-estrelas.vercel.app';
+    const origin = req.headers.get('origin') || 'https://www.desafioestrelas.com';
 
     // Cria uma sessão do Portal do Cliente (Stripe Billing)
     const session = await stripe.billingPortal.sessions.create({

@@ -12,9 +12,7 @@ export type UserRole = 'admin' | 'professional' | 'patient'
  * como o mesmo endereço, mas sistemas externos podem armazená-los diferentemente.
  */
 export const MASTER_ADMIN_EMAILS: string[] = [
-  'institutokamaleon@gmail.com',   // variante sem ponto (usada no bypass)
-  'instituto.kamaleon@gmail.com',  // variante com ponto (equivalente no Gmail)
-  'contato@kamaleon.com.br',
+  'desafioestrelas@gmail.com',
 ];
 
 /**
