@@ -151,30 +151,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       <StarField />
       
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-[100] bg-[#020617]/70 backdrop-blur-xl border-b border-white/5 p-4 md:px-12 grid grid-cols-3 items-center">
-        {/* Left Side: Rocket Logo */}
-        <div className="flex items-center gap-2 justify-start">
+      <nav className="fixed top-0 w-full z-[100] bg-[#020617]/70 backdrop-blur-xl border-b border-white/5 p-3 md:p-4 md:px-12 flex items-center justify-between">
+        {/* Left Side: Rocket Logo & App Name */}
+        <div className="flex items-center gap-2 md:gap-3">
           <motion.div 
             whileHover={{ scale: 1.1, rotate: -10 }}
-            className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(45,212,191,0.2)]"
+            className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(45,212,191,0.2)] shrink-0"
           >
             <Rocket className="w-5 h-5 md:w-6 md:h-6 text-primary" />
           </motion.div>
-        </div>
-
-        {/* Center: Thematic App Name */}
-        <div className="flex items-center justify-center">
-          <span className="font-black italic uppercase tracking-tighter text-sm sm:text-base md:text-2xl text-center select-none bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+          <span className="font-black italic uppercase tracking-tighter text-[11px] sm:text-base md:text-2xl select-none bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] whitespace-nowrap">
             Desafio das <span className="text-primary not-italic drop-shadow-[0_0_15px_rgba(45,212,191,0.6)]">Estrelas</span>
           </span>
         </div>
 
         {/* Right Side: Language & Login */}
-        <div className="flex items-center gap-2 md:gap-3 justify-end relative z-[110]">
+        <div className="flex items-center gap-1.5 md:gap-3 justify-end relative z-[110]">
           <div className="relative">
             <button 
               onClick={() => setIsLangOpen(!isLangOpen)}
-              className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 md:px-4 py-2 rounded-full text-[10px] md:text-sm font-bold hover:bg-white/10 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 md:gap-2 bg-white/5 border border-white/10 px-2.5 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-sm font-bold hover:bg-white/10 transition-all cursor-pointer"
             >
               {languages.find(l => l.code === language)?.flag} <span className="hidden sm:inline">{languages.find(l => l.code === language)?.label}</span> <ChevronDown className="w-3 h-3 md:w-4 md:h-4 opacity-40" />
             </button>
@@ -207,13 +203,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
           {deferredPrompt && (
             <button 
               onClick={onInstall} 
-              className="bg-yellow-400 text-black px-4 md:px-6 py-2 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-yellow-400/30 flex items-center gap-1.5 shrink-0 cursor-pointer"
+              className="bg-yellow-400 text-black px-3 md:px-6 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[9px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-yellow-400/30 flex items-center gap-1 md:gap-1.5 shrink-0 cursor-pointer"
             >
-              <Star className="w-3.5 h-3.5 fill-black animate-pulse" />
-              Instalar App
+              <Star className="w-3 h-3 md:w-3.5 md:h-3.5 fill-black animate-pulse" />
+              <span className="hidden sm:inline">Instalar App</span>
+              <span className="inline sm:hidden">Instalar</span>
             </button>
           )}
-          <button onClick={onStart} className="bg-primary text-black px-4 md:px-8 py-2 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/30">
+          <button onClick={onStart} className="bg-primary text-black px-3.5 md:px-8 py-1.5 md:py-2.5 rounded-full font-black uppercase text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/30 shrink-0">
             {t.login}
           </button>
         </div>
