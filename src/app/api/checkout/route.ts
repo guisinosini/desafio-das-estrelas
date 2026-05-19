@@ -5,11 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { data: { user } } = await supabase.auth.getUser();
 
     let { priceId } = await req.json();
 
@@ -17,14 +13,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Price ID is required' }, { status: 400 });
     }
 
-    const customerEmail = user.email;
-
     // Sanitiza o priceId de aspas ou espaços extras vindos do .env.local
     priceId = priceId.trim().replace(/^["']|["']$/g, '');
 
     const origin = req.headers.get('origin');
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
@@ -36,10 +30,15 @@ export async function POST(req: Request) {
       // Redireciona para a raiz com stage=register e session_id para cadastro imediato
       success_url: `${origin}/?stage=register&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
-      customer_email: customerEmail,
       allow_promotion_codes: true,
       billing_address_collection: 'required',
-    });
+    };
+
+    if (user && user.email) {
+      sessionParams.customer_email = user.email;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return NextResponse.json({ url: session.url });
   } catch (error: any) {
