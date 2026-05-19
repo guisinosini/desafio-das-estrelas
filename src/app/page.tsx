@@ -1380,36 +1380,38 @@ export default function DesafioEstrelas() {
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
           <DailyConquestCelebration tasks={tasks} t={t} onAwardStars={handleAwardStars} />
 
-            <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-4 md:p-6 grid grid-cols-3 items-center shadow-2xl">
+            <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-3 md:p-6 flex justify-between items-center md:grid md:grid-cols-3 shadow-2xl">
               {/* Coluna 1: Esquerda - Avatar e Status da Criança */}
-              <div className="flex items-center gap-4 justify-start">
+              <div className="flex items-center gap-3 md:gap-4 justify-start max-w-[60%] md:max-w-none">
                 <div onClick={() => {
                   if (view === 'child') {
                     setShowPin(true);
                   } else {
                     setView('child');
                   }
-                }} className="cursor-pointer group relative">
-                  <div className="w-14 h-14 rounded-full border-2 border-primary p-0.5 bg-zinc-900 shadow-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform text-2xl">
+                }} className="cursor-pointer group relative shrink-0">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border-2 border-primary p-0.5 bg-zinc-900 shadow-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform text-xl md:text-2xl">
                     {AVATARS.find(a => a.id === activeChild?.avatar)?.emoji}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 bg-primary text-black w-5 h-5 rounded-full flex items-center justify-center border border-white">
-                    {view === 'child' ? <Lock className="w-3 h-3" /> : <Settings className="w-3 h-3" />}
+                  <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-black w-4.5 h-4.5 md:w-5 md:h-5 rounded-full flex items-center justify-center border border-white">
+                    {view === 'child' ? <Lock className="w-2.5 h-2.5 md:w-3 md:h-3" /> : <Settings className="w-2.5 h-2.5 md:w-3 md:h-3" />}
                   </div>
                 </div>
-                <div className="cursor-pointer" onClick={() => setStage('select_child')}>
-                  <h1 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 flex items-center gap-2 flex-wrap">
-                    <span>{t.mentor}: {parentName || 'Comandante Galáctico'}</span>
-                    <span className="text-white/20">•</span>
-                    <span>{activeChild?.name}</span>
-                    <RefreshCw className="w-3 h-3 text-white/40" />
+                
+                <div className="cursor-pointer min-w-0" onClick={() => setStage('select_child')}>
+                  <h1 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-white/40 flex items-center gap-1.5 md:gap-2 flex-wrap truncate">
+                    <span className="hidden md:inline">{t.mentor}: {parentName || 'Comandante Galáctico'}</span>
+                    <span className="hidden md:inline text-white/20">•</span>
+                    <span className="text-white font-bold">{activeChild?.name}</span>
+                    <RefreshCw className="w-2.5 h-2.5 md:w-3 md:h-3 text-white/40 shrink-0" />
                   </h1>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <p className="text-sm md:text-lg font-black italic uppercase tracking-tighter text-white">
+                  
+                  <div className="flex items-center gap-1.5 md:gap-2 mt-0.5 md:mt-1 flex-wrap">
+                    <p className="text-xs md:text-sm md:text-lg font-black italic uppercase tracking-tighter text-white/90 truncate">
                       {view === 'child' ? t.commandStation : t.controlRoom}
                     </p>
                     <span className={clsx(
-                      "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shrink-0",
+                      "hidden sm:inline-block text-[8px] md:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border shrink-0",
                       isPremium 
                         ? "bg-primary/10 text-primary border-primary/20" 
                         : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
@@ -1417,7 +1419,7 @@ export default function DesafioEstrelas() {
                       {getPlanName()}
                     </span>
                     <span className={clsx(
-                      "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shrink-0",
+                      "hidden sm:inline-block text-[8px] md:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border shrink-0",
                       isPremium
                         ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                         : "bg-red-500/10 text-red-400 border-red-500/20"
@@ -1429,14 +1431,14 @@ export default function DesafioEstrelas() {
               </div>
 
               {/* Coluna 2: Centro - Título Temático e Neon "Desafio das Estrelas" */}
-              <div className="flex items-center justify-center">
+              <div className="hidden md:flex items-center justify-center">
                 <span className="font-black italic uppercase tracking-tighter text-xs sm:text-sm md:text-xl lg:text-2xl text-center select-none bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
                   Desafio das <span className="text-primary not-italic drop-shadow-[0_0_15px_rgba(45,212,191,0.6)]">Estrelas</span>
                 </span>
               </div>
 
               {/* Coluna 3: Direita - Ações, Relógio, Estrelas e Logout */}
-              <div className="flex gap-6 items-center justify-end">
+              <div className="flex gap-3 md:gap-6 items-center justify-end shrink-0">
                 {/* Relógio e Data Isolados */}
                 <ClockDisplay language={language} />
 
@@ -1445,23 +1447,23 @@ export default function DesafioEstrelas() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowRankingModal(true)}
-                    className="bg-white/5 border border-white/10 rounded-[28px] px-6 py-3 flex items-center gap-3 shadow-lg relative cursor-pointer hover:bg-white/10 transition-all"
+                    className="bg-white/5 border border-white/10 rounded-[20px] md:rounded-[28px] px-3 py-1.5 md:px-6 md:py-3 flex items-center gap-1.5 md:gap-3 shadow-lg relative cursor-pointer hover:bg-white/10 transition-all"
                   >
                     {isSyncing && (
                       <div className="absolute -top-1 -right-1">
                         <div className="relative">
                           <div className="absolute inset-0 bg-primary rounded-full blur-md animate-pulse" />
-                          <RefreshCw className="w-3 h-3 text-primary animate-spin relative z-10" />
+                          <RefreshCw className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary animate-spin relative z-10" />
                         </div>
                       </div>
                     )}
-                    <div className="relative">
-                      <Star id="total-stars-icon" className="w-6 h-6 text-yellow-400 fill-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
+                    <div className="relative shrink-0">
+                      <Star id="total-stars-icon" className="w-4 h-4 md:w-6 md:h-6 text-yellow-400 fill-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
                       <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-0.5 border border-zinc-900">
-                        <Trophy className="w-2 h-2 text-black" />
+                        <Trophy className="w-1.5 h-1.5 md:w-2 md:h-2 text-black" />
                       </div>
                     </div>
-                    <span className="text-xl md:text-2xl font-black italic tracking-tighter text-white">{stars}</span>
+                    <span className="text-sm md:text-2xl font-black italic tracking-tighter text-white">{stars}</span>
                   </motion.div>
 
                   {/* Star Flight Animation */}
@@ -1484,8 +1486,8 @@ export default function DesafioEstrelas() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg cursor-pointer" title={t.exitChallenge}>
-                    <LogOut className="w-5 h-5" />
+                  <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 text-red-400 p-2.5 md:p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg cursor-pointer shrink-0" title={t.exitChallenge}>
+                    <LogOut className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
               </div>
