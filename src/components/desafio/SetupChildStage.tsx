@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion, Variants } from 'framer-motion';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import type { ChildData } from '@/types/desafio';
 import { OrbitalPlanet } from './OrbitalPlanet';
@@ -12,6 +12,7 @@ interface SetupChildStageProps {
   handleCreateChild: () => void;
   hasChildren: boolean;
   t: any;
+  handleLogout: () => void;
 }
 
 const orbitalTransitionVariants: Variants = {
@@ -53,7 +54,8 @@ const SetupChildStage = memo(({
   setStage, 
   handleCreateChild, 
   hasChildren,
-  t 
+  t,
+  handleLogout
 }: SetupChildStageProps) => {
   return (
     <motion.div 
@@ -64,6 +66,15 @@ const SetupChildStage = memo(({
       exit="exit"
       className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
     >
+      <div className="absolute top-8 right-8 z-[100]">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+        >
+          <LogOut className="w-4 h-4" /> {t.logout || 'Sair da Conta'}
+        </button>
+      </div>
+
       <OrbitalPlanet type="green" title="Gaya Alfa" subtitle="Setor Origem" />
       
       <div className="relative z-10 space-y-8 flex flex-col justify-center">

@@ -1356,6 +1356,7 @@ export default function DesafioEstrelas() {
             handleCreateChild={handleCreateChild}
             hasChildren={children.length > 0}
             t={t}
+            handleLogout={handleLogout}
           />
         )}
         {stage === 'setup_avatar' && (
@@ -1367,6 +1368,14 @@ export default function DesafioEstrelas() {
             exit="exit"
             className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 text-center overflow-hidden"
           >
+            <div className="absolute top-8 left-8 z-[100]">
+              <button 
+                onClick={() => setStage('setup_child')}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all backdrop-blur-md border border-white/10"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            </div>
             <OrbitalPlanet type="purple" title="Nebula X" subtitle="Setor Nebulosa" />
             <div className="relative z-10 space-y-8 flex flex-col justify-center">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.chooseAvatar}</h2>
