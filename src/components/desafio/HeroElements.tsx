@@ -10,25 +10,46 @@ import confetti from "canvas-confetti";
 // --- Constantes ---
 export const AVATARS = [
   // Robôs (Bottts) - Foco Sci-Fi
-  { id: 'bot1', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=transparent', label: 'Felix' },
-  { id: 'bot2', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka&backgroundColor=transparent', label: 'Aneka' },
-  { id: 'bot3', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Mimi&backgroundColor=transparent', label: 'Mimi' },
-  { id: 'bot4', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Zoe&backgroundColor=transparent', label: 'Zoe' },
+  { id: 'bot1', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=transparent', label: 'Robô Felix' },
+  { id: 'bot2', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka&backgroundColor=transparent', label: 'Robô Aneka' },
+  { id: 'bot3', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Mimi&backgroundColor=transparent', label: 'Robô Mimi' },
+  { id: 'bot4', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Zoe&backgroundColor=transparent', label: 'Robô Zoe' },
+  { id: 'bot5', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Orion&backgroundColor=transparent', label: 'Robô Orion' },
+  { id: 'bot6', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Nova&backgroundColor=transparent', label: 'Robô Nova' },
+  { id: 'bot7', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Spark&backgroundColor=transparent', label: 'Robô Spark' },
+  { id: 'bot8', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Apollo&backgroundColor=transparent', label: 'Robô Apollo' },
+
   // Personagens Expressivos (Fun Emoji)
   { id: 'fun1', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy&backgroundColor=transparent', label: 'Feliz' },
-  { id: 'fun2', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool&backgroundColor=transparent', label: 'Ninja' },
+  { id: 'fun2', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool&backgroundColor=transparent', label: 'Descolado' },
   { id: 'fun3', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Wink&backgroundColor=transparent', label: 'Zigue' },
-  { id: 'fun4', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Star&backgroundColor=transparent', label: 'Star' },
+  { id: 'fun4', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Star&backgroundColor=transparent', label: 'Estrela' },
+  { id: 'fun5', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Love&backgroundColor=transparent', label: 'Amor' },
+  { id: 'fun6', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Silly&backgroundColor=transparent', label: 'Divertido' },
+  { id: 'fun7', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Sleepy&backgroundColor=transparent', label: 'Soneca' },
+  { id: 'fun8', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Nerd&backgroundColor=transparent', label: 'Gênio' },
+  { id: 'fun9', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Angel&backgroundColor=transparent', label: 'Anjinho' },
+  { id: 'fun10', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Party&backgroundColor=transparent', label: 'Festa' },
+
   // Aventureiros (Adventurer)
   { id: 'adv1', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Jack&backgroundColor=transparent', label: 'Jack' },
   { id: 'adv2', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Jasmine&backgroundColor=transparent', label: 'Jasmine' },
   { id: 'adv3', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Leo&backgroundColor=transparent', label: 'Leo' },
   { id: 'adv4', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Mia&backgroundColor=transparent', label: 'Mia' },
+  { id: 'adv5', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Finn&backgroundColor=transparent', label: 'Finn' },
+  { id: 'adv6', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Chloe&backgroundColor=transparent', label: 'Chloe' },
+  { id: 'adv7', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Max&backgroundColor=transparent', label: 'Max' },
+  { id: 'adv8', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ruby&backgroundColor=transparent', label: 'Ruby' },
+
   // Estilosos (Lorelei)
   { id: 'lor1', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Bella&backgroundColor=transparent', label: 'Bella' },
   { id: 'lor2', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Max&backgroundColor=transparent', label: 'Max' },
   { id: 'lor3', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Charlie&backgroundColor=transparent', label: 'Charlie' },
-  { id: 'lor4', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Luna&backgroundColor=transparent', label: 'Luna' }
+  { id: 'lor4', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Luna&backgroundColor=transparent', label: 'Luna' },
+  { id: 'lor5', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Oliver&backgroundColor=transparent', label: 'Oliver' },
+  { id: 'lor6', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Stella&backgroundColor=transparent', label: 'Stella' },
+  { id: 'lor7', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Milo&backgroundColor=transparent', label: 'Milo' },
+  { id: 'lor8', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Sophie&backgroundColor=transparent', label: 'Sophie' }
 ];
 
 export const StarField = memo(() => (
