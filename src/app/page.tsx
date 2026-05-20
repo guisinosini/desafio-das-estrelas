@@ -1716,7 +1716,12 @@ export default function DesafioEstrelas() {
                               "flex flex-col items-center p-2 rounded-xl border",
                               c.id === activeChild?.id ? "bg-primary/10 border-primary/40" : "bg-white/5 border-white/10 opacity-60"
                             )}>
-                              <span className="text-lg">{AVATARS.find(a => a.id === c.avatar)?.emoji}</span>
+                              <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800 flex items-center justify-center mb-1">
+                                {(() => {
+                                  const a = AVATARS.find(a => a.id === c.avatar) || AVATARS[0];
+                                  return a.image ? <img src={a.image} className="w-full h-full object-cover scale-110" /> : <span className="text-lg">{(a as any).emoji}</span>;
+                                })()}
+                              </div>
                               <span className="text-[8px] font-black uppercase tracking-tighter truncate max-w-[50px]">{c.name}</span>
                               <span className="text-[10px] font-black text-yellow-400">{c.stars}⭐</span>
                             </div>
@@ -1839,8 +1844,8 @@ export default function DesafioEstrelas() {
                           >
                             <div className="flex items-center gap-4">
                               <span className={clsx("text-lg font-black w-6 text-center", idx === 0 ? "text-yellow-400" : "text-white/20")}>{idx + 1}º</span>
-                              <div className="w-12 h-12 rounded-xl bg-zinc-900 flex items-center justify-center text-2xl border border-white/10">
-                                {avatar.emoji}
+                              <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center text-2xl border border-white/10 overflow-hidden">
+                                {avatar.image ? <img src={avatar.image} className="w-full h-full object-cover scale-110" /> : <span>{(avatar as any).emoji}</span>}
                               </div>
                               <div>
                                 <h3 className={clsx("text-sm font-black uppercase italic", isMe ? "text-primary" : "text-white")}>{c.name}</h3>

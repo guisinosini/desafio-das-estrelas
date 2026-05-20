@@ -58,7 +58,10 @@ export function MissionList({ tasks, activeChildAvatar, handleCompleteTask, plan
                     {task.stars > 3 && <span className="text-[8px] text-yellow-400 font-black">+{task.stars - 3}</span>}
                   </div>
                   <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 overflow-hidden relative text-xl">
-                    {task.status === 'done' ? "✅" : AVATARS.find(a => a.id === activeChildAvatar)?.emoji}
+                    {task.status === 'done' ? "✅" : (() => {
+                      const a = AVATARS.find(a => a.id === activeChildAvatar) || AVATARS[0];
+                      return a.image ? <img src={a.image} className="w-full h-full object-cover scale-110" /> : <span>{(a as any).emoji}</span>;
+                    })()}
                   </div>
                   <h3 className={clsx("text-[9px] md:text-xs font-black uppercase italic tracking-tighter leading-tight", task.status === 'done' ? "text-emerald-400" : "text-white")}>
                     {task.title}

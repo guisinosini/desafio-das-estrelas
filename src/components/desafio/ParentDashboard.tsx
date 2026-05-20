@@ -189,8 +189,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   className="p-4 md:p-8 bg-white/5 border border-white/10 rounded-3xl md:rounded-[40px] flex flex-col sm:flex-row items-center justify-between gap-6 backdrop-blur-md"
                 >
                   <div className="flex items-center gap-4 md:gap-6">
-                    <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-white/5 flex items-center justify-center border-2 border-primary/20 text-2xl md:text-4xl">
-                      {AVATARS.find(a => a.id === activeChild?.avatar)?.emoji}
+                    <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-zinc-800 flex items-center justify-center border-2 border-primary/20 text-2xl md:text-4xl overflow-hidden">
+                      {(() => {
+                        const a = AVATARS.find(a => a.id === activeChild?.avatar) || AVATARS[0];
+                        return a.image ? <img src={a.image} className="w-full h-full object-cover scale-110" /> : <span>{(a as any).emoji}</span>;
+                      })()}
                     </div>
                     <div>
                       <p className="text-lg md:text-xl font-black uppercase italic text-white">{tk.title}</p>
@@ -394,8 +397,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   >
                     <div className="flex items-center gap-6">
                       <div className="relative">
-                        <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-3xl">
-                          {avatar.emoji}
+                        <div className="w-16 h-16 rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center text-3xl overflow-hidden">
+                          {avatar.image ? <img src={avatar.image} className="w-full h-full object-cover scale-110" /> : <span>{(avatar as any).emoji}</span>}
                         </div>
                         <div
                           className={clsx(
@@ -448,11 +451,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       key={a.id}
                       onClick={() => updateActiveChild({ avatar: a.id })}
                       className={clsx(
-                        "w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all border-2",
-                        activeChild?.avatar === a.id ? "bg-primary/20 border-primary scale-110" : "bg-white/5 border-white/10 hover:border-white/30"
+                        "w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all border-2 overflow-hidden bg-zinc-800",
+                        activeChild?.avatar === a.id ? "border-primary scale-110" : "border-white/10 hover:border-white/30"
                       )}
                     >
-                      {a.emoji}
+                      {a.image ? <img src={a.image} className="w-full h-full object-cover scale-110" /> : <span>{(a as any).emoji}</span>}
                     </button>
                   ))}
                 </div>
