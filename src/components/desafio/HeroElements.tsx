@@ -49,7 +49,8 @@ export const StarField = memo(() => (
         ease: "linear",
         repeatDelay: 3
       }}
-      className="absolute w-[600px] h-[3px] bg-gradient-to-r from-transparent via-primary/60 to-transparent -rotate-12 blur-[1px]"
+      className="absolute w-[600px] h-[3px] bg-gradient-to-r from-transparent via-primary/60 to-transparent -rotate-12"
+      style={{ willChange: 'transform, opacity' }}
     />
 
     <motion.div
@@ -67,7 +68,8 @@ export const StarField = memo(() => (
         delay: 5,
         repeatDelay: 8
       }}
-      className="absolute w-48 h-48 rounded-full bg-zinc-400/20 shadow-[inset_-15px_-15px_40px_rgba(0,0,0,0.6),0_0_50px_rgba(255,255,255,0.1)] flex items-center justify-center text-7xl grayscale opacity-60 blur-[0.5px]"
+      className="absolute w-48 h-48 rounded-full bg-zinc-400/20 shadow-[inset_-15px_-15px_40px_rgba(0,0,0,0.6)] flex items-center justify-center text-7xl grayscale opacity-60"
+      style={{ willChange: 'transform, opacity' }}
     >
       🌑
     </motion.div>
@@ -76,50 +78,60 @@ export const StarField = memo(() => (
       initial={{ x: "-20vw", y: "80vh", opacity: 0 }}
       animate={{ x: "120vw", y: "20vh", opacity: [0, 0.7, 0.7, 0], rotate: 360 }}
       transition={{ duration: 50, repeat: Infinity, ease: "linear", delay: 2 }}
-      className="absolute text-6xl filter drop-shadow-[0_0_15px_rgba(255,165,0,0.3)]"
+      className="absolute text-6xl"
+      style={{ willChange: 'transform, opacity' }}
     >🪐</motion.div>
 
     <motion.div
       initial={{ x: "120vw", y: "15vh", opacity: 0 }}
       animate={{ x: "-30vw", y: "85vh", opacity: [0, 0.6, 0.6, 0], rotate: -360 }}
       transition={{ duration: 65, repeat: Infinity, ease: "linear", delay: 12 }}
-      className="absolute text-5xl filter drop-shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+      className="absolute text-5xl"
+      style={{ willChange: 'transform, opacity' }}
     >🌍</motion.div>
 
     <motion.div
       initial={{ x: "60vw", y: "-20vh", opacity: 0 }}
       animate={{ x: "20vw", y: "120vh", opacity: [0, 0.5, 0.5, 0] }}
       transition={{ duration: 45, repeat: Infinity, ease: "linear", delay: 20 }}
-      className="absolute text-4xl filter drop-shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+      className="absolute text-4xl"
+      style={{ willChange: 'transform, opacity' }}
     >🔴</motion.div>
 
     <motion.div
       initial={{ x: "110vw", y: "100vh", opacity: 0 }}
       animate={{ x: "-10vw", y: "-10vh", opacity: [0, 0.6, 0.6, 0] }}
       transition={{ duration: 55, repeat: Infinity, ease: "linear", delay: 30 }}
-      className="absolute text-7xl filter drop-shadow-[0_0_25px_rgba(168,85,247,0.3)]"
+      className="absolute text-7xl"
+      style={{ willChange: 'transform, opacity' }}
     >🔵</motion.div>
 
-    <div className="absolute top-[10%] right-[15%] w-64 h-64 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full blur-[80px] animate-pulse" />
+    {/* Omitindo os animate-pulse nos gradientes pesados para salvar o repaint da GPU */}
+    <div className="absolute top-[10%] right-[15%] w-64 h-64 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full blur-[80px]" />
     <div className="absolute bottom-[10%] left-[10%] w-96 h-96 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-[100px]" />
-    <div className="absolute top-[50%] left-[45%] w-32 h-32 bg-gradient-to-tl from-emerald-500/10 to-transparent rounded-full blur-[40px] animate-pulse" />
+    <div className="absolute top-[50%] left-[45%] w-32 h-32 bg-gradient-to-tl from-emerald-500/10 to-transparent rounded-full blur-[40px]" />
 
-    {[...Array(25)].map((_, i) => (
-      <motion.div
-        key={i}
-        initial={{ opacity: 0.1 }}
-        animate={{ opacity: [0.1, 0.7, 0.1] }}
-        transition={{ duration: 2 + (i % 5), repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
-        className="absolute bg-white rounded-full"
-        style={{
-          width: i % 5 === 0 ? '3px' : '1.5px',
-          height: i % 5 === 0 ? '3px' : '1.5px',
-          top: (5 + i * 13) % 100 + '%',
-          left: (3 + i * 17) % 100 + '%',
-          boxShadow: i % 5 === 0 ? '0 0 10px rgba(255,255,255,0.6)' : 'none'
-        }}
-      />
-    ))}
+    {/* Estrelas com CSS Puro (sem Framer Motion = Custo Zero de CPU) */}
+    {[...Array(25)].map((_, i) => {
+      const isLarge = i % 5 === 0;
+      return (
+        <div
+          key={i}
+          className="absolute bg-white rounded-full animate-pulse"
+          style={{
+            width: isLarge ? '3px' : '1.5px',
+            height: isLarge ? '3px' : '1.5px',
+            top: (5 + i * 13) % 100 + '%',
+            left: (3 + i * 17) % 100 + '%',
+            boxShadow: isLarge ? '0 0 8px rgba(255,255,255,0.4)' : 'none',
+            animationDuration: `${2 + (i % 5)}s`,
+            animationDelay: `${i * 0.3}s`,
+            opacity: 0.6,
+            willChange: 'opacity'
+          }}
+        />
+      );
+    })}
   </div>
 ));
 StarField.displayName = 'StarField';
