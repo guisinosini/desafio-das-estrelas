@@ -1388,7 +1388,7 @@ export default function DesafioEstrelas() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 text-center overflow-hidden"
+            className="relative z-10 w-full max-w-2xl mx-auto flex-1 flex flex-col justify-start md:justify-center px-4 py-8 md:p-6 space-y-8 text-center"
           >
             <div className="absolute top-8 left-8 z-[100]">
               <button 
