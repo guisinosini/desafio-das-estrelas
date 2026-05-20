@@ -50,13 +50,13 @@ export function useCloudSync({ supabase, setIsPremium, setSubscriptionPriceId }:
     return null;
   }, [supabase, setIsPremium, setSubscriptionPriceId]);
 
-  const saveToCloud = useCallback(async (state: any) => {
+  const saveToCloud = useCallback(async (state: any, forceEmpty: boolean = false) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     // TRAVA DE SEGURANÇA: Não salva se a lista de filhos estiver vazia 
     // e o usuário acabou de logar (isso evita sobrescrever dados da nuvem com um estado inicial vazio)
-    if (state.children && state.children.length === 0) {
+    if (!forceEmpty && state.children && state.children.length === 0) {
       console.log("Sincronização abortada: lista de heróis vazia para evitar perda de dados.");
       return;
     }

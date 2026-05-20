@@ -127,14 +127,18 @@ export function useAppInitializer({
                 if (syncData.priceId) setSubscriptionPriceId(syncData.priceId);
                 
                 const cloudData = await loadFromCloud(user);
-                if (cloudData && cloudData.children && cloudData.children.length > 0) {
+                if (cloudData && cloudData.children) {
                   setChildren(cloudData.children);
                   if (cloudData.activeChildId) setActiveChildId(cloudData.activeChildId);
                   if (cloudData.fleetId) setFleetId(cloudData.fleetId);
                   if (cloudData.language) setLanguage(cloudData.language);
                   
-                  const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
-                  setStage(nextStage);
+                  if (cloudData.children.length === 0) {
+                    setStage('setup_child');
+                  } else {
+                    const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
+                    setStage(nextStage);
+                  }
                 } else {
                   setStage('setup_child');
                 }
@@ -266,14 +270,18 @@ export function useAppInitializer({
             setSubscriptionPriceId(profile.subscription_price_id);
           }
           const cloudData = await loadFromCloud(session?.user);
-          if (cloudData && cloudData.children && cloudData.children.length > 0) {
+          if (cloudData && cloudData.children) {
             setChildren(cloudData.children);
             setActiveChildId(cloudData.activeChildId || null);
             if (cloudData.fleetId) setFleetId(cloudData.fleetId);
             if (cloudData.language) setLanguage(cloudData.language);
             
-            const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
-            setStage(nextStage);
+            if (cloudData.children.length === 0) {
+              setStage('setup_child');
+            } else {
+              const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
+              setStage(nextStage);
+            }
           } else {
             setChildren([]);
             setActiveChildId(null);

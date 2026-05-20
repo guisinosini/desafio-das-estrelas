@@ -464,15 +464,27 @@ export default function DesafioEstrelas() {
   const removeChild = (id: string) => {
     const remaining = children.filter(c => c.id !== id);
     setChildren(remaining);
+    
+    // Explicitly save the deletion to cloud to overwrite even if it becomes empty
+    let nextActiveId = activeChildId;
+    let nextStage = stage;
+    let nextView = view;
+    
     if (activeChildId === id) {
       if (remaining.length > 0) {
-        setActiveChildId(remaining[0].id);
-        setView('child');
+        nextActiveId = remaining[0].id;
+        setActiveChildId(nextActiveId);
+        nextView = 'child';
+        setView(nextView);
       } else {
+        nextActiveId = null;
         setActiveChildId(null);
-        setStage('select_child');
+        nextStage = 'select_child';
+        setStage(nextStage);
       }
     }
+    
+    saveToCloud({ children: remaining, activeChildId: nextActiveId, stage: nextStage, parentPin, fleetId, language }, true);
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -597,18 +609,22 @@ export default function DesafioEstrelas() {
       const cloudData = result.cloudData;
 
       if (cloudData) {
-        // TRAVA DE SEGURANÇA: Só atualiza se houver dados reais na nuvem
-        // Isso evita que um erro de RLS ou novo login limpe o progresso local
-        if (cloudData.children && cloudData.children.length > 0) {
+        // TRAVA DE SEGURANÇA: Só atualiza se houver a propriedade children na nuvem
+        // Se a nuvem tiver um array vazio (herói deletado), ele deve sobrescrever o cache local
+        if (cloudData.children) {
           setChildren(cloudData.children);
           setActiveChildId(cloudData.activeChildId || null);
           if (cloudData.parentPin) setParentPin(cloudData.parentPin);
           if (cloudData.fleetId) setFleetId(cloudData.fleetId);
           if (cloudData.language) setLanguage(cloudData.language);
 
-          const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
-          setStage(nextStage);
-          if (nextStage === 'adventure') setView('child');
+          if (cloudData.children.length === 0) {
+            setStage('setup_child');
+          } else {
+            const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
+            setStage(nextStage);
+            if (nextStage === 'adventure') setView('child');
+          }
         } else {
           setStage(children.length > 0 ? 'select_child' : 'setup_child');
         }

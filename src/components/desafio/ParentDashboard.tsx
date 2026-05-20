@@ -122,6 +122,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const [customBehaviorLabel, setCustomBehaviorLabel] = useState('');
   const [customBehaviorStars, setCustomBehaviorStars] = useState(2);
   const [behaviorNote, setBehaviorNote] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // TODO (futura implementação): Alertas de missões atrasadas por e-mail.
   // Esta funcionalidade requer adicionar o campo `mentorEmail: string` ao tipo ChildData
@@ -162,13 +163,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           <Plus className="w-4 h-4" /> {t.newHero}
         </button>
         <button
-          onClick={() => {
-            if (confirm(t.confirm_delete_hero.replace('{name}', activeChild?.name || ''))) {
-              if (activeChildId) {
-                removeChild(activeChildId);
-              }
-            }
-          }}
+          onClick={() => setShowDeleteModal(true)}
           className="w-full flex items-center gap-3 px-8 py-5 mt-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all"
         >
           <Trash className="w-4 h-4" /> {t.deleteProfile}
@@ -781,6 +776,48 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal de Exclusão de Perfil */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0f1115] border border-red-500/30 p-8 rounded-[40px] max-w-md w-full relative z-10 shadow-2xl"
+          >
+            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-6 mx-auto border border-red-500/20">
+              <AlertCircle className="w-8 h-8 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-black italic uppercase text-center text-white mb-4">
+              Excluir Perfil?
+            </h2>
+            <p className="text-white/60 text-center text-sm leading-relaxed mb-8">
+              Você está prestes a excluir o perfil de <strong className="text-white">{activeChild?.name}</strong>. 
+              Isso apagará <strong className="text-red-400">permanentemente</strong> do banco de dados todo o histórico de missões, recompensas, evolução clínica e estrelas acumuladas. Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  if (activeChildId) {
+                    removeChild(activeChildId);
+                  }
+                  setShowDeleteModal(false);
+                }}
+                className="w-full py-4 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2"
+              >
+                <Trash className="w-4 h-4" /> Sim, Excluir Perfil
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="w-full py-4 rounded-2xl bg-white/5 hover:bg-white/10 text-white/60 font-black uppercase tracking-widest text-xs transition-all"
+              >
+                Cancelar
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
