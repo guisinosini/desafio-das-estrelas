@@ -100,11 +100,15 @@ export function useAppInitializer({
 
         // Sincroniza preventivamente o e-mail no Supabase para garantir webhooks de alta precisão
         if (user.email) {
-          await supabase
-            .from('profiles')
-            .update({ email: user.email })
-            .eq('id', user.id)
-            .is('email', null);
+          try {
+            await supabase
+              .from('profiles')
+              .update({ email: user.email })
+              .eq('id', user.id)
+              .is('email', null);
+          } catch (e) {
+            console.warn("Não foi possível atualizar o e-mail no perfil (possível falta de permissão ou coluna). Ignorando.", e);
+          }
         }
 
         const { data: profile } = await supabase
