@@ -67,7 +67,7 @@ const SetupChildStage = memo(({
       initial="initial"
       animate="animate"
       exit="exit"
-      className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
+      className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-start md:justify-center p-4 md:p-6 py-12 space-y-8"
     >
       <div className="absolute top-8 right-8 z-[100]">
         <button 

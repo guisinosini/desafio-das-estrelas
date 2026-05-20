@@ -40,7 +40,7 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = memo(({
       initial="initial"
       animate="animate"
       exit="exit"
-      className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
+      className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-start md:justify-center p-4 md:p-6 py-12 space-y-8"
     >
       <OrbitalPlanetDynamic type="gold" title="Helios Prime" subtitle="Setor Estelar" />
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
