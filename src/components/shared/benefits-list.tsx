@@ -19,7 +19,7 @@ export function BenefitsList() {
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [processing, setProcessing] = useState<string | null>(null);
   const { toast } = useToast();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
     fetchData();

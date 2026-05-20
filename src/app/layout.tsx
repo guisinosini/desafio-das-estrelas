@@ -88,11 +88,11 @@ export default function RootLayout({
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    if (process.env.NODE_ENV !== 'production') {
+                    if ('${process.env.NODE_ENV}' !== 'production') {
                       console.log('SW registrado com sucesso:', registration.scope);
                     }
                   }, function(err) {
-                    if (process.env.NODE_ENV !== 'production') {
+                    if ('${process.env.NODE_ENV}' !== 'production') {
                       console.log('Falha no registro do SW:', err);
                     }
                   });
