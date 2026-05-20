@@ -793,6 +793,12 @@ export default function DesafioEstrelas() {
   };
 
   const handleLogout = async () => {
+    // Força a sincronização dos dados atuais antes de deslogar (bypass do debounce de 2s)
+    if (children.length > 0) {
+      const currentState = { children, activeChildId, stage, parentPin, fleetId, language };
+      await saveToCloud(currentState);
+    }
+
     // Reseta estados locais de interface para garantir logout limpo em qualquer view
     setShowPin(false);
     setPin('');
@@ -801,7 +807,7 @@ export default function DesafioEstrelas() {
     try {
       await supabase.auth.signOut();
     } catch (err) {
-      console.warn("Erro ao invalidar sessão na API do Supabase:", err);
+      console.error("❌ Erro ao invalidar sessão na API do Supabase:", err);
     } finally {
       // Preserva a preferência de idioma antes de limpar tudo
       let savedLanguage: string | null = null;

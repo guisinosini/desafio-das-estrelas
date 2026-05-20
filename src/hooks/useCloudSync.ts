@@ -65,17 +65,21 @@ export function useCloudSync({ supabase, setIsPremium, setSubscriptionPriceId }:
 
       const { error } = await supabase
         .from('patient_gamification')
-        .upsert(payload);
+        .upsert(payload, { onConflict: 'profile_id' });
 
       if (error) {
+        console.error("❌ Erro do Supabase no upsert de patient_gamification:", error);
         // Fallback em caso de falha de foreign key ou permissão na coluna fleet_id
-        if (error.message.includes('fleet_id')) {
+        if (error.message.includes('fleet_id') || error.message.includes('column "fleet_id"')) {
           delete payload.fleet_id;
-          await supabase.from('patient_gamification').upsert(payload);
+          const { error: fallbackError } = await supabase.from('patient_gamification').upsert(payload, { onConflict: 'profile_id' });
+          if (fallbackError) {
+            console.error("❌ Erro do Supabase no fallback upsert:", fallbackError);
+          }
         }
       }
     } catch (e) {
-      console.error("Erro na sincronização:", e);
+      console.error("❌ Erro inesperado na sincronização:", e);
     } finally {
       setIsSyncing(false);
     }
