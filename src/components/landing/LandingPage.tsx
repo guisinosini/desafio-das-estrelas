@@ -815,7 +815,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
       </section>
 
       {/* Footer */}
-      <Footer />
+      <Footer language={language} />
     </div>
   );
 };

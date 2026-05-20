@@ -254,16 +254,16 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                 </div>
                 <div>
                   <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-indigo-300">
-                    Olá, Profissional do Desenvolvimento!
+                    {t.reportWelcomePro}
                   </h2>
                   <p className="text-xs text-white/50 font-bold uppercase tracking-wider">
-                    Portal de Acompanhamento Clínico & Pedagógico
+                    {t.reportPortalTitle}
                   </p>
                 </div>
               </div>
               
               <p className="text-xs md:text-sm text-white/70 leading-relaxed font-medium">
-                Seja muito bem-vindo ao Desafio das Estrelas. Este relatório consolida os dados de hábitos, rotina de missões, comportamento e engajamento da criança no laboratório cognitivo de maneira gamificada e estruturada. Acompanhe nossas novidades e artigos em <a href="https://www.instagram.com/desafioestrelasapp/" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 font-bold hover:underline inline-flex items-center gap-0.5">@desafioestrelasapp</a>.
+                {t.reportWelcomeDesc} <a href="https://www.instagram.com/desafioestrelasapp/" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 font-bold hover:underline inline-flex items-center gap-0.5">@desafioestrelasapp</a>.
               </p>
 
               {/* Disclaimer do Diagnóstico */}
@@ -271,10 +271,10 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                 <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 block">
-                    Aviso Importante de Responsabilidade Técnica
+                    {t.reportWarningTitle}
                   </span>
                   <p className="text-[11px] text-amber-200/80 leading-relaxed font-medium">
-                    Este documento constitui um consolidado pedagógico-comportamental complementar baseado nas missões e rotinas realizadas. <strong>Não constitui diagnóstico clínico, anamnese, nem deve ser interpretado como ferramenta de avaliação psicológica ou médica oficial</strong>, devendo ser utilizado como suporte e interpretado exclusivamente sob supervisão técnica profissional.
+                    {t.reportWarningDesc}
                   </p>
                 </div>
               </div>
@@ -286,16 +286,16 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                 <Heart className="w-6 h-6 animate-pulse" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-xs font-black uppercase tracking-wider text-white">Recomende o App</h4>
+                <h4 className="text-xs font-black uppercase tracking-wider text-white">{t.reportRecommendApp}</h4>
                 <p className="text-[10px] text-white/40 leading-normal font-medium">
-                  Indique o Desafio das Estrelas para outros pais e mentores que buscam fortalecer rotinas positivas.
+                  {t.reportRecommendDesc}
                 </p>
               </div>
               <button
                 onClick={() => setShowReferralModal(true)}
                 className="w-full py-3.5 px-6 bg-indigo-500 hover:bg-indigo-600 text-white font-black uppercase tracking-[0.1em] text-[10px] rounded-2xl shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2"
               >
-                <Sparkles className="w-4 h-4" /> Indicar o Desafio
+                <Sparkles className="w-4 h-4" /> {t.reportRecommendBtn}
               </button>
             </div>
           </div>
@@ -438,8 +438,8 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
                   <Heart className="w-5 h-5 text-indigo-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black uppercase italic tracking-tighter">Recomende o Desafio</h2>
-                  <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest leading-none mt-1">Indicar para Pais & Mentores</p>
+                  <h2 className="text-xl font-black uppercase italic tracking-tighter">{t.reportReferralTitle}</h2>
+                  <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest leading-none mt-1">{t.reportReferralSub}</p>
                 </div>
               </div>
               <button 
@@ -452,7 +452,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
 
             <div className="p-8 space-y-6">
               <p className="text-white/60 text-xs md:text-sm leading-relaxed font-medium">
-                Sua recomendação faz a diferença! Selecione uma rede social abaixo para enviar uma recomendação pronta ou copie o texto preparado para compartilhar em qualquer lugar.
+                {t.reportReferralDesc}
               </p>
 
               {/* Botões de Redes Sociais */}
@@ -526,7 +526,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
 
               {/* Mensagem Formatada Pronta para Copiar */}
               <div className="space-y-3 pt-2 border-t border-white/5">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block">Texto de indicação</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block">{t.reportReferralTextLabel}</span>
                 <div className="relative">
                   <textarea
                     readOnly
@@ -784,17 +784,17 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
           return (
             <div className="space-y-4 print:pt-4">
               <h3 className="text-xs font-black uppercase tracking-widest text-indigo-400 print:text-indigo-800 flex items-center gap-2">
-                <Brain className="w-4 h-4" /> Desempenho no Laboratório Cognitivo
+                <Brain className="w-4 h-4" /> {t.reportCognitiveTitle}
               </h3>
               
               <div className="w-full overflow-x-auto border border-white/10 print:border-zinc-200 rounded-2xl bg-white/5 print:bg-white">
                 <table className="w-full text-left text-xs border-collapse min-w-[500px]">
                   <thead>
                     <tr className="border-b border-white/10 print:border-zinc-200 bg-white/5 print:bg-zinc-50 text-[10px] font-black uppercase tracking-wider text-white/40 print:text-zinc-500">
-                      <th className="p-3">Data</th>
-                      <th className="p-3">Treinamento Praticado</th>
-                      <th className="p-3">Tempo de Jogo</th>
-                      <th className="p-3 text-right">Eficácia / Pontuação</th>
+                      <th className="p-3">{t.reportDate}</th>
+                      <th className="p-3">{t.reportTraining}</th>
+                      <th className="p-3">{t.reportPlayTime}</th>
+                      <th className="p-3 text-right">{t.reportEfficacy}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5 print:divide-zinc-100">

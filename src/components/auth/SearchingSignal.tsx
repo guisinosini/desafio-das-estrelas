@@ -59,6 +59,16 @@ export function SearchingSignal({ language }: { language: string }) {
     ]
   };
 
+  const titles: Record<string, string> = {
+    'pt-BR': 'Buscando Sinal Galáctico',
+    'pt-PT': 'A Procurar Sinal Galático',
+    'en': 'Searching for Galactic Signal',
+    'es': 'Buscando Señal Galáctica',
+    'fr': 'Recherche du Signal Galactique',
+    'it': 'Ricerca del Segnale Galattico',
+    'zh': '搜索銀河信号',
+  };
+
   const currentLang = (messages[language as keyof typeof messages] ? language : "pt-BR") as keyof typeof messages;
   const currentMessages = messages[currentLang];
 
@@ -123,7 +133,7 @@ export function SearchingSignal({ language }: { language: string }) {
       <div className="mt-12 text-center space-y-3 px-6 relative z-10 max-w-md">
         <h3 className="text-[#2dd4bf] font-black uppercase tracking-[0.3em] text-xs flex items-center justify-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-[#2dd4bf]" />
-          Buscando Sinal Galáctico
+          {titles[language] || titles['pt-BR']}
         </h3>
         
         <div className="h-8 flex items-center justify-center">
