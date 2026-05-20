@@ -32,8 +32,6 @@ export async function POST(req: Request) {
           const { error } = await supabase
             .from('profiles')
             .update({
-              is_premium: true,
-              plan_type: planType,
               subscription_status: 'active',
               subscription_price_id: priceId,
             })
@@ -56,8 +54,6 @@ export async function POST(req: Request) {
           const { error } = await supabase
             .from('profiles')
             .update({
-              is_premium: true,
-              plan_type: planType,
               subscription_status: 'active',
               subscription_price_id: priceId,
             })

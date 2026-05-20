@@ -39,12 +39,10 @@ export async function POST(req: Request) {
     const planType = selectedPlan === 'yearly' ? 'commander' : 'cadet';
     const priceId = selectedPlan === 'yearly' ? 'yearly' : 'monthly';
 
-    // Atualiza o banco de dados via RLS bypass
+    // Atualiza o banco de dados via RLS bypass (apenas colunas que existem no schema)
     await supabaseAdmin
       .from('profiles')
       .update({
-        is_premium: true,
-        plan_type: planType,
         subscription_status: 'active',
         subscription_price_id: priceId,
       })

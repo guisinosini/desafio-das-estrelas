@@ -89,13 +89,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // Atualizamos o banco de dados local imediatamente
+    // Atualizamos o banco de dados local imediatamente (apenas colunas que existem no schema)
     await supabaseAdmin
       .from('profiles')
       .update({
-        is_premium: false,
         subscription_status: 'cancelled',
-        plan_type: null,
         subscription_price_id: null,
       })
       .eq('id', user.id);

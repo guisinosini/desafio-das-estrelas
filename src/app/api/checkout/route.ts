@@ -34,46 +34,45 @@ export async function POST(req: Request) {
     const title = interval === 'yearly'
       ? 'Desafio das Estrelas - Plano Comandante (Anual)'
       : 'Desafio das Estrelas - Plano Cadete (Mensal)';
-    const planType = interval === 'yearly' ? 'commander' : 'cadet';
 
-    // Ambos os planos usam Payment.create() — compatível com sandbox e produção.
-    // O PreApproval (assinatura) foi removido pois o token gerado pelo CardPayment Brick
-    // é incompatível com PreApproval.create() no ambiente sandbox (retorna "Card token service not found").
     const payment = new Payment(mpClient);
 
-    const response = await payment.create({
-      body: {
-        transaction_amount: amount,
-        token: cardTokenId,
-        description: title,
-        // Mensal: força 1 parcela; Anual: até 12x conforme seleção do usuário
-        installments: interval === 'yearly' ? Number(installments || 1) : 1,
-        payment_method_id: paymentMethodId,
-        issuer_id: issuerId,
-        payer: {
-          email: user.email!,
-          ...(identificationType && identificationNumber && {
-            identification: {
-              type: identificationType,
-              number: identificationNumber,
-            },
-          }),
-        },
-        external_reference: user.id,
-      }
-    });
+    const paymentBody: any = {
+      transaction_amount: amount,
+      token: cardTokenId,
+      description: title,
+      // Mensal: sempre 1 parcela; Anual: usa a seleção do usuário
+      installments: interval === 'yearly' ? Number(installments || 1) : 1,
+      payment_method_id: paymentMethodId,
+      payer: {
+        email: user.email!,
+        ...(identificationType && identificationNumber && {
+          identification: {
+            type: identificationType,
+            number: identificationNumber,
+          },
+        }),
+      },
+      external_reference: user.id,
+    };
+
+    // Só inclui issuer_id se for um valor válido (MP rejeita null/undefined/vazio)
+    if (issuerId && String(issuerId).trim() !== '') {
+      paymentBody.issuer_id = Number(issuerId);
+    }
+
+    const response = await payment.create({ body: paymentBody });
 
     console.log(`[MP Checkout ${interval}] Status: ${response.status} | ID: ${response.id}`);
 
     const statusOk = ['approved', 'in_process', 'pending'].includes(response.status || '');
 
     if (statusOk) {
-      // Atualiza o Supabase e verifica se a linha foi de fato encontrada e modificada
+      // IMPORTANTE: Atualiza apenas as colunas que EXISTEM no schema do Supabase.
+      // As colunas 'is_premium' e 'plan_type' foram removidas pois não existem na tabela profiles.
       const { data: updatedRows, error: dbError } = await supabaseAdmin
         .from('profiles')
         .update({
-          is_premium: true,
-          plan_type: planType,
           subscription_status: 'active',
           subscription_price_id: interval,
         })
@@ -90,18 +89,15 @@ export async function POST(req: Request) {
 
       if (!updatedRows || updatedRows.length === 0) {
         // Fallback: perfil não existe ainda, cria via upsert
-        console.warn(`[MP Checkout] Nenhuma linha atualizada para user.id=${user.id} — tentando upsert`);
+        console.warn(`[MP Checkout] Nenhuma linha atualizada para user.id=${user.id} — upsert`);
         await supabaseAdmin.from('profiles').upsert({
           id: user.id,
-          email: user.email,
-          is_premium: true,
-          plan_type: planType,
           subscription_status: 'active',
           subscription_price_id: interval,
         });
       }
 
-      console.log(`[MP Checkout] Perfil ${user.id} ativado como ${planType} ✅`);
+      console.log(`[MP Checkout] Perfil ${user.id} ativado (${interval}) ✅`);
     }
 
     return NextResponse.json({

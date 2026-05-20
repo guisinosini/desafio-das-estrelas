@@ -1219,7 +1219,18 @@ export default function DesafioEstrelas() {
                     <p className="text-[10px] text-white/50">Cobrado mensalmente. Acesso total a todas as ferramentas.</p>
                   </div>
                   <button
-                    onClick={() => { setSelectedPlan('monthly'); setStage('checkout'); }}
+                    onClick={() => {
+                      // Pré-inicializa o SDK do MP antes de navegar para o checkout
+                      // Isso garante que o Brick já esteja carregando quando o componente montar
+                      const win = window as any;
+                      if (!win.__mercadopago_initialized__ && process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY) {
+                        import('@mercadopago/sdk-react').then(({ initMercadoPago }) => {
+                          initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!, { locale: 'pt-BR' });
+                          win.__mercadopago_initialized__ = true;
+                        });
+                      }
+                      setSelectedPlan('monthly'); setStage('checkout');
+                    }}
                     className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
                   >
                     Ativar Plano Cadete
@@ -1238,7 +1249,16 @@ export default function DesafioEstrelas() {
                     <p className="text-[10px] text-white/50">Cobrado anualmente. Menos de R$ 17 por mês no ano.</p>
                   </div>
                   <button
-                    onClick={() => { setSelectedPlan('yearly'); setStage('checkout'); }}
+                    onClick={() => {
+                      const win = window as any;
+                      if (!win.__mercadopago_initialized__ && process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY) {
+                        import('@mercadopago/sdk-react').then(({ initMercadoPago }) => {
+                          initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!, { locale: 'pt-BR' });
+                          win.__mercadopago_initialized__ = true;
+                        });
+                      }
+                      setSelectedPlan('yearly'); setStage('checkout');
+                    }}
                     className="w-full mt-6 py-4 bg-primary text-black hover:bg-teal-300 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-lg shadow-primary/10"
                   >
                     Ativar Plano Comandante
