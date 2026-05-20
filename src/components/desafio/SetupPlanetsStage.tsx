@@ -39,14 +39,14 @@ export const SetupPlanetsStage: React.FC<SetupPlanetsStageProps> = ({
       <OrbitalPlanet type="blue" title="Cosmos Blue" subtitle="Setor Cosmos" />
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
         <div className="text-center space-y-4">
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.destinyPlanets}</h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">{t.destinyPlanets}</h2>
           <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.planetExplainer }} />
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 md:p-8 rounded-[30px] md:rounded-[40px] space-y-6 shadow-2xl">
           <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createPlanet}</p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 placeholder="Ex: Melhorar em Matemática"
@@ -58,7 +58,7 @@ export const SetupPlanetsStage: React.FC<SetupPlanetsStageProps> = ({
                 type="text"
                 value={customPlanet.icon}
                 onChange={e => setCustomPlanet({ ...customPlanet, icon: e.target.value })}
-                className="w-16 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
+                className="w-full sm:w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
                 placeholder="🪐"
               />
               <button
@@ -69,7 +69,7 @@ export const SetupPlanetsStage: React.FC<SetupPlanetsStageProps> = ({
                   }
                 }}
                 disabled={!customPlanet.title}
-                className="bg-primary/20 text-primary p-3 rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto bg-primary/20 text-primary p-3 flex justify-center rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
               >
                 <Plus className="w-5 h-5" />
               </button>

@@ -42,15 +42,15 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
       <OrbitalPlanet type="gold" title="Helios Prime" subtitle="Setor Estelar" />
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
         <div className="text-center space-y-4">
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
           <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.taskExplainer }} />
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 md:p-8 rounded-[30px] md:rounded-[40px] space-y-6 shadow-2xl">
           <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createMission}:</p>
             <div className="flex flex-col gap-4">
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   placeholder="Ex: Lavar louça..."
@@ -64,7 +64,7 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
                   max="100"
                   value={customTask.stars}
                   onChange={e => setCustomTask({ ...customTask, stars: parseInt(e.target.value) || 0 })}
-                  className="w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
+                  className="w-full sm:w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -80,14 +80,14 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
                   ))}
                 </select>
               </div>
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex bg-white/5 rounded-xl p-1 border border-white/10 flex-wrap gap-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex bg-white/5 rounded-xl p-1 border border-white/10 flex-wrap gap-1 justify-center sm:justify-start">
                   {['daily', 'weekly', 'monthly', 'once'].map((rec) => (
                     <button
                       key={rec}
                       onClick={() => setCustomTask({ ...customTask, recurrence: rec as TaskRecurrence })}
                       className={clsx(
-                        "px-3 py-2 text-[8px] md:text-[10px] font-black uppercase rounded-lg transition-all",
+                        "px-3 py-2 text-[8px] md:text-[10px] font-black uppercase rounded-lg transition-all flex-1 sm:flex-none",
                         customTask.recurrence === rec ? "bg-primary text-black" : "text-white/40 hover:text-white"
                       )}
                     >
@@ -98,7 +98,7 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
                 <button
                   disabled={!customTask.title}
                   onClick={() => { addTask(customTask.title, customTask.stars, customTask.recurrence, customTask.planetId); setCustomTask({ title: "", stars: 5, recurrence: 'daily', planetId: "" }); }}
-                  className="flex-1 py-3 bg-primary text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all"
+                  className="w-full sm:w-auto flex-1 py-3 bg-primary text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all"
                 >
                   {t.addMissionBtn}
                 </button>

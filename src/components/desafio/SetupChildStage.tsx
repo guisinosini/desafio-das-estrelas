@@ -79,9 +79,9 @@ const SetupChildStage = memo(({
       
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
         
-        <h2 className="text-4xl font-black italic uppercase tracking-tighter text-center">{t.whoIsHero}</h2>
+        <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-center">{t.whoIsHero}</h2>
         
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[50px] space-y-6 shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[30px] md:rounded-[50px] space-y-6 shadow-2xl">
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block text-center">{t.heroName}</label>
             <input
@@ -120,7 +120,7 @@ const SetupChildStage = memo(({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block">{t.birthDate}</label>
               <input

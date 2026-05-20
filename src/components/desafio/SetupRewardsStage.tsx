@@ -39,14 +39,14 @@ export const SetupRewardsStage: React.FC<SetupRewardsStageProps> = ({
       <OrbitalPlanet type="turquoise" title="Aurelia Turquesa" subtitle="Setor Relíquia" />
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
         <div className="text-center space-y-4">
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
+          <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
           <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.rewardExplainer }} />
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[40px] space-y-6 shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 md:p-8 rounded-[30px] md:rounded-[40px] space-y-6 shadow-2xl">
           <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createTreasure}:</p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 placeholder="Ex: Cinema com pipoca..."
@@ -59,12 +59,12 @@ export const SetupRewardsStage: React.FC<SetupRewardsStageProps> = ({
                 min="1"
                 value={customReward.cost}
                 onChange={e => setCustomReward({ ...customReward, cost: parseInt(e.target.value) || 0 })}
-                className="w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-yellow-400 text-white"
+                className="w-full sm:w-28 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-yellow-400 text-white"
               />
               <button
                 disabled={!customReward.title}
                 onClick={() => { addReward(customReward.title, customReward.cost); setCustomReward({ title: "", cost: 50 }); }}
-                className="px-6 bg-yellow-400 text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all shadow-lg shadow-yellow-400/20"
+                className="w-full sm:w-auto px-6 py-4 sm:py-0 bg-yellow-400 text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 transition-all shadow-lg shadow-yellow-400/20"
               >
                 {t.add}
               </button>
