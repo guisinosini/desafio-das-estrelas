@@ -199,7 +199,13 @@ export function useAppInitializer({
         setActiveChildId(finalData.activeChildId || null);
         if (finalData.parentPin) setParentPin(finalData.parentPin);
         if (finalData.fleetId) setFleetId(finalData.fleetId);
-        if (finalData.stage) setStage(finalData.stage);
+        // Stages proibidos de serem restaurados automaticamente:
+        // - 'checkout': exige que o usuário escolha um plano consciente e clique no botão
+        // - 'no_subscription': definido pelo status da assinatura, não pelo estado salvo
+        const BLOCKED_RESTORE_STAGES = ['checkout', 'no_subscription'];
+        if (finalData.stage && !BLOCKED_RESTORE_STAGES.includes(finalData.stage)) {
+          setStage(finalData.stage);
+        }
       }
     };
 
