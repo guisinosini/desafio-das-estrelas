@@ -793,13 +793,17 @@ export default function DesafioEstrelas() {
   };
 
   const handleLogout = async () => {
+    // Reseta estados locais de interface para garantir logout limpo em qualquer view
+    setShowPin(false);
+    setPin('');
+    setView('child');
+
     try {
       await supabase.auth.signOut();
     } catch (err) {
       console.warn("Erro ao invalidar sessão na API do Supabase:", err);
     } finally {
-      // Limpeza manual absoluta de tokens e cookies locais (independente de falha de API ou internet)
-      // I3: Preserva a preferência de idioma usando a chave correta antes de limpar
+      // Preserva a preferência de idioma antes de limpar tudo
       let savedLanguage: string | null = null;
       try {
         const stored = localStorage.getItem('desafio_estrelas_v2');
@@ -1430,6 +1434,7 @@ export default function DesafioEstrelas() {
                   if (view === 'child') {
                     setShowPin(true);
                   } else {
+                    setShowPin(false); // Fecha qualquer popup de PIN residual ao entrar na view child
                     setView('child');
                   }
                 }} className="cursor-pointer group relative shrink-0">
@@ -1485,7 +1490,7 @@ export default function DesafioEstrelas() {
                 {/* Relógio e Data Isolados */}
                 <ClockDisplay language={language} />
 
-                <div className="flex gap-2 relative">
+                 <div className="flex gap-2 relative">
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -1509,7 +1514,7 @@ export default function DesafioEstrelas() {
                     <span className="text-sm md:text-2xl font-black italic tracking-tighter text-white">{stars}</span>
                   </motion.div>
 
-                  {/* Star Flight Animation */}
+                  {/* Star Flight Animation — pointer-events-none para nunca bloquear cliques */}
                   <AnimatePresence>
                     {animatingStar && (
                       <motion.div
@@ -1529,10 +1534,17 @@ export default function DesafioEstrelas() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  <button onClick={handleLogout} className="bg-red-500/10 border border-red-500/20 text-red-400 p-2.5 md:p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg cursor-pointer shrink-0" title={t.exitChallenge}>
-                    <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-                  </button>
                 </div>
+
+                {/* Botão de Logout — isolado em elemento próprio com z-index elevado,
+                    sempre clicável independente de view, overlay ou animações ativas */}
+                <button
+                  onClick={handleLogout}
+                  className="relative z-[80] bg-red-500/10 border border-red-500/20 text-red-400 p-2.5 md:p-3 rounded-full hover:bg-red-500/20 active:scale-95 transition-all shadow-lg cursor-pointer shrink-0"
+                  title={t.exitChallenge}
+                >
+                  <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
               </div>
             </header>
 
