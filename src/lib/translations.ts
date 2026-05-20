@@ -1025,10 +1025,7 @@ export const translations: Record<Language, any> = {
     reportWarningTitle: 'Important Technical Responsibility Notice',
     reportWarningDesc: 'This document constitutes a complementary pedagogical-behavioral consolidation based on the missions and routines performed. It does not constitute a clinical diagnosis, anamnesis, nor should it be interpreted as an official psychological or medical evaluation tool, and should be used as support and interpreted exclusively under professional technical supervision.',
     reportRecommendApp: 'Recommend the App',
-    reportWelcomeDesc: 'Welcome to the Star Challenge. This report consolidates the child\\'s habit data, mission routines, behavior, and engagement in the cognitive laboratory in a gamified and structured way. Follow our news and articles at',
-    reportWarningTitle: 'Important Technical Responsibility Notice',
-    reportWarningDesc: 'This document constitutes a complementary pedagogical-behavioral consolidation based on the missions and routines performed. It does not constitute a clinical diagnosis, anamnesis, nor should it be interpreted as an official psychological or medical evaluation tool, and should be used as support and interpreted exclusively under professional technical supervision.',
-    reportRecommendApp: 'Recommend the App',
+
     reportRecommendDesc: 'Recommend the Star Challenge to other parents and mentors looking to strengthen positive routines.',
     reportRecommendBtn: 'Recommend Challenge',
     reportReferralTitle: 'Recommend the Challenge',
