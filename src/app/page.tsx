@@ -1489,8 +1489,16 @@ export default function DesafioEstrelas() {
                     setView('child');
                   }
                 }} className="cursor-pointer group relative shrink-0">
-                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border-2 border-primary p-0.5 bg-zinc-900 shadow-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform text-xl md:text-2xl">
-                    {AVATARS.find(a => a.id === activeChild?.avatar)?.emoji}
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border-2 border-primary p-0.5 bg-zinc-900 shadow-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform text-xl md:text-2xl overflow-hidden">
+                    {(() => {
+                      const a = AVATARS.find(a => a.id === activeChild?.avatar);
+                      if (!a) return null;
+                      return a.image ? (
+                        <img src={a.image} alt={a.label} className="w-full h-full object-cover scale-110" />
+                      ) : (
+                        <span>{(a as any).emoji}</span>
+                      );
+                    })()}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-black w-4.5 h-4.5 md:w-5 md:h-5 rounded-full flex items-center justify-center border border-white">
                     {view === 'child' ? <Lock className="w-2.5 h-2.5 md:w-3 md:h-3" /> : <Settings className="w-2.5 h-2.5 md:w-3 md:h-3" />}
