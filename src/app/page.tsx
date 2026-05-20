@@ -432,9 +432,15 @@ export default function DesafioEstrelas() {
     return () => clearInterval(interval);
   }, []); // Sem dependências: o intervalo vive durante toda a sessão ativa
 
-  const updateActiveChild = (updates: Partial<ChildData>) => {
-    setChildren((prev: ChildData[]) => prev.map(c => c.id === activeChildId ? { ...c, ...updates } : c));
-  };
+  const updateActiveChild = useCallback((updates: Partial<ChildData> | ((prevChild: ChildData) => Partial<ChildData>)) => {
+    setChildren((prev: ChildData[]) => prev.map(c => {
+      if (c.id === activeChildId) {
+        const newUpdates = typeof updates === 'function' ? updates(c) : updates;
+        return { ...c, ...newUpdates };
+      }
+      return c;
+    }));
+  }, [activeChildId]);
 
   const handleAwardStars = (amount: number, gameTitle: string, scoreText?: string, playTime?: number) => {
     if (!activeChildId) return;
@@ -896,23 +902,23 @@ export default function DesafioEstrelas() {
     }
   };
 
-  const addTask = (title: string, starCount: number, recurrence: TaskRecurrence = 'daily', planetId?: string) => {
+  const addTask = useCallback((title: string, starCount: number, recurrence: TaskRecurrence = 'daily', planetId?: string) => {
     const newTask: Task = { id: Date.now().toString(), title, stars: starCount, recurrence, status: 'available', planetId };
-    updateActiveChild({ tasks: [...tasks, newTask] });
-  };
+    updateActiveChild(child => ({ tasks: [...child.tasks, newTask] }));
+  }, [updateActiveChild]);
 
-  const removeTask = (id: string) => {
-    updateActiveChild({ tasks: tasks.filter(t => t.id !== id) });
-  };
+  const removeTask = useCallback((id: string) => {
+    updateActiveChild(child => ({ tasks: child.tasks.filter(t => t.id !== id) }));
+  }, [updateActiveChild]);
 
-  const addReward = (title: string, cost: number) => {
+  const addReward = useCallback((title: string, cost: number) => {
     const newReward: Reward = { id: Date.now().toString(), title, cost };
-    updateActiveChild({ rewards: [...rewards, newReward] });
-  };
+    updateActiveChild(child => ({ rewards: [...child.rewards, newReward] }));
+  }, [updateActiveChild]);
 
-  const removeReward = (id: string) => {
-    updateActiveChild({ rewards: rewards.filter(r => r.id !== id) });
-  };
+  const removeReward = useCallback((id: string) => {
+    updateActiveChild(child => ({ rewards: child.rewards.filter(r => r.id !== id) }));
+  }, [updateActiveChild]);
 
   const taskPresets = t.taskPresets;
   const rewardPresets = t.rewardPresets;
@@ -920,14 +926,14 @@ export default function DesafioEstrelas() {
 
   const [customPlanet, setCustomPlanet] = useState({ title: "", icon: "🪐" });
 
-  const addPlanet = (title: string, icon: string) => {
+  const addPlanet = useCallback((title: string, icon: string) => {
     const newPlanet: Planet = { id: Date.now().toString(), title, icon, achieved: false };
-    updateActiveChild({ planets: [...(activeChild?.planets || []), newPlanet] });
-  };
+    updateActiveChild(child => ({ planets: [...(child.planets || []), newPlanet] }));
+  }, [updateActiveChild]);
 
-  const removePlanet = (id: string) => {
-    updateActiveChild({ planets: (activeChild?.planets || []).filter(p => p.id !== id) });
-  };
+  const removePlanet = useCallback((id: string) => {
+    updateActiveChild(child => ({ planets: (child.planets || []).filter(p => p.id !== id) }));
+  }, [updateActiveChild]);
 
   const handleSaveNote = (content: string) => {
     if (!activeChild || !content.trim()) return;

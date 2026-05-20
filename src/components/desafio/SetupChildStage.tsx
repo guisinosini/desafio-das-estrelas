@@ -3,7 +3,10 @@ import { motion, Variants } from 'framer-motion';
 import { ChevronLeft, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import type { ChildData } from '@/types/desafio';
-import { OrbitalPlanet } from './OrbitalPlanet';
+import dynamic from 'next/dynamic';
+import { GlassCard } from '@/components/ui/GlassCard';
+
+const OrbitalPlanetDynamic = dynamic(() => import('./OrbitalPlanet').then(mod => mod.OrbitalPlanet), { ssr: false });
 
 interface SetupChildStageProps {
   newChild: Partial<ChildData>;
@@ -75,13 +78,13 @@ const SetupChildStage = memo(({
         </button>
       </div>
 
-      <OrbitalPlanet type="green" title="Gaya Alfa" subtitle="Setor Origem" />
+      <OrbitalPlanetDynamic type="green" title="Gaya Alfa" subtitle="Setor Origem" />
       
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
         
         <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-center">{t.whoIsHero}</h2>
         
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[30px] md:rounded-[50px] space-y-6 shadow-2xl">
+        <GlassCard className="p-6 md:p-8 rounded-[30px] md:rounded-[50px] space-y-6">
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-white/40 block text-center">{t.heroName}</label>
             <input
@@ -178,7 +181,7 @@ const SetupChildStage = memo(({
           >
             {t.nextStep}
           </button>
-        </div>
+        </GlassCard>
       </div>
     </motion.div>
   );

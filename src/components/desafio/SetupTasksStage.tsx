@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Trash } from 'lucide-react';
 import clsx from 'clsx';
-import { OrbitalPlanet } from './OrbitalPlanet';
+import dynamic from 'next/dynamic';
+import { GlassCard } from '@/components/ui/GlassCard';
+
+const OrbitalPlanetDynamic = dynamic(() => import('./OrbitalPlanet').then(mod => mod.OrbitalPlanet), { ssr: false });
 import type { Planet, Task, TaskRecurrence } from '@/types/desafio';
 
 interface SetupTasksStageProps {
@@ -18,7 +21,7 @@ interface SetupTasksStageProps {
   setStage: (stage: any) => void;
 }
 
-export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
+export const SetupTasksStage: React.FC<SetupTasksStageProps> = memo(({
   orbitalTransitionVariants,
   t,
   customTask,
@@ -39,14 +42,14 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
       exit="exit"
       className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
     >
-      <OrbitalPlanet type="gold" title="Helios Prime" subtitle="Setor Estelar" />
+      <OrbitalPlanetDynamic type="gold" title="Helios Prime" subtitle="Setor Estelar" />
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
         <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">{t.journeyMissions}</h2>
           <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.taskExplainer }} />
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 md:p-8 rounded-[30px] md:rounded-[40px] space-y-6 shadow-2xl">
+        <GlassCard className="p-5 md:p-8 rounded-[30px] md:rounded-[40px] space-y-6">
           <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createMission}:</p>
             <div className="flex flex-col gap-4">
@@ -131,8 +134,10 @@ export const SetupTasksStage: React.FC<SetupTasksStageProps> = ({
           </div>
 
           <button disabled={tasks.length === 0} onClick={() => setStage('setup_rewards')} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.continue}</button>
-        </div>
+        </GlassCard>
       </div>
     </motion.div>
   );
-};
+});
+
+SetupTasksStage.displayName = 'SetupTasksStage';

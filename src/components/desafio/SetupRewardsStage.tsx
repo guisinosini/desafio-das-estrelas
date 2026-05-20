@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Trash } from 'lucide-react';
-import { OrbitalPlanet } from './OrbitalPlanet';
+import dynamic from 'next/dynamic';
+import { GlassCard } from '@/components/ui/GlassCard';
+
+const OrbitalPlanetDynamic = dynamic(() => import('./OrbitalPlanet').then(mod => mod.OrbitalPlanet), { ssr: false });
 import type { Reward } from '@/types/desafio';
 
 interface SetupRewardsStageProps {
@@ -16,7 +19,7 @@ interface SetupRewardsStageProps {
   handleStartAdventure: () => void;
 }
 
-export const SetupRewardsStage: React.FC<SetupRewardsStageProps> = ({
+export const SetupRewardsStage: React.FC<SetupRewardsStageProps> = memo(({
   orbitalTransitionVariants,
   t,
   customReward,
@@ -36,14 +39,14 @@ export const SetupRewardsStage: React.FC<SetupRewardsStageProps> = ({
       exit="exit"
       className="relative z-10 max-w-2xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8 overflow-hidden"
     >
-      <OrbitalPlanet type="turquoise" title="Aurelia Turquesa" subtitle="Setor Relíquia" />
+      <OrbitalPlanetDynamic type="turquoise" title="Aurelia Turquesa" subtitle="Setor Relíquia" />
       <div className="relative z-10 space-y-8 flex flex-col justify-center">
         <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter">{t.galacticTreasures}</h2>
           <p className="text-white/80 text-sm md:text-base leading-relaxed bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg text-left" dangerouslySetInnerHTML={{ __html: t.rewardExplainer }} />
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 md:p-8 rounded-[30px] md:rounded-[40px] space-y-6 shadow-2xl">
+        <GlassCard className="p-5 md:p-8 rounded-[30px] md:rounded-[40px] space-y-6">
           <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{t.createTreasure}:</p>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -96,8 +99,10 @@ export const SetupRewardsStage: React.FC<SetupRewardsStageProps> = ({
           </div>
 
           <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.startChallenge}</button>
-        </div>
+        </GlassCard>
       </div>
     </motion.div>
   );
-};
+});
+
+SetupRewardsStage.displayName = 'SetupRewardsStage';
