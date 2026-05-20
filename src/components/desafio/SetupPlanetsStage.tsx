@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Plus, Trash } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { GlassCard } from '@/components/ui/GlassCard';
+import clsx from 'clsx';
 
 const OrbitalPlanetDynamic = dynamic(() => import('./OrbitalPlanet').then(mod => mod.OrbitalPlanet), { ssr: false });
 import type { Planet } from '@/types/desafio';
@@ -57,13 +58,6 @@ export const SetupPlanetsStage: React.FC<SetupPlanetsStageProps> = memo(({
                 onChange={e => setCustomPlanet({ ...customPlanet, title: e.target.value })}
                 className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-primary transition-colors text-white"
               />
-              <input
-                type="text"
-                value={customPlanet.icon}
-                onChange={e => setCustomPlanet({ ...customPlanet, icon: e.target.value })}
-                className="w-full sm:w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-center outline-none focus:border-primary text-white"
-                placeholder="🪐"
-              />
               <button
                 onClick={() => {
                   if (customPlanet.title) {
@@ -72,10 +66,30 @@ export const SetupPlanetsStage: React.FC<SetupPlanetsStageProps> = memo(({
                   }
                 }}
                 disabled={!customPlanet.title}
-                className="w-full sm:w-auto bg-primary/20 text-primary p-3 flex justify-center rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto bg-primary/20 text-primary p-3 px-6 flex justify-center items-center rounded-xl hover:bg-primary/30 transition-colors disabled:opacity-50"
               >
                 <Plus className="w-5 h-5" />
               </button>
+            </div>
+
+            <div className="pt-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-3 block">Escolha o Ícone do Planeta</p>
+              <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                {["🪐", "🌍", "🌕", "☄️", "🌌", "🌟", "🛸", "🚀", "🌞", "👾", "🤖", "🏆", "🎨", "📚", "⭐", "🔮"].map(icon => (
+                  <button
+                    key={icon}
+                    onClick={() => setCustomPlanet({ ...customPlanet, icon })}
+                    className={clsx(
+                      "min-w-[40px] h-[40px] rounded-lg border flex items-center justify-center text-xl transition-all flex-shrink-0",
+                      customPlanet.icon === icon 
+                        ? "bg-primary border-primary text-black scale-110 shadow-[0_0_15px_rgba(212,175,55,0.4)]" 
+                        : "bg-white/5 border-white/10 opacity-60 hover:opacity-100 hover:border-white/30"
+                    )}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

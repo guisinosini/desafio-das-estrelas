@@ -27,6 +27,14 @@ export const AVATARS = [
   { id: 'coa1', emoji: '🐨', label: 'Coala' },
   { id: 'tig1', emoji: '🐯', label: 'Tigre' },
   { id: 'mer1', emoji: '🧜', label: 'Sereia' },
+  { id: 'nin1', emoji: '🥷', label: 'Ninja' },
+  { id: 'wiz1', emoji: '🧙', label: 'Mago' },
+  { id: 'elf1', emoji: '🧝', label: 'Elfo' },
+  { id: 'vam1', emoji: '🧛', label: 'Vampiro' },
+  { id: 'kni1', emoji: '🤺', label: 'Cavaleiro' },
+  { id: 'pir1', emoji: '🏴‍☠️', label: 'Pirata' },
+  { id: 'ast2', emoji: '🧑‍🚀', label: 'Cosmonauta' },
+  { id: 'she1', emoji: '🛡️', label: 'Protetor' }
 ];
 
 export const StarField = memo(() => (
