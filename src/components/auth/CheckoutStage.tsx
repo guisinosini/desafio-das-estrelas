@@ -205,7 +205,8 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
         setStripeAmount(data.amount);
       } catch (err: any) {
         console.error('Erro ao inicializar Stripe:', err);
-        setErrorMessage(language === 'zh' ? '加载 Stripe 支付失败。' : 'Failed to load Stripe payment gateway.');
+        const baseMsg = language === 'zh' ? '加载 Stripe 支付失败。' : 'Failed to load Stripe payment gateway.';
+        setErrorMessage(`${baseMsg} Detalhes: ${err.message}`);
       } finally {
         setLoadingStripeIntent(false);
       }

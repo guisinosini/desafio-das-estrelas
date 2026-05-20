@@ -71,7 +71,8 @@ export async function POST(req: Request) {
       }
 
       // 2. Criar a assinatura no Stripe em modo incompleto (aguardando primeiro pagamento)
-      const subscription = await stripe.subscriptions.create({
+      let subscription: Stripe.Subscription;
+      const subParams: Stripe.SubscriptionCreateParams = {
         customer: customerId,
         items: [{ price: priceId }],
         payment_behavior: 'default_incomplete',
@@ -82,7 +83,25 @@ export async function POST(req: Request) {
           planType: 'cadet',
           interval: 'monthly',
         },
-      });
+      };
+
+      try {
+        subscription = await stripe.subscriptions.create(subParams);
+      } catch (subErr: any) {
+        // Stripe proíbe usar moedas diferentes (ex: USD e BRL) no mesmo Customer.
+        // Se isso acontecer, criamos um Customer secundário no Stripe para essa nova moeda.
+        if (subErr.message && subErr.message.includes('cannot combine currencies')) {
+          console.log(`[Stripe] Conflito de moeda para ${user.email}. Criando novo Customer...`);
+          const newCustomer = await stripe.customers.create({
+            email: user.email!,
+            metadata: { userId: user.id, fallback: 'true' },
+          });
+          subParams.customer = newCustomer.id;
+          subscription = await stripe.subscriptions.create(subParams);
+        } else {
+          throw subErr;
+        }
+      }
 
       const invoice = subscription.latest_invoice as any;
       const clientSecret = invoice?.payment_intent?.client_secret;
