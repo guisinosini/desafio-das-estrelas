@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, RefreshCw, Eye, EyeOff, ShieldCheck, X, FileText, Lock } from 'lucide-react';
 import clsx from 'clsx';
 import type { Language } from '@/lib/translations';
-
+import { TermsContent, getConsentText1, getConsentText2, getConsentText3, getPrivacyLink, getTermsLink, getTermsModalTitle, getTermsModalSubtitle } from './TermsContent';
 interface AuthStageProps {
   t: any;
   language: Language;
@@ -147,23 +147,23 @@ const AuthStage = memo(({
                   className="w-5 h-5 rounded border border-white/20 bg-black/40 text-primary focus:ring-0 cursor-pointer mt-0.5 accent-primary shrink-0"
                 />
                 <label htmlFor="terms-checkbox" className="text-[10px] text-white/60 font-bold leading-relaxed cursor-pointer">
-                  Li e concordo com os{' '}
+                  {getConsentText1(language)}
                   <button
                     type="button"
                     onClick={() => setShowTermsModal(true)}
                     className="text-primary hover:underline font-black uppercase tracking-wider transition-all"
                   >
-                    Termos de Uso
-                  </button>{' '}
-                  e{' '}
+                    {getTermsLink(language)}
+                  </button>
+                  {getConsentText2(language)}
                   <button
                     type="button"
                     onClick={() => setShowTermsModal(true)}
                     className="text-primary hover:underline font-black uppercase tracking-wider transition-all"
                   >
-                    Políticas de Privacidade
-                  </button>{' '}
-                  do Desafio das Estrelas.
+                    {getPrivacyLink(language)}
+                  </button>
+                  {getConsentText3(language)}
                 </label>
               </div>
             )}
@@ -219,8 +219,8 @@ const AuthStage = memo(({
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">Termos de Uso e Privacidade</h2>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-primary/60">Contrato de Licenciamento SaaS do Mentor</p>
+                    <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">{getTermsModalTitle(language)}</h2>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-primary/60">{getTermsModalSubtitle(language)}</p>
                   </div>
                 </div>
                 <button 
@@ -231,70 +231,8 @@ const AuthStage = memo(({
                 </button>
               </div>
 
-              {/* Conteúdo Legal Rolável */}
-              <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar text-zinc-300 text-xs md:text-sm leading-relaxed font-medium">
-                
-                <div className="flex items-start gap-3 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl text-emerald-400">
-                  <ShieldCheck className="w-6 h-6 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <h4 className="text-[10px] font-black uppercase tracking-wider text-emerald-300">Chancela e Responsabilidade Técnica</h4>
-                    <p className="text-[11px] font-bold">
-                      O aplicativo **Desafio das Estrelas** e seus algoritmos de incentivo comportamental são supervisionados pelo Responsável Técnico: **Guilherme Carvalho Sinosini (CRP 06/181084)**.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h3 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2">1. Termos de Uso (Terms of Service) e Licenciamento SaaS</h3>
-                  <p>
-                    O **Desafio das Estrelas** concede ao mentor uma licença de uso individual, revogável e não exclusiva de nossa plataforma SaaS (Software as a Service) educacional. 
-                  </p>
-                  <ul className="list-disc list-inside space-y-1.5 pl-2 text-zinc-400">
-                    <li>**Disponibilidade e SLA:** Nossa infraestrutura tecnológica é integrada aos servidores em nuvem do **Supabase**, usufruindo de acordos de SLA (Service Level Agreement) de disponibilidade padrão de mercado de **99,9%**, com backups redundantes e proteção de integridade.</li>
-                    <li>**Limites da Licença:** O acesso às ferramentas administrativas de mentoria (Quadro de Missões, Emissão de Relatórios Compartilhados e Diário de Bordo) é concedido sob o regime de assinatura via **Mercado Pago**. Os limites de crianças cadastradas e recursos de BI seguem estritamente o plano ativo escolhido.</li>
-                    <li>**Cancelamento:** A assinatura pode ser revogada ou alterada a qualquer momento, sem taxas de cancelamento, diretamente no Portal do Mercado Pago.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-3">
-                  <h3 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2">2. Política de Privacidade (Privacy Policy) e Proteção de Dados</h3>
-                  <p>
-                    Respeitamos e protegemos a integridade física, moral e digital dos menores de idade de acordo com a **Lei Geral de Proteção de Dados (LGPD)** e legislações internacionais:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1.5 pl-2 text-zinc-400">
-                    <li>**Anonimização e Segurança:** Os dados da criança (estruturados em `ChildData`, Logs de Tarefas Concluídas e Registros de Comportamento) são protegidos por criptografia SSL/TLS em repouso e em trânsito. O aplicativo não requer sobrenomes, documentos ou informações de identificação direta da criança.</li>
-                    <li>**Uso Restrito e Não Comercialização:** Todas as informações comportamentais e missões cadastradas servem exclusivamente para o monitoramento pedagógico da própria família. O aplicativo **não monitora, não rastreia, não vende e não compartilha** dados ou históricos comportamentais das crianças com nenhuma plataforma de publicidade ou terceiros.</li>
-                    <li>**Relatórios Clínicos:** O compartilhamento de dados com psicólogos, pediatras ou profissionais de saúde é feito única e exclusivamente sob demanda ativa do mentor, gerando chaves temporárias criptografadas de leitura na tabela `shared_reports`.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-3">
-                  <h3 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2">3. Política de Cookies</h3>
-                  <p>
-                    Para garantir conformidade com a **LGPD (Lei Geral de Proteção de Dados)** no Brasil e a **GDPR (General Data Protection Regulation)** na União Europeia, declaramos que:
-                  </p>
-                  <p className="text-zinc-400">
-                    O aplicativo utiliza cookies e tecnologias de armazenamento local (localStorage) **estritamente necessários** para o funcionamento técnico da plataforma. Estes recursos servem apenas para gerenciar a persistência segura da sessão de login do Supabase, autenticação e preferências de idioma, **não sendo utilizados** para fins de rastreamento comportamental, remarketing ou fins publicitários.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <h3 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2">4. Isenção de Responsabilidade Médica (Medical Disclaimer)</h3>
-                  <div className="p-4 bg-yellow-400/5 border border-yellow-400/20 rounded-2xl text-yellow-400 font-bold">
-                    ⚠️ "O Desafio das Estrelas é uma ferramenta de suporte ao desenvolvimento comportamental. Os dados gerados não substituem avaliações neurológicas, diagnósticos psiquiátricos ou psicoterapias formais."
-                  </div>
-                  <p className="text-zinc-400">
-                    O aplicativo atua como facilitador de rotina familiar baseado na ciência de reforço positivo. A interpretação de dados de BI e históricos deve ser feita com fins pedagógicos de incentivo, devendo qualquer desconfiança clínica ou neurológica ser avaliada por profissional habilitado em consulta médica.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <h3 className="text-sm font-black uppercase tracking-wider text-white border-b border-white/5 pb-2">5. Disposições Finais</h3>
-                  <p>
-                    Ao criar a sua conta e utilizar o Desafio das Estrelas, o mentor atesta que é o responsável legal do menor cadastrado e aceita de forma irrevogável todas as regras e políticas descritas neste instrumento.
-                  </p>
-                </div>
-              </div>
+              {/* Conteúdo Legal Rolável Componentizado com Tradução */}
+              <TermsContent language={language} />
 
               {/* Rodapé do Modal com Ação de Aceite */}
               <div className="p-6 border-t border-white/10 bg-zinc-900/50 flex flex-col sm:flex-row justify-end items-center gap-4 shrink-0">
