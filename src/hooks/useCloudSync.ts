@@ -21,6 +21,13 @@ export function useCloudSync({ supabase, setIsPremium, setSubscriptionPriceId }:
         supabase.from('profiles').select('subscription_status, subscription_price_id').eq('id', user.id).maybeSingle()
       ]);
 
+      if (profileRes.error) {
+        console.error("❌ Erro do Supabase ao carregar perfil (profiles):", profileRes.error);
+      }
+      if (gamificationRes.error) {
+        console.error("❌ Erro do Supabase ao carregar estado do jogo (patient_gamification):", gamificationRes.error);
+      }
+
       if (profileRes.data?.subscription_status === 'active') {
         setIsPremium(true);
         if (profileRes.data.subscription_price_id) {
@@ -32,7 +39,10 @@ export function useCloudSync({ supabase, setIsPremium, setSubscriptionPriceId }:
       }
 
       if (gamificationRes.data?.state) {
+        console.log("✅ Progresso carregado com sucesso da nuvem para o usuário:", user.id);
         return gamificationRes.data.state;
+      } else {
+        console.warn("⚠️ Nenhum progresso salvo em patient_gamification para o usuário:", user.id);
       }
     } catch (e) {
       console.error("💥 Erro ao carregar dados:", e);

@@ -123,13 +123,17 @@ export function useAppInitializer({
                 if (syncData.priceId) setSubscriptionPriceId(syncData.priceId);
                 
                 const cloudData = await loadFromCloud(user);
-                if (cloudData) {
-                  if (cloudData.children) setChildren(cloudData.children);
+                if (cloudData && cloudData.children && cloudData.children.length > 0) {
+                  setChildren(cloudData.children);
                   if (cloudData.activeChildId) setActiveChildId(cloudData.activeChildId);
                   if (cloudData.fleetId) setFleetId(cloudData.fleetId);
                   if (cloudData.language) setLanguage(cloudData.language);
+                  
+                  const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
+                  setStage(nextStage);
+                } else {
+                  setStage('setup_child');
                 }
-                setStage('adventure');
                 return;
               }
             }
@@ -199,13 +203,21 @@ export function useAppInitializer({
         setActiveChildId(finalData.activeChildId || null);
         if (finalData.parentPin) setParentPin(finalData.parentPin);
         if (finalData.fleetId) setFleetId(finalData.fleetId);
-        // Stages proibidos de serem restaurados automaticamente:
-        // - 'checkout': exige que o usuário escolha um plano consciente e clique no botão
-        // - 'no_subscription': definido pelo status da assinatura, não pelo estado salvo
-        const BLOCKED_RESTORE_STAGES = ['checkout', 'no_subscription'];
-        if (finalData.stage && !BLOCKED_RESTORE_STAGES.includes(finalData.stage)) {
-          setStage(finalData.stage);
+        
+        if (updatedChildren.length === 0) {
+          setStage('setup_child');
+        } else {
+          // Stages proibidos de serem restaurados automaticamente:
+          const BLOCKED_RESTORE_STAGES = ['checkout', 'no_subscription', 'welcome', 'auth'];
+          if (finalData.stage && !BLOCKED_RESTORE_STAGES.includes(finalData.stage)) {
+            setStage(finalData.stage);
+          } else {
+            setStage('select_child');
+          }
         }
+      } else if (user) {
+        // Se o usuário está logado, é premium, mas não possui dados salvos (primeiro login)
+        setStage('setup_child');
       }
     };
 
@@ -248,11 +260,18 @@ export function useAppInitializer({
             setSubscriptionPriceId(profile.subscription_price_id);
           }
           const cloudData = await loadFromCloud(session?.user);
-          if (cloudData && cloudData.children) {
+          if (cloudData && cloudData.children && cloudData.children.length > 0) {
             setChildren(cloudData.children);
             setActiveChildId(cloudData.activeChildId || null);
             if (cloudData.fleetId) setFleetId(cloudData.fleetId);
             if (cloudData.language) setLanguage(cloudData.language);
+            
+            const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
+            setStage(nextStage);
+          } else {
+            setChildren([]);
+            setActiveChildId(null);
+            setStage('setup_child');
           }
         }
       }
