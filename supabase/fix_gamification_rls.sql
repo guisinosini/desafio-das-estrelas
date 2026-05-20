@@ -18,16 +18,29 @@ ALTER TABLE public.patient_gamification ENABLE ROW LEVEL SECURITY;
 -- 3. Remove políticas antigas caso existam para evitar conflitos
 DROP POLICY IF EXISTS "Usuário gerencia seu próprio jogo" ON public.patient_gamification;
 DROP POLICY IF EXISTS "Leitura de Frotas para Ranking" ON public.patient_gamification;
+DROP POLICY IF EXISTS "Permitir Select no próprio jogo" ON public.patient_gamification;
+DROP POLICY IF EXISTS "Permitir Insert no próprio jogo" ON public.patient_gamification;
+DROP POLICY IF EXISTS "Permitir Update no próprio jogo" ON public.patient_gamification;
+DROP POLICY IF EXISTS "Permitir Delete no próprio jogo" ON public.patient_gamification;
 
--- 4. Cria política robusta para o próprio usuário (Permite Select, Insert, Update, Delete)
-CREATE POLICY "Usuário gerencia seu próprio jogo" 
-    ON public.patient_gamification 
-    FOR ALL 
+-- 4. Cria políticas separadas e mais seguras para evitar bugs de UPSERT
+CREATE POLICY "Permitir Select no próprio jogo" 
+    ON public.patient_gamification FOR SELECT 
+    USING (auth.uid() = profile_id);
+
+CREATE POLICY "Permitir Insert no próprio jogo" 
+    ON public.patient_gamification FOR INSERT 
+    WITH CHECK (auth.uid() = profile_id);
+
+CREATE POLICY "Permitir Update no próprio jogo" 
+    ON public.patient_gamification FOR UPDATE 
     USING (auth.uid() = profile_id)
     WITH CHECK (auth.uid() = profile_id);
 
--- 5. Cria política para o Ranking Galáctico (Apenas leitura)
-CREATE POLICY "Leitura de Frotas para Ranking"
-    ON public.patient_gamification
-    FOR SELECT
-    USING (auth.role() = 'authenticated');
+CREATE POLICY "Permitir Delete no próprio jogo" 
+    ON public.patient_gamification FOR DELETE 
+    USING (auth.uid() = profile_id);
+
+-- 5. Política de Ranking removida
+-- A leitura de frotas agora é feita na nova tabela pública 'fleet_rankings'.
+-- Não permita leitura de terceiros na patient_gamification!

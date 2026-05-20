@@ -618,7 +618,13 @@ export default function DesafioEstrelas() {
 
     } catch (err: any) {
       console.error("💥 Falha total no handleAuth:", err);
-      setAuthError(err.message || "Erro desconhecido ao conectar.");
+      let errorMessage = err.message || "Erro desconhecido ao conectar.";
+      if (errorMessage.includes("already registered")) errorMessage = "Este e-mail já está cadastrado. Tente fazer login.";
+      else if (errorMessage.includes("Password should be at least")) errorMessage = "Sua senha deve ter pelo menos 6 caracteres.";
+      else if (errorMessage.includes("Invalid login credentials")) errorMessage = "E-mail ou senha incorretos.";
+      else if (errorMessage.includes("Email not confirmed")) errorMessage = "Confirme seu e-mail para continuar.";
+      
+      setAuthError(errorMessage);
       setStage('auth'); // Devolve para tela de login em caso de falha de autenticação
     } finally {
       setAuthLoading(false);
