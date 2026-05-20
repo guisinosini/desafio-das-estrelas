@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
-import { PreApproval, Payment } from 'mercadopago';
+import { Payment } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
 
 // Supabase Admin para atualizar perfil com service role (ignora RLS)
@@ -29,125 +29,86 @@ export async function POST(req: Request) {
       identificationNumber,
     } = await req.json();
 
-    const prices = {
-      monthly: 19.90,
-      yearly: 199.00,
-    };
-
+    const prices = { monthly: 19.90, yearly: 199.00 };
     const amount = interval === 'yearly' ? prices.yearly : prices.monthly;
     const title = interval === 'yearly'
       ? 'Desafio das Estrelas - Plano Comandante (Anual)'
       : 'Desafio das Estrelas - Plano Cadete (Mensal)';
+    const planType = interval === 'yearly' ? 'commander' : 'cadet';
 
-    // ——— MODELO HÍBRIDO DE PAGAMENTO ———
-    if (interval === 'yearly') {
-      // Plano ANUAL: Processado como pagamento único com suporte total a parcelamento em até 12x
-      const payment = new Payment(mpClient);
-      
-      const response = await payment.create({
-        body: {
-          transaction_amount: amount,
-          token: cardTokenId,
-          description: title,
-          installments: Number(installments || 1),
-          payment_method_id: paymentMethodId,
-          issuer_id: issuerId,
-          payer: {
-            email: user.email!,
-            ...(identificationType && identificationNumber && {
-              identification: {
-                type: identificationType,
-                number: identificationNumber,
-              },
-            }),
-          },
-          external_reference: user.id,
-        }
-      });
+    // Ambos os planos usam Payment.create() — compatível com sandbox e produção.
+    // O PreApproval (assinatura) foi removido pois o token gerado pelo CardPayment Brick
+    // é incompatível com PreApproval.create() no ambiente sandbox (retorna "Card token service not found").
+    const payment = new Payment(mpClient);
 
-      console.log('[MP Checkout Anual] Status do pagamento:', response.status, '| ID:', response.id);
-
-      // Aceita approved, in_process e pending (sandbox retorna 'pending' em pagamentos de teste 1x)
-      const statusOk = ['approved', 'in_process', 'pending'].includes(response.status || '');
-
-      if (statusOk) {
-        const { error: dbError } = await supabaseAdmin
-          .from('profiles')
-          .update({
-            is_premium: true,
-            plan_type: 'commander',
-            subscription_status: 'active',
-            subscription_price_id: 'yearly',
-          })
-          .eq('id', user.id);
-
-        if (dbError) {
-          console.error('[MP Checkout Anual] Erro ao atualizar Supabase:', dbError);
-        } else {
-          console.log('[MP Checkout Anual] Perfil atualizado como premium com sucesso!');
-        }
-      }
-
-      return NextResponse.json({
-        success: statusOk,
-        status: response.status,
-        id: response.id,
-      });
-
-    } else {
-      // Plano MENSAL: Processado como assinatura recorrente automática (PreApproval)
-      const preApproval = new PreApproval(mpClient);
-
-      const response = await preApproval.create({
-        body: {
-          reason: title,
-          auto_recurring: {
-            frequency: 1,
-            frequency_type: 'months',
-            transaction_amount: amount,
-            currency_id: 'BRL',
-          },
-          card_token_id: cardTokenId,
-          payer_email: user.email!,
-          external_reference: user.id,
-          status: 'authorized',
+    const response = await payment.create({
+      body: {
+        transaction_amount: amount,
+        token: cardTokenId,
+        description: title,
+        // Mensal: força 1 parcela; Anual: até 12x conforme seleção do usuário
+        installments: interval === 'yearly' ? Number(installments || 1) : 1,
+        payment_method_id: paymentMethodId,
+        issuer_id: issuerId,
+        payer: {
+          email: user.email!,
           ...(identificationType && identificationNumber && {
-            payer: {
-              identification: {
-                type: identificationType,
-                number: identificationNumber,
-              },
+            identification: {
+              type: identificationType,
+              number: identificationNumber,
             },
           }),
-        }
-      });
+        },
+        external_reference: user.id,
+      }
+    });
 
-      console.log('[MP Checkout Mensal] Status da assinatura:', response.status, '| ID:', response.id);
+    console.log(`[MP Checkout ${interval}] Status: ${response.status} | ID: ${response.id}`);
 
-      if (response.status === 'authorized' || response.status === 'pending') {
-        const { error: dbError } = await supabaseAdmin
-          .from('profiles')
-          .update({
-            is_premium: true,
-            plan_type: 'cadet',
-            subscription_status: 'active',
-            subscription_price_id: 'monthly',
-          })
-          .eq('id', user.id);
+    const statusOk = ['approved', 'in_process', 'pending'].includes(response.status || '');
 
-        if (dbError) {
-          console.error('[MP Checkout Mensal] Erro ao atualizar Supabase:', dbError);
-        } else {
-          console.log('[MP Checkout Mensal] Perfil atualizado como premium com sucesso!');
-        }
+    if (statusOk) {
+      // Atualiza o Supabase e verifica se a linha foi de fato encontrada e modificada
+      const { data: updatedRows, error: dbError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          is_premium: true,
+          plan_type: planType,
+          subscription_status: 'active',
+          subscription_price_id: interval,
+        })
+        .eq('id', user.id)
+        .select('id');
+
+      if (dbError) {
+        console.error(`[MP Checkout] Erro no Supabase:`, dbError);
+        return NextResponse.json({
+          error: `Pagamento aprovado mas falha ao ativar conta: ${dbError.message}`,
+          status: response.status,
+        }, { status: 500 });
       }
 
-      return NextResponse.json({
-        success: ['authorized', 'pending'].includes(response.status || ''),
-        status: response.status,
-        id: response.id,
-      });
+      if (!updatedRows || updatedRows.length === 0) {
+        // Fallback: perfil não existe ainda, cria via upsert
+        console.warn(`[MP Checkout] Nenhuma linha atualizada para user.id=${user.id} — tentando upsert`);
+        await supabaseAdmin.from('profiles').upsert({
+          id: user.id,
+          email: user.email,
+          is_premium: true,
+          plan_type: planType,
+          subscription_status: 'active',
+          subscription_price_id: interval,
+        });
+      }
+
+      console.log(`[MP Checkout] Perfil ${user.id} ativado como ${planType} ✅`);
     }
+
+    return NextResponse.json({
+      success: statusOk,
+      status: response.status,
+      id: response.id,
+    });
 
   } catch (error: any) {
     console.error('Checkout Transparente Error:', error);

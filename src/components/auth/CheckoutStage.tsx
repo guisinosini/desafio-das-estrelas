@@ -293,6 +293,16 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
         return;
       }
 
+      // Backend confirmou falha na ativação mesmo com pagamento aprovado
+      if (!data.success) {
+        setErrorMessage(data.status
+          ? `Pagamento com status "${data.status}" — aguarde ou contate o suporte.`
+          : 'Falha ao confirmar ativação. Contate o suporte.'
+        );
+        setStatus('error');
+        return;
+      }
+
       setStatus('success');
       setTimeout(() => {
         onSuccess();
