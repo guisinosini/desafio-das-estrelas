@@ -1245,7 +1245,7 @@ export default function DesafioEstrelas() {
                           win.__mercadopago_initialized__ = true;
                         });
                       }
-                      setSelectedPlan('monthly'); setStage('checkout');
+                      setSelectedPlan('monthly'); setStage('auth'); setIsLogin(false);
                     }}
                     className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
                   >
@@ -1273,7 +1273,7 @@ export default function DesafioEstrelas() {
                           win.__mercadopago_initialized__ = true;
                         });
                       }
-                      setSelectedPlan('yearly'); setStage('checkout');
+                      setSelectedPlan('yearly'); setStage('auth'); setIsLogin(false);
                     }}
                     className="w-full mt-6 py-4 bg-primary text-black hover:bg-teal-300 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-lg shadow-primary/10"
                   >

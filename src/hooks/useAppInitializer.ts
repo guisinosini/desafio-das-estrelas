@@ -151,8 +151,10 @@ export function useAppInitializer({
             setSubscriptionPriceId(profile.subscription_price_id);
           }
         }
+      } else {
+        // Se o usuário não estiver logado, não tenta restaurar progresso nem navegar para áreas restritas
+        return;
       }
-
       const cloudData = await loadFromCloud();
       const saved = localStorage.getItem('desafio_estrelas_v2');
       let finalData = null;
