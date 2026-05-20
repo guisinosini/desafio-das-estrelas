@@ -9,32 +9,26 @@ import confetti from "canvas-confetti";
 
 // --- Constantes ---
 export const AVATARS = [
-  { id: 'ast1', emoji: '👨‍🚀', label: 'Astronauta' },
-  { id: 'ali1', emoji: '👽', label: 'Alienígena' },
-  { id: 'rob1', emoji: '🤖', label: 'Robô' },
-  { id: 'cat1', emoji: '🐱', label: 'Gato Espacial' },
-  { id: 'dog1', emoji: '🐶', label: 'Cão Estelar' },
-  { id: 'mon1', emoji: '🐵', label: 'Macaco Piloto' },
-  { id: 'uni1', emoji: '🦄', label: 'Unicórnio' },
-  { id: 'din1', emoji: '🦖', label: 'Dino' },
-  { id: 'dra1', emoji: '🐉', label: 'Dragão' },
-  { id: 'fox1', emoji: '🦊', label: 'Raposa' },
-  { id: 'pan1', emoji: '🐼', label: 'Panda' },
-  { id: 'leo1', emoji: '🦁', label: 'Leão' },
-  { id: 'owl1', emoji: '🦉', label: 'Coruja' },
-  { id: 'fai1', emoji: '🧚', label: 'Fada' },
-  { id: 'sup1', emoji: '🦸', label: 'Herói' },
-  { id: 'coa1', emoji: '🐨', label: 'Coala' },
-  { id: 'tig1', emoji: '🐯', label: 'Tigre' },
-  { id: 'mer1', emoji: '🧜', label: 'Sereia' },
-  { id: 'nin1', emoji: '🥷', label: 'Ninja' },
-  { id: 'wiz1', emoji: '🧙', label: 'Mago' },
-  { id: 'elf1', emoji: '🧝', label: 'Elfo' },
-  { id: 'vam1', emoji: '🧛', label: 'Vampiro' },
-  { id: 'kni1', emoji: '🤺', label: 'Cavaleiro' },
-  { id: 'pir1', emoji: '🏴‍☠️', label: 'Pirata' },
-  { id: 'ast2', emoji: '🧑‍🚀', label: 'Cosmonauta' },
-  { id: 'she1', emoji: '🛡️', label: 'Protetor' }
+  // Robôs (Bottts) - Foco Sci-Fi
+  { id: 'bot1', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=transparent', label: 'Felix' },
+  { id: 'bot2', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka&backgroundColor=transparent', label: 'Aneka' },
+  { id: 'bot3', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Mimi&backgroundColor=transparent', label: 'Mimi' },
+  { id: 'bot4', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Zoe&backgroundColor=transparent', label: 'Zoe' },
+  // Personagens Expressivos (Fun Emoji)
+  { id: 'fun1', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy&backgroundColor=transparent', label: 'Feliz' },
+  { id: 'fun2', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool&backgroundColor=transparent', label: 'Ninja' },
+  { id: 'fun3', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Wink&backgroundColor=transparent', label: 'Zigue' },
+  { id: 'fun4', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Star&backgroundColor=transparent', label: 'Star' },
+  // Aventureiros (Adventurer)
+  { id: 'adv1', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Jack&backgroundColor=transparent', label: 'Jack' },
+  { id: 'adv2', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Jasmine&backgroundColor=transparent', label: 'Jasmine' },
+  { id: 'adv3', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Leo&backgroundColor=transparent', label: 'Leo' },
+  { id: 'adv4', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Mia&backgroundColor=transparent', label: 'Mia' },
+  // Estilosos (Lorelei)
+  { id: 'lor1', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Bella&backgroundColor=transparent', label: 'Bella' },
+  { id: 'lor2', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Max&backgroundColor=transparent', label: 'Max' },
+  { id: 'lor3', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Charlie&backgroundColor=transparent', label: 'Charlie' },
+  { id: 'lor4', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Luna&backgroundColor=transparent', label: 'Luna' }
 ];
 
 export const StarField = memo(() => (
@@ -583,8 +577,12 @@ export const HeroCharacter = memo(function HeroCharacter({ avatar, name, isCeleb
       />
 
       <div className="relative w-24 h-24 md:w-36 md:h-36 z-10">
-        <div className={clsx("w-full h-full rounded-full border-4 shadow-[0_0_30px_rgba(255,255,255,0.2)] overflow-hidden bg-zinc-900 transition-colors relative p-1 flex items-center justify-center", isSad ? "border-red-500" : isFiring ? "border-green-400 shadow-[0_0_20px_#4ade80]" : "border-white/80")}>
-          <div className="text-4xl md:text-6xl select-none">{selectedAvatar.emoji}</div>
+        <div className={clsx("w-full h-full rounded-full border-4 shadow-[0_0_30px_rgba(255,255,255,0.2)] overflow-hidden bg-zinc-900 transition-colors relative p-0.5 md:p-1 flex items-center justify-center", isSad ? "border-red-500" : isFiring ? "border-green-400 shadow-[0_0_20px_#4ade80]" : "border-white/80")}>
+          {selectedAvatar.image ? (
+            <img src={selectedAvatar.image} alt={selectedAvatar.label} className="w-full h-full object-cover scale-110" />
+          ) : (
+            <div className="text-4xl md:text-6xl select-none">{(selectedAvatar as any).emoji}</div>
+          )}
           <div className="absolute top-2 left-4 w-12 h-6 bg-white/10 rounded-full rotate-[-45deg]" />
           {isFiring && (
             <motion.div

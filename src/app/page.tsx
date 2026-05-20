@@ -1327,7 +1327,7 @@ export default function DesafioEstrelas() {
 
         {/* --- STAGE: SELECT CHILD --- */}
         {stage === 'select_child' && (
-          <motion.div key="select_child" className="relative z-10 max-w-4xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-12">
+          <motion.div key="select_child" className="relative z-10 w-full max-w-4xl mx-auto flex-1 flex flex-col justify-start md:justify-center p-6 py-12 md:py-6 space-y-8 md:space-y-12">
 
             <div className="text-center space-y-4">
               <h2 className="text-5xl font-black italic uppercase tracking-tighter">{t.whoIsTraveling}</h2>
@@ -1345,8 +1345,12 @@ export default function DesafioEstrelas() {
                     onClick={() => { setActiveChildId(c.id); setStage('adventure'); }}
                     className="flex flex-col items-center gap-4 group"
                   >
-                    <div className="w-32 h-32 rounded-full bg-white/5 border-4 border-white/10 group-hover:border-primary flex items-center justify-center text-5xl shadow-2xl transition-all">
-                      {avatar.emoji}
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-zinc-800 border-4 border-white/10 group-hover:border-primary flex items-center justify-center text-5xl shadow-2xl transition-all overflow-hidden p-1">
+                      {avatar.image ? (
+                        <img src={avatar.image} alt={avatar.label} className="w-full h-full object-cover scale-110" />
+                      ) : (
+                        <div className="text-5xl">{(avatar as any).emoji}</div>
+                      )}
                     </div>
                     <span className="text-xl font-black uppercase italic group-hover:text-primary transition-colors">{c.name}</span>
                     <div className="flex items-center gap-1 text-yellow-400 font-black">
@@ -1361,7 +1365,7 @@ export default function DesafioEstrelas() {
                 onClick={() => { setNewChild({ name: "", avatar: "ast1" }); setStage('setup_child'); }}
                 className="flex flex-col items-center gap-4 group"
               >
-                <div className="w-32 h-32 rounded-full border-4 border-dashed border-white/20 flex items-center justify-center text-white/20 group-hover:border-primary group-hover:text-primary transition-all">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-dashed border-white/20 flex items-center justify-center text-white/20 group-hover:border-primary group-hover:text-primary transition-all">
                   <Plus className="w-12 h-12" />
                 </div>
                 <span className="text-xl font-black uppercase italic text-white/20 group-hover:text-primary">{t.newHero}</span>
@@ -1407,11 +1411,15 @@ export default function DesafioEstrelas() {
                     key={a.id}
                     onClick={() => setNewChild({ ...newChild, avatar: a.id })}
                     className={clsx(
-                      "w-full aspect-square rounded-2xl md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl transition-all border-2",
-                      newChild.avatar === a.id ? "bg-primary/20 border-primary scale-105 shadow-[0_0_20px_rgba(45,212,191,0.3)]" : "bg-white/5 border-white/10 hover:border-white/30 text-white/60"
+                      "w-full aspect-square rounded-2xl md:rounded-3xl flex items-center justify-center transition-all border-2 overflow-hidden bg-zinc-800",
+                      newChild.avatar === a.id ? "border-primary scale-105 shadow-[0_0_20px_rgba(45,212,191,0.3)]" : "border-white/10 hover:border-white/30"
                     )}
                   >
-                    {a.emoji}
+                    {a.image ? (
+                      <img src={a.image} alt={a.label} className="w-full h-full object-cover scale-110" />
+                    ) : (
+                      <div className="text-3xl md:text-4xl text-white/60">{(a as any).emoji}</div>
+                    )}
                   </button>
                 ))}
               </div>
