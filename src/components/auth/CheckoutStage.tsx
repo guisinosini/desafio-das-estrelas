@@ -295,21 +295,21 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const responseData = await res.json();
 
-      if (data.error) throw new Error(data.error);
+      if (responseData.error) throw new Error(responseData.error);
 
       // Pagamento rejeitado explicitamente pelo MP
-      if (data.status === 'rejected') {
+      if (responseData.status === 'rejected') {
         setErrorMessage('Pagamento recusado pela operadora. Verifique os dados do cartão ou tente outro.');
         setStatus('error');
         return;
       }
 
       // Backend confirmou falha na ativação mesmo com pagamento aprovado
-      if (!data.success) {
-        setErrorMessage(data.status
-          ? `Pagamento com status "${data.status}" — aguarde ou contate o suporte.`
+      if (!responseData.success) {
+        setErrorMessage(responseData.status
+          ? `Pagamento com status "${responseData.status}" — aguarde ou contate o suporte.`
           : 'Falha ao confirmar ativação. Contate o suporte.'
         );
         setStatus('error');
@@ -317,8 +317,8 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       }
 
       // Se foi gerado um PIX, vai exibir a tela com QR Code e não ativar ainda
-      if (data.paymentMethodId === 'pix' && data.qrCodeBase64) {
-        setPixData({ qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 });
+      if (responseData.paymentMethodId === 'pix' && responseData.qrCodeBase64) {
+        setPixData({ qrCode: responseData.qrCode, qrCodeBase64: responseData.qrCodeBase64 });
         setStatus('awaiting_pix');
         return;
       }
