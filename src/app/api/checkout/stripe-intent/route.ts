@@ -85,16 +85,30 @@ export async function POST(req: Request) {
 
     console.log(`[Stripe] Customer ID: ${customerId}`);
 
-    // 2. Cancelar qualquer assinatura incompleta antiga para evitar conflito
+    // 2. Verificar se já existe uma subscription incompleta válida para reutilizar
     const existingSubs = await stripe.subscriptions.list({
       customer: customerId,
       status: 'incomplete',
       limit: 5,
+      expand: ['data.latest_invoice'],
     });
 
-    for (const sub of existingSubs.data) {
-      console.log(`[Stripe] Cancelando assinatura incompleta antiga: ${sub.id}`);
-      await stripe.subscriptions.cancel(sub.id);
+    // Reutiliza a subscription incompleta se o Price ID for o mesmo
+    const reusableSub = existingSubs.data.find((sub: any) =>
+      sub.items.data[0]?.price?.id === priceId
+    );
+
+    if (reusableSub) {
+      console.log(`[Stripe] Reutilizando subscription incompleta: ${reusableSub.id}`);
+      const clientSecret = await resolveClientSecret(reusableSub);
+      if (clientSecret) {
+        return NextResponse.json({
+          clientSecret,
+          subscriptionId: reusableSub.id,
+          amount: selectedPlan === 'yearly' ? 99.00 : 9.90,
+          currency: currency.toUpperCase(),
+        });
+      }
     }
 
     // 3. Criar nova assinatura
