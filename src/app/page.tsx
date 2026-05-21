@@ -151,7 +151,7 @@ export default function DesafioEstrelas() {
   // Estado Temporário para Criação
   const [newChild, setNewChild] = useState<Partial<ChildData>>({ 
     name: "", 
-    avatar: "3d_astronaut_boy",
+    avatar: "3d_sunglasses",
     gender: 'boy',
     age: 7,
     schoolGrade: "1º Ano"
@@ -709,7 +709,7 @@ export default function DesafioEstrelas() {
     const child: ChildData = {
       id,
       name: newChild.name || "Herói",
-      avatar: newChild.avatar || "3d_astronaut_boy",
+      avatar: newChild.avatar || "3d_sunglasses",
       gender: (newChild.gender as any) || 'boy',
       age: newChild.age,
       birthDate: newChild.birthDate,
