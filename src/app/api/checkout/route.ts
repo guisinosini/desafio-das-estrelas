@@ -31,34 +31,41 @@ export async function POST(req: Request) {
     } = await req.json();
 
     if (interval === 'monthly' && cardTokenId) {
-      // Usando o token do cartão do Checkout Transparente para criar a assinatura recorrente
       const preApproval = new PreApproval(mpClient);
-      const preApprovalData = await preApproval.create({
-        body: {
-          preapproval_plan_id: 'fc9189bc5b5e4389a37dd24e5cb99991',
-          payer_email: user.email!,
-          card_token_id: cardTokenId,
-          external_reference: user.id,
-          status: 'authorized'
-        },
-        requestOptions: { idempotencyKey: crypto.randomUUID() }
-      });
-
-      const statusOk = ['authorized', 'pending'].includes(preApprovalData.status || '');
-      
-      if (statusOk) {
-        await supabaseAdmin.from('profiles').upsert({
-          id: user.id,
-          subscription_status: 'active',
-          subscription_price_id: interval,
+      try {
+        console.log(`[PreApproval] Tentando criar assinatura com Token: ${cardTokenId}, Plano: fc9189bc5b5e4389a37dd24e5cb99991`);
+        const preApprovalData = await preApproval.create({
+          body: {
+            preapproval_plan_id: 'fc9189bc5b5e4389a37dd24e5cb99991',
+            payer_email: user.email!,
+            card_token_id: cardTokenId,
+            external_reference: user.id,
+            status: 'authorized'
+          },
+          requestOptions: { idempotencyKey: crypto.randomUUID() }
         });
-      }
+        
+        console.log(`[PreApproval] Resposta do MP:`, preApprovalData.id, preApprovalData.status);
 
-      return NextResponse.json({
-        success: statusOk,
-        status: preApprovalData.status,
-        id: preApprovalData.id,
-      });
+        const statusOk = ['authorized', 'pending'].includes(preApprovalData.status || '');
+        
+        if (statusOk) {
+          await supabaseAdmin.from('profiles').upsert({
+            id: user.id,
+            subscription_status: 'active',
+            subscription_price_id: interval,
+          });
+        }
+
+        return NextResponse.json({
+          success: statusOk,
+          status: preApprovalData.status,
+          id: preApprovalData.id,
+        });
+      } catch (mpError: any) {
+        console.error(`[PreApproval] Falha na criação da assinatura no MP:`, mpError);
+        return NextResponse.json({ error: mpError.message || 'Erro interno Mercado Pago' }, { status: 500 });
+      }
     }
 
     // Se for mensal via PIX ou Anual (Cartão/PIX), cai para pagamento único (Payment API)

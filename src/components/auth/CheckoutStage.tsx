@@ -157,6 +157,9 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
   const [errorMessage, setErrorMessage] = useState('');
   const [isBrickReady, setIsBrickReady] = useState(false);
   const [pixData, setPixData] = useState<{ qrCode: string; qrCodeBase64: string } | null>(null);
+  
+  // Proteção contra duplo clique no Brick do Mercado Pago
+  const isSubmittingRef = React.useRef(false);
 
   // Stripe States
   const [stripeClientSecret, setStripeClientSecret] = useState('');
@@ -266,6 +269,9 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
   }, [isInternational, selectedPlan, stripeCurrency, language]);
 
   const handleSubmitMercadoPago = async (param: any) => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    
     setStatus('processing');
     setErrorMessage('');
     try {
@@ -320,17 +326,20 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       if (responseData.paymentMethodId === 'pix' && responseData.qrCodeBase64) {
         setPixData({ qrCode: responseData.qrCode, qrCodeBase64: responseData.qrCodeBase64 });
         setStatus('awaiting_pix');
+        isSubmittingRef.current = false;
         return;
       }
 
       setStatus('success');
       setTimeout(() => {
         onSuccess();
+        isSubmittingRef.current = false;
       }, 2000);
     } catch (err: any) {
       console.error('Erro no checkout transparente:', err);
       setErrorMessage(err.message || 'Não foi possível processar o pagamento. Tente novamente.');
       setStatus('error');
+      isSubmittingRef.current = false;
     }
   };
 
