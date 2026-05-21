@@ -204,15 +204,19 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        setStripeClientSecret(data.clientSecret);
-        setStripeCurrency(data.currency);
-        setStripeAmount(data.amount);
+        if (isMounted && data.clientSecret) {
+          setStripeClientSecret(data.clientSecret);
+          if (data.amount) setStripeAmount(data.amount);
+          if (data.currency) setStripeCurrency(data.currency);
+        }
       } catch (err: any) {
-        console.error('Erro ao inicializar Stripe:', err);
-        const baseMsg = language === 'zh' ? '加载 Stripe 支付失败。' : 'Failed to load Stripe payment gateway.';
-        setErrorMessage(`${baseMsg} Detalhes: ${err.message}`);
+        console.error('Erro ao buscar Stripe Intent:', err);
+        if (isMounted) {
+            const baseMsg = language === 'zh' ? '加载 Stripe 支付失败。' : 'Failed to load Stripe payment gateway.';
+            setErrorMessage(`${baseMsg} Detalhes: ${err.message}`);
+        }
       } finally {
-        setLoadingStripeIntent(false);
+        if (isMounted) setLoadingStripeIntent(false);
       }
     };
 
@@ -553,13 +557,29 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
             </motion.div>
           ) : (
             <>
-              <div className="space-y-1 mb-5 sm:mb-6 relative z-10">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
-                  {language === 'zh' ? '付款信息' : (language === 'es' ? 'Datos del Pago' : (language === 'fr' ? 'Détails du Paiement' : 'Dados do Pagamento'))}
-                </span>
-                <h3 className="text-base sm:text-lg font-black italic uppercase tracking-tight text-white">
-                  {language === 'zh' ? '信用卡或借记卡' : (language === 'es' ? 'Tarjeta de Crédito o Débito' : (language === 'fr' ? 'Carte de Crédit ou Débit' : 'Cartão de Crédito ou Débito'))}
-                </h3>
+              <div className="mb-6 sm:mb-8 relative z-10 bg-black/20 p-4 sm:p-5 rounded-2xl border border-white/5 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between shadow-inner">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" /> 
+                    {language === 'zh' ? '安全结账' : (language === 'es' ? 'Pago 100% Seguro' : (language === 'fr' ? 'Paiement 100% Sécurisé' : 'Pagamento 100% Seguro'))}
+                  </span>
+                  <h3 className="text-[11px] sm:text-xs font-bold text-white/60 leading-relaxed max-w-xs">
+                    {language === 'zh' ? '您的财务数据受到最高级别军事加密保护。' : (language === 'es' ? 'Tus datos financieros están protegidos con encriptación de grado militar.' : (language === 'fr' ? 'Vos données financières sont protégées par un cryptage de niveau militaire.' : 'Seus dados financeiros são protegidos com criptografia de ponta a ponta.'))}
+                  </h3>
+                </div>
+                
+                <div className="shrink-0 flex items-center gap-3 px-4 py-2.5 bg-white rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/20 w-full sm:w-auto justify-center">
+                  {isInternational ? (
+                    <span className="text-[#635BFF] font-black text-xl tracking-tighter">stripe</span>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-6 h-6 bg-[#009EE3] rounded-full flex items-center justify-center">
+                        <span className="text-white font-black text-[10px] italic">mp</span>
+                      </div>
+                      <span className="text-[#009EE3] font-black text-base tracking-tighter">mercado pago</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {errorMessage && (
