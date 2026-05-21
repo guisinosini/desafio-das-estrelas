@@ -65,6 +65,7 @@ import { OrbitalPlanet } from "@/components/desafio/OrbitalPlanet";
 import { SetupPlanetsStage } from "@/components/desafio/SetupPlanetsStage";
 import { SetupTasksStage } from "@/components/desafio/SetupTasksStage";
 import { SetupRewardsStage } from "@/components/desafio/SetupRewardsStage";
+import { RocketLaunchStage } from "@/components/desafio/RocketLaunchStage";
 import { useAppInitializer } from "@/hooks/useAppInitializer";
 import { AppHeader } from "@/components/shared/AppHeader";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
@@ -750,7 +751,7 @@ export default function DesafioEstrelas() {
   };
   const handleStartAdventure = () => {
     if (tasks.length === 0 || rewards.length === 0) { alert("Configure o universo primeiro!"); return; }
-    setStage('adventure'); setView('child');
+    setStage('rocket_launch');
   };
 
   const handleCompleteTask = (task: Task, e: React.MouseEvent) => {
@@ -1473,6 +1474,17 @@ export default function DesafioEstrelas() {
             handleStartAdventure={handleStartAdventure}
           />
         )}
+        
+        {/* --- STAGE: ROCKET LAUNCH --- */}
+        {stage === 'rocket_launch' && (
+          <RocketLaunchStage 
+            onLaunchComplete={() => {
+              setStage('adventure');
+              setView('child');
+            }} 
+          />
+        )}
+
         {/* --- DASHBOARD ADVENTURE --- */}
         {stage === 'adventure' && (
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">

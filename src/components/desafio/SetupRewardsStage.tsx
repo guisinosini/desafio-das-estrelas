@@ -98,7 +98,7 @@ export const SetupRewardsStage: React.FC<SetupRewardsStageProps> = memo(({
             {rewards.length === 0 && <p className="text-center py-8 text-white/20 font-black uppercase italic tracking-widest">{t.noRewardsAdded}</p>}
           </div>
 
-          <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">{t.startChallenge}</button>
+          <button disabled={rewards.length === 0} onClick={handleStartAdventure} className="w-full py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">IR PARA O LANÇAMENTO DO FOGUETE 🚀</button>
         </GlassCard>
       </div>
     </motion.div>
