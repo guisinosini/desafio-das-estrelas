@@ -191,6 +191,8 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
   // Buscar Intenção da Stripe se for internacional
   useEffect(() => {
     if (!isInternational) return;
+    
+    let isMounted = true;
 
     const fetchStripeIntent = async () => {
       setLoadingStripeIntent(true);
@@ -221,6 +223,8 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     };
 
     fetchStripeIntent();
+    
+    return () => { isMounted = false; };
   }, [isInternational, selectedPlan, language]);
 
   // Plano traduzido dinamicamente de acordo com o idioma do usuário
