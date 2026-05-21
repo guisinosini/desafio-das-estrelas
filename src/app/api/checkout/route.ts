@@ -65,7 +65,9 @@ export async function POST(req: Request) {
 
     console.log(`[MP Checkout ${interval}] Status: ${response.status} | ID: ${response.id}`);
 
-    const statusOk = ['approved', 'in_process', 'pending'].includes(response.status || '');
+    // Apenas ativa se o status for aprovado imediatamente (Cartão de Crédito)
+    // Se for PIX ou Boleto, ficará pendente e o Webhook fará a ativação.
+    const statusOk = ['approved'].includes(response.status || '');
 
     if (statusOk) {
       // IMPORTANTE: Atualiza apenas as colunas que EXISTEM no schema do Supabase.
@@ -101,9 +103,13 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      success: statusOk,
+      success: response.status !== 'rejected' && response.status !== 'cancelled',
       status: response.status,
       id: response.id,
+      paymentMethodId,
+      // Se for PIX, enviamos os dados do QR Code para o frontend renderizar
+      qrCode: response.point_of_interaction?.transaction_data?.qr_code,
+      qrCodeBase64: response.point_of_interaction?.transaction_data?.qr_code_base64,
     });
 
   } catch (error: any) {

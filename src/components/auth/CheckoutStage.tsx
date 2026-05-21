@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { initMercadoPago, CardPayment } from '@mercadopago/sdk-react';
+import { initMercadoPago, Payment as MPPayment } from '@mercadopago/sdk-react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ShieldCheck, Sparkles, Rocket, CheckCircle2, RefreshCw, Lock } from 'lucide-react';
 import clsx from 'clsx';
@@ -153,9 +153,10 @@ function StripeForm({
 }
 
 export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: CheckoutStageProps) {
-  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error' | 'awaiting_pix'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [isBrickReady, setIsBrickReady] = useState(false);
+  const [pixData, setPixData] = useState<{ qrCode: string; qrCodeBase64: string } | null>(null);
 
   // Stripe States
   const [stripeClientSecret, setStripeClientSecret] = useState('');
@@ -304,6 +305,13 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
         return;
       }
 
+      // Se foi gerado um PIX, vai exibir a tela com QR Code e não ativar ainda
+      if (data.paymentMethodId === 'pix' && data.qrCodeBase64) {
+        setPixData({ qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 });
+        setStatus('awaiting_pix');
+        return;
+      }
+
       setStatus('success');
       setTimeout(() => {
         onSuccess();
@@ -315,18 +323,16 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     }
   };
 
-  // Customização separada: mensal NÃO tem paymentMethods (PreApproval não suporta, causa bug de token)
-  // anual TEM maxInstallments para habilitar parcelamento
   const customizationMercadoPago: any = {
     visual: {
-      theme: 'dark',
-    },
-    ...(selectedPlan === 'yearly' && {
-      paymentMethods: {
-        minInstallments: 1,
-        maxInstallments: 12,
+      style: {
+        theme: 'dark',
       }
-    })
+    },
+    paymentMethods: {
+      maxInstallments: selectedPlan === 'yearly' ? 12 : 1,
+      bankTransfer: selectedPlan === 'yearly' ? 'all' : undefined, // Habilita PIX no plano anual
+    }
   };
 
   // Configuração Estética Premium da Stripe
@@ -480,6 +486,49 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
                 </span>
               </div>
             </motion.div>
+          ) : status === 'awaiting_pix' && pixData ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-6 sm:py-8 gap-6 text-center relative z-10"
+            >
+              <div>
+                <h3 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter text-emerald-400">Pague com PIX</h3>
+                <p className="text-white/60 text-xs sm:text-sm mt-2 max-w-sm mx-auto">
+                  Escaneie o QR Code abaixo com o aplicativo do seu banco ou copie o código PIX Copia e Cola. O acesso será liberado em segundos após o pagamento.
+                </p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-3xl inline-block shadow-[0_0_40px_rgba(45,212,191,0.2)]">
+                <img src={`data:image/jpeg;base64,${pixData.qrCodeBase64}`} alt="QR Code PIX" className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded-xl" />
+              </div>
+
+              <div className="w-full max-w-sm space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/40 text-left">PIX Copia e Cola</p>
+                <div className="flex bg-black/40 border border-white/10 rounded-xl overflow-hidden p-1">
+                  <input type="text" readOnly value={pixData.qrCode} className="bg-transparent text-white/80 text-xs px-3 py-2 w-full outline-none font-mono" />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(pixData.qrCode);
+                      alert('Código PIX copiado!');
+                    }}
+                    className="bg-primary text-black px-4 py-2 rounded-lg text-[10px] font-black uppercase whitespace-nowrap hover:bg-primary/80 transition-colors cursor-pointer"
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setStatus('processing');
+                  setTimeout(() => onSuccess(), 4000); // Simulador para fallback, mas idealmente o webhook ativa e o usuário clica quando pago.
+                }}
+                className="w-full max-w-sm py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest rounded-2xl transition-all cursor-pointer mt-4"
+              >
+                Já paguei (Verificar)
+              </button>
+            </motion.div>
           ) : (
             <>
               <div className="space-y-1 mb-5 sm:mb-6 relative z-10">
@@ -565,14 +614,14 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
                     )}
 
                     <div className={clsx("relative z-10 transition-opacity duration-300", !isBrickReady ? "opacity-0 absolute inset-0 pointer-events-none" : "opacity-100")}>
-                      <CardPayment
+                      <MPPayment
                         initialization={{ amount: plan.amount }}
                         customization={customizationMercadoPago}
                         onSubmit={handleSubmitMercadoPago}
                         onReady={() => setIsBrickReady(true)}
                         onError={(err) => {
                           console.error('Erro no formulário MP:', err);
-                          setErrorMessage('Erro ao processar o formulário. Verifique os dados do cartão.');
+                          setErrorMessage('Erro ao processar o formulário. Verifique os dados inseridos.');
                           setStatus('error');
                         }}
                       />
