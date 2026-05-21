@@ -83,8 +83,31 @@ export async function POST(req: Request) {
       }
     }
 
-    const invoice = subscription.latest_invoice as any;
-    const clientSecret = invoice?.payment_intent?.client_secret;
+    let invoice = subscription.latest_invoice as any;
+    let clientSecret = invoice?.payment_intent?.client_secret;
+
+    // Fallbacks caso a Stripe não expanda os objetos automaticamente
+    if (!clientSecret) {
+      if (typeof invoice === 'string') {
+        invoice = await stripe.invoices.retrieve(invoice, { expand: ['payment_intent'] });
+      }
+      
+      let paymentIntent = invoice?.payment_intent;
+      if (typeof paymentIntent === 'string') {
+        paymentIntent = await stripe.paymentIntents.retrieve(paymentIntent);
+      }
+      
+      clientSecret = paymentIntent?.client_secret;
+      
+      // Se tiver Free Trial, a Stripe usa Setup Intent em vez de Payment Intent
+      if (!clientSecret && subscription.pending_setup_intent) {
+        let setupIntent = subscription.pending_setup_intent as any;
+        if (typeof setupIntent === 'string') {
+           setupIntent = await stripe.setupIntents.retrieve(setupIntent);
+        }
+        clientSecret = setupIntent.client_secret;
+      }
+    }
 
     if (!clientSecret) {
       console.log(`[Stripe Error] Sem client_secret. Status da Sub: ${subscription.status}`);
