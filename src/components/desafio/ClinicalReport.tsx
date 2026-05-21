@@ -339,18 +339,18 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
             </div>
           </div>
 
-          <div className="flex gap-3 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <button
               onClick={() => setShowShareModal(true)}
-              className="flex-1 sm:flex-none px-8 py-5 bg-indigo-500 text-white font-black uppercase tracking-[0.1em] text-[10px] rounded-[24px] shadow-[0_20px_40px_-10px_rgba(99,102,241,0.4)] hover:scale-105 hover:bg-indigo-600 transition-all flex items-center justify-center gap-3"
+              className="flex-1 sm:flex-none px-4 py-3 bg-indigo-500 text-white font-black uppercase tracking-[0.05em] text-[10px] rounded-[16px] shadow-[0_10px_20px_-10px_rgba(99,102,241,0.4)] hover:scale-105 hover:bg-indigo-600 transition-all flex items-center justify-center gap-2"
             >
-              <Share2 className="w-5 h-5" /> {t.shareReport}
+              <Share2 className="w-4 h-4" /> {t.shareReport}
             </button>
             <button
               onClick={handlePrint}
-              className="flex-1 sm:flex-none px-8 py-5 bg-white/10 text-white font-black uppercase tracking-[0.1em] text-[10px] rounded-[24px] border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-3"
+              className="flex-1 sm:flex-none px-4 py-3 bg-white/10 text-white font-black uppercase tracking-[0.05em] text-[10px] rounded-[16px] border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-2"
             >
-              <Printer className="w-5 h-5" /> {t.reportExport}
+              <Printer className="w-4 h-4" /> {t.reportExport}
             </button>
           </div>
         </div>
@@ -558,8 +558,15 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary print:text-zinc-500 block">
               {t.reportTitle}
             </span>
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter mt-1 print:text-black">
-              {activeChild.name}
+            <h1 className="text-3xl font-black uppercase italic tracking-tighter mt-1 print:text-black flex flex-wrap items-center gap-3">
+              <span>{activeChild.name}</span>
+              {(activeChild.age || activeChild.schoolGrade) && (
+                <span className="text-[11px] font-bold not-italic tracking-normal text-white/50 print:text-zinc-500 bg-white/5 print:bg-zinc-100 border border-white/10 print:border-zinc-200 px-3 py-1 rounded-full flex items-center gap-2 mt-1 sm:mt-0">
+                  {activeChild.age && <span>{activeChild.age} {language === 'en' ? 'years old' : (language === 'es' ? 'años' : 'anos')}</span>}
+                  {activeChild.age && activeChild.schoolGrade && <span className="w-1 h-1 rounded-full bg-white/30 print:bg-zinc-400" />}
+                  {activeChild.schoolGrade && <span>{activeChild.schoolGrade}</span>}
+                </span>
+              )}
             </h1>
             <p className="text-xs text-white/40 print:text-zinc-600 font-medium mt-1 flex items-center gap-1">
               <Calendar className="w-3 h-3" /> {t.reportIssuedAt}: {new Date().toLocaleDateString(language)}
