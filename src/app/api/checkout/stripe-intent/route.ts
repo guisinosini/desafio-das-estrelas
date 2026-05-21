@@ -86,6 +86,11 @@ export async function POST(req: Request) {
     const invoice = subscription.latest_invoice as any;
     const clientSecret = invoice?.payment_intent?.client_secret;
 
+    if (!clientSecret) {
+      console.log(`[Stripe Error] Sem client_secret. Status da Sub: ${subscription.status}`);
+      console.log(`[Stripe Error] Invoice data:`, JSON.stringify(invoice, null, 2));
+    }
+
     return NextResponse.json({
       clientSecret: clientSecret,
       subscriptionId: subscription.id,
