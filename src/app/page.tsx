@@ -468,7 +468,7 @@ export default function DesafioEstrelas() {
     }));
   };
 
-  const removeChild = (id: string) => {
+  const removeChild = async (id: string) => {
     const remaining = children.filter(c => c.id !== id);
     setChildren(remaining);
     
@@ -492,6 +492,13 @@ export default function DesafioEstrelas() {
     }
     
     saveToCloud({ children: remaining, activeChildId: nextActiveId, stage: nextStage, parentPin, fleetId, language }, true);
+
+    // Também remover o perfil da tabela fleet_rankings
+    try {
+      await supabase.from('fleet_rankings').delete().eq('child_id', id);
+    } catch (err) {
+      console.error("Erro ao remover criança do fleet_rankings:", err);
+    }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
