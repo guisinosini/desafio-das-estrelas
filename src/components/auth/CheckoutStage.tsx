@@ -204,7 +204,13 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
           body: JSON.stringify({ selectedPlan, language }),
         });
         const data = await res.json();
+        
+        if (data.requireAuth) {
+          throw new Error('Sua sessão expirou. Por favor, faça login novamente.');
+        }
+        
         if (data.error) throw new Error(data.error);
+        if (!data.clientSecret) throw new Error('A API não retornou o token da Stripe (clientSecret).');
 
         if (isMounted && data.clientSecret) {
           setStripeClientSecret(data.clientSecret);
