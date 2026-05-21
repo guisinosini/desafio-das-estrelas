@@ -10,14 +10,14 @@ async function resolveClientSecret(subscription: Stripe.Subscription): Promise<s
 
   // Se a invoice veio como string (não expandida), busca ela explicitamente
   if (typeof invoice === 'string') {
-    const fullInvoice = await stripe.invoices.retrieve(invoice);
+    const fullInvoice = await stripe.invoices.retrieve(invoice) as any;
     const piId = fullInvoice.payment_intent;
     if (typeof piId === 'string') {
       const pi = await stripe.paymentIntents.retrieve(piId);
       return pi.client_secret;
     }
     if (piId && typeof piId === 'object') {
-      return (piId as any).client_secret;
+      return piId.client_secret ?? null;
     }
     return null;
   }
