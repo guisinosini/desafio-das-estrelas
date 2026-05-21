@@ -4,46 +4,38 @@ import { stripe } from '@/lib/stripe';
 import Stripe from 'stripe';
 
 async function resolveClientSecret(subscription: Stripe.Subscription): Promise<string | null> {
-  // Tenta extrair o client_secret da subscription diretamente
-  const invoice = subscription.latest_invoice as any;
-  let paymentIntent = invoice?.payment_intent;
+  // Busca direta e explícita: nunca depende do expand
+  const invoiceId = typeof subscription.latest_invoice === 'string'
+    ? subscription.latest_invoice
+    : (subscription.latest_invoice as any)?.id;
 
-  // Se a invoice veio como string (não expandida), busca ela explicitamente
-  if (typeof invoice === 'string') {
-    const fullInvoice = await stripe.invoices.retrieve(invoice) as any;
-    const piId = fullInvoice.payment_intent;
-    if (typeof piId === 'string') {
-      const pi = await stripe.paymentIntents.retrieve(piId);
-      return pi.client_secret;
-    }
-    if (piId && typeof piId === 'object') {
-      return piId.client_secret ?? null;
+  if (!invoiceId) {
+    // Fallback para Free Trial: usa Setup Intent
+    const siId = typeof subscription.pending_setup_intent === 'string'
+      ? subscription.pending_setup_intent
+      : (subscription.pending_setup_intent as any)?.id;
+    
+    if (siId) {
+      const si = await stripe.setupIntents.retrieve(siId);
+      return si.client_secret;
     }
     return null;
   }
 
-  // Se o payment_intent veio como string (ID), busca ele explicitamente
-  if (typeof paymentIntent === 'string') {
-    const pi = await stripe.paymentIntents.retrieve(paymentIntent);
-    return pi.client_secret;
-  }
+  // Busca a invoice explicitamente com o payment_intent expandido
+  const invoice = await stripe.invoices.retrieve(invoiceId, {
+    expand: ['payment_intent'],
+  }) as any;
 
-  // Se o payment_intent veio expandido como objeto
-  if (paymentIntent?.client_secret) {
-    return paymentIntent.client_secret;
-  }
+  const paymentIntentId = typeof invoice.payment_intent === 'string'
+    ? invoice.payment_intent
+    : invoice.payment_intent?.id;
 
-  // Fallback para Free Trial: usa Setup Intent
-  if (subscription.pending_setup_intent) {
-    const siId = subscription.pending_setup_intent as any;
-    if (typeof siId === 'string') {
-      const si = await stripe.setupIntents.retrieve(siId);
-      return si.client_secret;
-    }
-    return (siId as any)?.client_secret ?? null;
-  }
+  if (!paymentIntentId) return null;
 
-  return null;
+  // Busca o PaymentIntent explicitamente
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  return paymentIntent.client_secret;
 }
 
 export async function POST(req: Request) {
