@@ -7,99 +7,57 @@ import clsx from "clsx";
 import type { Task } from "@/types/desafio";
 import confetti from "canvas-confetti";
 
-// --- Constantes ---
+// Avatares 3D Premium (Microsoft Fluent Emojis)
+const BASE_3D = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets";
+
 export const AVATARS = [
-  // Robôs (Bottts) - Foco Sci-Fi
-  { id: 'bot1', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=transparent', label: 'Robô Felix' },
-  { id: 'bot2', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka&backgroundColor=transparent', label: 'Robô Aneka' },
-  { id: 'bot3', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Mimi&backgroundColor=transparent', label: 'Robô Mimi' },
-  { id: 'bot4', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Zoe&backgroundColor=transparent', label: 'Robô Zoe' },
-  { id: 'bot5', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Orion&backgroundColor=transparent', label: 'Robô Orion' },
-  { id: 'bot6', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Nova&backgroundColor=transparent', label: 'Robô Nova' },
-  { id: 'bot7', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Spark&backgroundColor=transparent', label: 'Robô Spark' },
-  { id: 'bot8', image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Apollo&backgroundColor=transparent', label: 'Robô Apollo' },
+  // Espaço e Sci-Fi
+  { id: '3d_alien', image: `${BASE_3D}/Alien/3D/alien_3d.png`, label: 'Alien' },
+  { id: '3d_alien_monster', image: `${BASE_3D}/Alien%20monster/3D/alien_monster_3d.png`, label: 'Monstro Espacial' },
+  { id: '3d_robot', image: `${BASE_3D}/Robot/3D/robot_3d.png`, label: 'Robô' },
+  { id: '3d_astronaut_boy', image: `${BASE_3D}/Man%20astronaut/Color/man_astronaut_color.png`, label: 'Astronauta Menino' }, // Fallback para Color se não tiver 3D exato
+  { id: '3d_astronaut_girl', image: `${BASE_3D}/Woman%20astronaut/Color/woman_astronaut_color.png`, label: 'Astronauta Menina' },
+  { id: '3d_flying_saucer', image: `${BASE_3D}/Flying%20saucer/3D/flying_saucer_3d.png`, label: 'Disco Voador' },
+  { id: '3d_sun', image: `${BASE_3D}/Sun%20with%20face/3D/sun_with_face_3d.png`, label: 'Sol' },
+  { id: '3d_moon', image: `${BASE_3D}/First%20quarter%20moon%20with%20face/3D/first_quarter_moon_with_face_3d.png`, label: 'Lua' },
+  { id: '3d_star', image: `${BASE_3D}/Star/3D/star_3d.png`, label: 'Estrela' },
+  { id: '3d_comet', image: `${BASE_3D}/Comet/3D/comet_3d.png`, label: 'Cometa' },
 
-  // Personagens Expressivos (Fun Emoji)
-  { id: 'fun1', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy&backgroundColor=transparent', label: 'Feliz' },
-  { id: 'fun2', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool&backgroundColor=transparent', label: 'Descolado' },
-  { id: 'fun3', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Wink&backgroundColor=transparent', label: 'Zigue' },
-  { id: 'fun4', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Star&backgroundColor=transparent', label: 'Estrela' },
-  { id: 'fun5', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Love&backgroundColor=transparent', label: 'Amor' },
-  { id: 'fun6', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Silly&backgroundColor=transparent', label: 'Divertido' },
-  { id: 'fun7', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Sleepy&backgroundColor=transparent', label: 'Soneca' },
-  { id: 'fun8', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Nerd&backgroundColor=transparent', label: 'Gênio' },
-  { id: 'fun9', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Angel&backgroundColor=transparent', label: 'Anjinho' },
-  { id: 'fun10', image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Party&backgroundColor=transparent', label: 'Festa' },
+  // Heróis e Fantasia
+  { id: '3d_ninja', image: `${BASE_3D}/Ninja/3D/ninja_3d.png`, label: 'Ninja' },
+  { id: '3d_superhero', image: `${BASE_3D}/Superhero/3D/superhero_3d.png`, label: 'Super-Herói' },
+  { id: '3d_mage', image: `${BASE_3D}/Mage/3D/mage_3d.png`, label: 'Mago' },
+  { id: '3d_fairy', image: `${BASE_3D}/Fairy/3D/fairy_3d.png`, label: 'Fada' },
+  { id: '3d_mermaid', image: `${BASE_3D}/Mermaid/3D/mermaid_3d.png`, label: 'Sereia' },
+  { id: '3d_prince', image: `${BASE_3D}/Prince/3D/prince_3d.png`, label: 'Príncipe' },
+  { id: '3d_princess', image: `${BASE_3D}/Princess/3D/princess_3d.png`, label: 'Princesa' },
+  { id: '3d_detective', image: `${BASE_3D}/Detective/3D/detective_3d.png`, label: 'Detetive' },
 
-  // Aventureiros (Adventurer)
-  { id: 'adv1', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Jack&backgroundColor=transparent', label: 'Jack' },
-  { id: 'adv2', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Jasmine&backgroundColor=transparent', label: 'Jasmine' },
-  { id: 'adv3', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Leo&backgroundColor=transparent', label: 'Leo' },
-  { id: 'adv4', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Mia&backgroundColor=transparent', label: 'Mia' },
-  { id: 'adv5', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Finn&backgroundColor=transparent', label: 'Finn' },
-  { id: 'adv6', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Chloe&backgroundColor=transparent', label: 'Chloe' },
-  { id: 'adv7', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Max&backgroundColor=transparent', label: 'Max' },
-  { id: 'adv8', image: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ruby&backgroundColor=transparent', label: 'Ruby' },
+  // Animais Divertidos
+  { id: '3d_fox', image: `${BASE_3D}/Fox/3D/fox_3d.png`, label: 'Raposa' },
+  { id: '3d_cat', image: `${BASE_3D}/Cat%20face/3D/cat_face_3d.png`, label: 'Gato' },
+  { id: '3d_dog', image: `${BASE_3D}/Dog%20face/3D/dog_face_3d.png`, label: 'Cachorro' },
+  { id: '3d_monkey', image: `${BASE_3D}/Monkey%20face/3D/monkey_face_3d.png`, label: 'Macaco' },
+  { id: '3d_bear', image: `${BASE_3D}/Bear/3D/bear_3d.png`, label: 'Urso' },
+  { id: '3d_panda', image: `${BASE_3D}/Panda/3D/panda_3d.png`, label: 'Panda' },
+  { id: '3d_koala', image: `${BASE_3D}/Koala/3D/koala_3d.png`, label: 'Coala' },
+  { id: '3d_tiger', image: `${BASE_3D}/Tiger%20face/3D/tiger_face_3d.png`, label: 'Tigre' },
+  { id: '3d_lion', image: `${BASE_3D}/Lion/3D/lion_3d.png`, label: 'Leão' },
+  { id: '3d_cow', image: `${BASE_3D}/Cow%20face/3D/cow_face_3d.png`, label: 'Vaca' },
+  { id: '3d_pig', image: `${BASE_3D}/Pig%20face/3D/pig_face_3d.png`, label: 'Porco' },
+  { id: '3d_frog', image: `${BASE_3D}/Frog/3D/frog_3d.png`, label: 'Sapo' },
+  { id: '3d_octopus', image: `${BASE_3D}/Octopus/3D/octopus_3d.png`, label: 'Polvo' },
+  { id: '3d_trex', image: `${BASE_3D}/T-Rex/3D/t-rex_3d.png`, label: 'T-Rex' },
+  { id: '3d_sauropod', image: `${BASE_3D}/Sauropod/3D/sauropod_3d.png`, label: 'Dinossauro' },
+  { id: '3d_unicorn', image: `${BASE_3D}/Unicorn/3D/unicorn_3d.png`, label: 'Unicórnio' },
+  { id: '3d_dragon', image: `${BASE_3D}/Dragon%20face/3D/dragon_face_3d.png`, label: 'Dragão' },
 
-  // Estilosos (Lorelei)
-  { id: 'lor1', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Bella&backgroundColor=transparent', label: 'Bella' },
-  { id: 'lor2', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Max&backgroundColor=transparent', label: 'Max' },
-  { id: 'lor3', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Charlie&backgroundColor=transparent', label: 'Charlie' },
-  { id: 'lor4', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Luna&backgroundColor=transparent', label: 'Luna' },
-  { id: 'lor5', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Oliver&backgroundColor=transparent', label: 'Oliver' },
-  { id: 'lor6', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Stella&backgroundColor=transparent', label: 'Stella' },
-  { id: 'lor7', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Milo&backgroundColor=transparent', label: 'Milo' },
-  { id: 'lor8', image: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Sophie&backgroundColor=transparent', label: 'Sophie' },
-
-  // Avataaars (Clássicos e Expressivos)
-  { id: 'ava1', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&backgroundColor=transparent', label: 'Sam' },
-  { id: 'ava2', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jasmine&backgroundColor=transparent', label: 'Jazz' },
-  { id: 'ava3', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=George&backgroundColor=transparent', label: 'George' },
-  { id: 'ava4', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lilly&backgroundColor=transparent', label: 'Lilly' },
-  { id: 'ava5', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Oscar&backgroundColor=transparent', label: 'Oscar' },
-  { id: 'ava6', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe&backgroundColor=transparent', label: 'Zoe' },
-  { id: 'ava7', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=transparent', label: 'Felps' },
-  { id: 'ava8', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo&backgroundColor=transparent', label: 'Milo' },
-
-  // Micah (Estilo Desenhado Premium)
-  { id: 'mic1', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Aiden&backgroundColor=transparent', label: 'Aiden' },
-  { id: 'mic2', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Caleb&backgroundColor=transparent', label: 'Caleb' },
-  { id: 'mic3', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Elijah&backgroundColor=transparent', label: 'Elijah' },
-  { id: 'mic4', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Hazel&backgroundColor=transparent', label: 'Hazel' },
-  { id: 'mic5', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Maya&backgroundColor=transparent', label: 'Maya' },
-  { id: 'mic6', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Noah&backgroundColor=transparent', label: 'Noah' },
-  { id: 'mic7', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Ruby&backgroundColor=transparent', label: 'Ruby' },
-  { id: 'mic8', image: 'https://api.dicebear.com/7.x/micah/svg?seed=Sophia&backgroundColor=transparent', label: 'Sophia' },
-
-  // Big Ears (Fofinhos)
-  { id: 'big1', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Coco&backgroundColor=transparent', label: 'Coco' },
-  { id: 'big2', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Daisy&backgroundColor=transparent', label: 'Daisy' },
-  { id: 'big3', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Ginger&backgroundColor=transparent', label: 'Ginger' },
-  { id: 'big4', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Jasper&backgroundColor=transparent', label: 'Jasper' },
-  { id: 'big5', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Lucky&backgroundColor=transparent', label: 'Lucky' },
-  { id: 'big6', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Oreo&backgroundColor=transparent', label: 'Oreo' },
-  { id: 'big7', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Peanut&backgroundColor=transparent', label: 'Peanut' },
-  { id: 'big8', image: 'https://api.dicebear.com/7.x/big-ears/svg?seed=Simba&backgroundColor=transparent', label: 'Simba' },
-
-  // Pixel Art (Retrô / Games)
-  { id: 'pix1', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Arthur&backgroundColor=transparent', label: 'Arthur' },
-  { id: 'pix2', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Bibi&backgroundColor=transparent', label: 'Bibi' },
-  { id: 'pix3', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Cody&backgroundColor=transparent', label: 'Cody' },
-  { id: 'pix4', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Dora&backgroundColor=transparent', label: 'Dora' },
-  { id: 'pix5', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Evan&backgroundColor=transparent', label: 'Evan' },
-  { id: 'pix6', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Fiona&backgroundColor=transparent', label: 'Fiona' },
-  { id: 'pix7', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Gus&backgroundColor=transparent', label: 'Gus' },
-  { id: 'pix8', image: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Hugo&backgroundColor=transparent', label: 'Hugo' },
-
-  // Aventureiros Neutros (Adventurer Neutral)
-  { id: 'adn1', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Alex&backgroundColor=transparent', label: 'Alex' },
-  { id: 'adn2', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Avery&backgroundColor=transparent', label: 'Avery' },
-  { id: 'adn3', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Riley&backgroundColor=transparent', label: 'Riley' },
-  { id: 'adn4', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Jordan&backgroundColor=transparent', label: 'Jordan' },
-  { id: 'adn5', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Casey&backgroundColor=transparent', label: 'Casey' },
-  { id: 'adn6', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Quinn&backgroundColor=transparent', label: 'Quinn' },
-  { id: 'adn7', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Taylor&backgroundColor=transparent', label: 'Taylor' },
-  { id: 'adn8', image: 'https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Morgan&backgroundColor=transparent', label: 'Morgan' }
+  // Emojis Radicais
+  { id: '3d_sunglasses', image: `${BASE_3D}/Smiling%20face%20with%20sunglasses/3D/smiling_face_with_sunglasses_3d.png`, label: 'Descolado' },
+  { id: '3d_starstruck', image: `${BASE_3D}/Star-struck/3D/star-struck_3d.png`, label: 'Fascinado' },
+  { id: '3d_exploding', image: `${BASE_3D}/Exploding%20head/3D/exploding_head_3d.png`, label: 'Mente Explodindo' },
+  { id: '3d_party', image: `${BASE_3D}/Partying%20face/3D/partying_face_3d.png`, label: 'Festeiro' },
+  { id: '3d_ghost', image: `${BASE_3D}/Ghost/3D/ghost_3d.png`, label: 'Fantasminha' },
 ];
 
 export const StarField = memo(() => (
