@@ -25,7 +25,6 @@ export async function POST(req: Request) {
       if (data.status === 'authorized') {
         const userId = data.external_reference;
         const reason = data.reason?.toLowerCase() || '';
-        const planType = reason.includes('comandante') || reason.includes('anual') ? 'commander' : 'cadet';
         const priceId = reason.includes('comandante') || reason.includes('anual') ? 'yearly' : 'monthly';
 
         if (userId && userId !== 'anonymous') {
@@ -37,7 +36,19 @@ export async function POST(req: Request) {
             })
             .eq('id', userId);
 
-          if (error) console.error('Erro ao atualizar usuário via assinatura:', error);
+          if (error) console.error('Erro ao atualizar usuário via assinatura (authorized):', error);
+        }
+      } else if (['paused', 'cancelled'].includes(data.status || '')) {
+        const userId = data.external_reference;
+        if (userId && userId !== 'anonymous') {
+          const { error } = await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'inactive',
+            })
+            .eq('id', userId);
+
+          if (error) console.error(`Erro ao atualizar usuário via assinatura (${data.status}):`, error);
         }
       }
     } else if (type === 'payment') {
@@ -47,7 +58,6 @@ export async function POST(req: Request) {
       if (paymentData.status === 'approved') {
         const userId = paymentData.external_reference;
         const description = paymentData.description?.toLowerCase() || '';
-        const planType = description.includes('comandante') || description.includes('anual') ? 'commander' : 'cadet';
         const priceId = description.includes('comandante') || description.includes('anual') ? 'yearly' : 'monthly';
         
         if (userId && userId !== 'anonymous') {
@@ -59,7 +69,19 @@ export async function POST(req: Request) {
             })
             .eq('id', userId);
 
-          if (error) console.error('Erro ao atualizar usuário via pagamento:', error);
+          if (error) console.error('Erro ao atualizar usuário via pagamento (approved):', error);
+        }
+      } else if (['rejected', 'refunded', 'charged_back', 'cancelled'].includes(paymentData.status || '')) {
+        const userId = paymentData.external_reference;
+        if (userId && userId !== 'anonymous') {
+          const { error } = await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'inactive',
+            })
+            .eq('id', userId);
+
+          if (error) console.error(`Erro ao atualizar usuário via pagamento (${paymentData.status}):`, error);
         }
       }
     }

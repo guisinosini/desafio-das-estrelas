@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
-import { Payment } from 'mercadopago';
+import { Payment, PreApproval } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
 
 // Supabase Admin para atualizar perfil com service role (ignora RLS)
@@ -27,7 +27,41 @@ export async function POST(req: Request) {
       installments,
       identificationType,
       identificationNumber,
+      isSubscription
     } = await req.json();
+
+    if (interval === 'monthly' && cardTokenId) {
+      // Usando o token do cartão do Checkout Transparente para criar a assinatura recorrente
+      const preApproval = new PreApproval(mpClient);
+      const preApprovalData = await preApproval.create({
+        body: {
+          preapproval_plan_id: 'fc9189bc5b5e4389a37dd24e5cb99991',
+          payer_email: user.email!,
+          card_token_id: cardTokenId,
+          external_reference: user.id,
+          status: 'authorized'
+        },
+        requestOptions: { idempotencyKey: crypto.randomUUID() }
+      });
+
+      const statusOk = ['authorized', 'pending'].includes(preApprovalData.status || '');
+      
+      if (statusOk) {
+        await supabaseAdmin.from('profiles').upsert({
+          id: user.id,
+          subscription_status: 'active',
+          subscription_price_id: interval,
+        });
+      }
+
+      return NextResponse.json({
+        success: statusOk,
+        status: preApprovalData.status,
+        id: preApprovalData.id,
+      });
+    }
+
+    // Se for mensal via PIX ou Anual (Cartão/PIX), cai para pagamento único (Payment API)
 
     const prices = { monthly: 19.90, yearly: 199.00 };
     const amount = interval === 'yearly' ? prices.yearly : prices.monthly;
@@ -61,7 +95,10 @@ export async function POST(req: Request) {
       paymentBody.issuer_id = Number(issuerId);
     }
 
-    const response = await payment.create({ body: paymentBody });
+    const response = await payment.create({ 
+      body: paymentBody,
+      requestOptions: { idempotencyKey: crypto.randomUUID() }
+    });
 
     console.log(`[MP Checkout ${interval}] Status: ${response.status} | ID: ${response.id}`);
 

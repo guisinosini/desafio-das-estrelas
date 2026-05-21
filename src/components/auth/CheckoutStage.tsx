@@ -268,7 +268,6 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
   const handleSubmitMercadoPago = async (cardFormData: any) => {
     setStatus('processing');
     setErrorMessage('');
-
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
