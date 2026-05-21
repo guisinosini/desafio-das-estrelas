@@ -339,7 +339,7 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
             </div>
           </div>
 
-          <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+          <div className="flex flex-col gap-3 w-full sm:w-auto">
             <button
               onClick={() => setShowShareModal(true)}
               className="flex-1 sm:flex-none px-4 py-3 bg-indigo-500 text-white font-black uppercase tracking-[0.05em] text-[10px] rounded-[16px] shadow-[0_10px_20px_-10px_rgba(99,102,241,0.4)] hover:scale-105 hover:bg-indigo-600 transition-all flex items-center justify-center gap-2"
