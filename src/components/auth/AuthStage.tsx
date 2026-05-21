@@ -54,146 +54,208 @@ const AuthStage = memo(({
 
   return (
     <>
-      <motion.div key="auth" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 max-w-xl mx-auto min-h-screen flex flex-col justify-center p-6 space-y-8">
-        <button onClick={() => setStage('welcome')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors w-fit"><ChevronLeft className="w-4 h-4" /> {t.back}</button>
-        
-        <div className="space-y-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{isLogin ? t.login : t.mentorRegistration || 'CADASTRO DE MENTOR'}</span>
-          <h2 className="text-4xl font-black italic uppercase tracking-tighter">{isLogin ? t.mentorIdentification : t.createGalacticAccount || 'Crie sua Conta Galáctica'}</h2>
-        </div>
-
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-[40px] md:rounded-[50px] space-y-8 shadow-2xl relative overflow-hidden">
-          {/* Glow de fundo sutil */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px]" />
+      <motion.div 
+        key="auth" 
+        initial={{ opacity: 0, y: 30 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="relative z-10 min-h-screen flex items-center justify-center p-4 md:p-8"
+      >
+        <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           
-          <div className="space-y-4 relative z-10">
-            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2">
-               <RefreshCw className="w-3 h-3 text-primary" /> {t.systemLanguage}
-            </label>
-            <div className="flex flex-wrap gap-2.5">
-              {(['pt-BR', 'pt-PT', 'en', 'es', 'fr', 'it', 'zh'] as Language[]).map(lang => (
-                <button
-                  key={lang}
-                  onClick={() => setLanguage(lang)}
-                  className={clsx(
-                    "w-11 h-11 rounded-2xl flex items-center justify-center text-2xl border transition-all shadow-xl",
-                    language === lang ? "bg-primary border-primary scale-110 rotate-2 shadow-primary/20" : "bg-white/5 border-white/10 hover:bg-white/10"
-                  )}
-                >
-                  {lang === 'pt-BR' ? '🇧🇷' : 
-                   lang === 'pt-PT' ? '🇵🇹' : 
-                   lang === 'en' ? '🇺🇸' : 
-                   lang === 'es' ? '🇪🇸' : 
-                   lang === 'fr' ? '🇫🇷' : 
-                   lang === 'it' ? '🇮🇹' : '🇨🇳'}
-                </button>
-              ))}
+          {/* LADO ESQUERDO - Copy e Grafismos (Oculto em telas muito pequenas para focar no form) */}
+          <div className="hidden md:flex flex-col space-y-8 lg:pr-10 relative">
+            {/* Elementos Flutuantes 3D */}
+            <motion.img 
+              src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Rocket/3D/rocket_3d.png"
+              animate={{ y: [0, -20, 0], rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-12 -left-12 w-24 h-24 lg:w-32 lg:h-32 opacity-80 blur-[1px]"
+              alt="Foguete"
+            />
+            <motion.img 
+              src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Glowing%20star/3D/glowing_star_3d.png"
+              animate={{ y: [0, 15, 0], scale: [1, 1.1, 1] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute bottom-10 right-0 w-16 h-16 lg:w-20 lg:h-20 opacity-60"
+              alt="Estrela"
+            />
+
+            <div className="space-y-4 relative z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                <ShieldCheck className="w-4 h-4" /> Acesso Seguro
+              </div>
+              <h1 className="text-4xl lg:text-6xl xl:text-7xl font-black italic uppercase tracking-tighter leading-[0.9]">
+                {isLogin ? "Bem-vindo de volta, Comandante" : "O Universo Aguarda Seu Comando"}
+              </h1>
+              <p className="text-lg text-white/50 leading-relaxed max-w-md">
+                {isLogin 
+                  ? "Acesse o painel da sua frota e acompanhe a evolução diária dos seus pequenos heróis." 
+                  : "Transforme a rotina em uma aventura épica. Crie sua conta pai/mãe e prepare-se para a decolagem."}
+              </p>
             </div>
+
+            {/* Social Proof / Benefícios */}
+            {!isLogin && (
+              <div className="grid grid-cols-2 gap-4 pt-6">
+                {[
+                  { icon: "🚀", title: "Missões Épicas", desc: "Rotina gamificada" },
+                  { icon: "🏆", title: "Recompensas", desc: "Motivação diária" },
+                  { icon: "🧠", title: "Treino Cognitivo", desc: "Jogos exclusivos" },
+                  { icon: "📊", title: "Relatórios Clínicos", desc: "Visão 360º" },
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-3 items-center bg-white/[0.02] border border-white/5 p-4 rounded-2xl hover:bg-white/[0.05] transition-colors">
+                    <div className="text-2xl">{item.icon}</div>
+                    <div>
+                      <h4 className="font-bold text-white text-sm uppercase italic tracking-tight">{item.title}</h4>
+                      <p className="text-[10px] text-white/40 uppercase tracking-wider">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <form onSubmit={handleAuth} className="space-y-5 relative z-10">
-            {authError && <div className="p-4 bg-red-500/20 text-red-200 text-[10px] font-bold rounded-2xl border border-red-500/30 text-center">{authError}</div>}
-            {authSuccess && <div className="p-4 bg-emerald-500/20 text-emerald-200 text-[10px] font-bold rounded-2xl border border-emerald-500/30 text-center">{authSuccess}</div>}
-            
-            {!isLogin && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.mentorName}</label>
-                <input required type="text" value={parentName} onChange={e => setParentName(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors text-white" />
+          {/* LADO DIREITO - Formulário Glassmorphism Premium */}
+          <div className="w-full max-w-md mx-auto lg:ml-auto relative">
+            <button onClick={() => setStage('welcome')} className="md:hidden flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors mb-6"><ChevronLeft className="w-4 h-4" /> Voltar</button>
+
+            <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-[40px] shadow-2xl relative overflow-hidden group">
+              {/* Glow Dinâmico de Fundo */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] group-hover:bg-primary/20 transition-colors duration-700" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[100px] group-hover:bg-purple-500/20 transition-colors duration-700" />
+              
+              {/* Header Mobile (Visível apenas se a coluna esquerda estiver oculta) */}
+              <div className="md:hidden space-y-2 mb-8 relative z-10 text-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{isLogin ? t.login : 'CADASTRO'}</span>
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-tight">{isLogin ? t.mentorIdentification : 'Crie sua Conta'}</h2>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.email}</label>
-              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors text-white" />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.password}</label>
-              <div className="relative group/pass">
-                <input 
-                  required 
-                  type={showPassword ? "text" : "password"} 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)} 
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary transition-colors pr-12 text-white" 
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-primary transition-colors p-1"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {isLogin && (
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-[9px] font-black uppercase text-primary/60 hover:text-primary transition-colors mt-1 ml-2"
-                >
-                  {t.forgotPassword}
-                </button>
-              )}
-            </div>
-
-            {/* Checkbox de Aceite dos Termos de Uso (Visível apenas no Cadastro) */}
-            {!isLogin && (
-              <div className="flex items-start gap-3 mt-4 select-none p-3.5 bg-white/5 border border-white/5 rounded-2xl">
-                <input
-                  id="terms-checkbox"
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={e => setAgreed(e.target.checked)}
-                  className="w-5 h-5 rounded border border-white/20 bg-black/40 text-primary focus:ring-0 cursor-pointer mt-0.5 accent-primary shrink-0"
-                />
-                <label htmlFor="terms-checkbox" className="text-[10px] text-white/60 font-bold leading-relaxed cursor-pointer">
-                  {getConsentText1(language)}
-                  <button
-                    type="button"
-                    onClick={() => setShowTermsModal(true)}
-                    className="text-primary hover:underline font-black uppercase tracking-wider transition-all"
-                  >
-                    {getTermsLink(language)}
-                  </button>
-                  {getConsentText2(language)}
-                  <button
-                    type="button"
-                    onClick={() => setShowTermsModal(true)}
-                    className="text-primary hover:underline font-black uppercase tracking-wider transition-all"
-                  >
-                    {getPrivacyLink(language)}
-                  </button>
-                  {getConsentText3(language)}
+              {/* Seletor de Idiomas Minimalista */}
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5 relative z-10">
+                <label className="text-[9px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1.5">
+                   <RefreshCw className="w-3 h-3 text-primary" /> {t.systemLanguage}
                 </label>
+                <div className="flex gap-2">
+                  {(['pt-BR', 'en', 'es'] as Language[]).map(lang => (
+                    <button
+                      key={lang}
+                      onClick={() => setLanguage(lang)}
+                      className={clsx(
+                        "w-8 h-8 rounded-full flex items-center justify-center text-sm border transition-all",
+                        language === lang ? "bg-primary/20 border-primary shadow-[0_0_15px_rgba(45,212,191,0.3)] scale-110" : "bg-white/5 border-white/10 hover:bg-white/10 opacity-50 hover:opacity-100"
+                      )}
+                    >
+                      {lang === 'pt-BR' ? '🇧🇷' : lang === 'en' ? '🇺🇸' : '🇪🇸'}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={authLoading || (!isLogin && !agreed)}
-              className={clsx(
-                "w-full py-5 font-black uppercase tracking-widest rounded-2xl shadow-xl mt-4 transition-all flex items-center justify-center gap-3",
-                (authLoading || (!isLogin && !agreed))
-                  ? "bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50"
-                  : "bg-primary text-black hover:scale-[1.02] active:scale-[0.98]"
-              )}
-            >
-              {authLoading ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" /> {t.processing}
-                </>
-              ) : (
-                isLogin ? t.continue : t.registerAndTakeoff || 'Cadastrar e decolar 🚀'
-              )}
-            </button>
-          </form>
-          
-          <button 
-            onClick={() => setIsLogin(!isLogin)} 
-            className="w-full text-center text-[10px] font-black uppercase text-white/30 hover:text-white transition-colors"
-          >
-            {isLogin ? t.createAccount : t.alreadyHaveAccount}
-          </button>
+              <form onSubmit={handleAuth} className="space-y-5 relative z-10">
+                {authError && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-red-500/10 text-red-300 text-[10px] font-bold rounded-2xl border border-red-500/20 flex items-start gap-2">
+                    <X className="w-4 h-4 shrink-0 text-red-400" /> {authError}
+                  </motion.div>
+                )}
+                
+                {!isLogin && (
+                  <div className="space-y-2 group/input">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-white/40 group-focus-within/input:text-primary transition-colors ml-1">{t.mentorName}</label>
+                    <input required type="text" placeholder="Ex: Capitão Carlos" value={parentName} onChange={e => setParentName(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary focus:bg-white/5 transition-all text-white placeholder-white/20 shadow-inner" />
+                  </div>
+                )}
+
+                <div className="space-y-2 group/input">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-white/40 group-focus-within/input:text-primary transition-colors ml-1">{t.email}</label>
+                  <input required type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary focus:bg-white/5 transition-all text-white placeholder-white/20 shadow-inner" />
+                </div>
+
+                <div className="space-y-2 group/input">
+                  <div className="flex justify-between items-end ml-1 mb-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-white/40 group-focus-within/input:text-primary transition-colors">{t.password}</label>
+                    {isLogin && (
+                      <button type="button" onClick={handleForgotPassword} className="text-[9px] font-black uppercase text-primary/60 hover:text-primary transition-colors hover:underline">
+                        {t.forgotPassword}
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input 
+                      required 
+                      type={showPassword ? "text" : "password"} 
+                      placeholder="••••••••"
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary focus:bg-white/5 transition-all pr-12 text-white placeholder-white/20 shadow-inner tracking-widest" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-primary transition-colors p-1"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {!isLogin && (
+                  <div className="flex items-start gap-3 mt-6 select-none p-4 bg-black/20 border border-white/5 rounded-2xl">
+                    <input
+                      id="terms-checkbox"
+                      type="checkbox"
+                      checked={agreed}
+                      onChange={e => setAgreed(e.target.checked)}
+                      className="w-5 h-5 rounded border border-white/20 bg-black/40 text-primary focus:ring-0 cursor-pointer mt-0.5 accent-primary shrink-0"
+                    />
+                    <label htmlFor="terms-checkbox" className="text-[10px] text-white/50 font-bold leading-relaxed cursor-pointer">
+                      {getConsentText1(language)}
+                      <button type="button" onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }} className="text-primary hover:underline font-black uppercase mx-1">
+                        {getTermsLink(language)}
+                      </button>
+                      {getConsentText2(language)}
+                      <button type="button" onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }} className="text-primary hover:underline font-black uppercase mx-1">
+                        {getPrivacyLink(language)}
+                      </button>
+                      {getConsentText3(language)}
+                    </label>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={authLoading || (!isLogin && !agreed)}
+                  className={clsx(
+                    "w-full py-5 font-black uppercase tracking-widest rounded-2xl shadow-xl mt-8 transition-all flex items-center justify-center gap-3 overflow-hidden relative group/btn",
+                    (authLoading || (!isLogin && !agreed))
+                      ? "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
+                      : "bg-primary text-black hover:scale-[1.02] active:scale-[0.98] shadow-primary/20"
+                  )}
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
+                  {authLoading ? (
+                    <><RefreshCw className="w-5 h-5 animate-spin relative z-10" /> <span className="relative z-10">{t.processing}</span></>
+                  ) : (
+                    <span className="relative z-10 flex items-center gap-2">
+                      {isLogin ? t.continue : 'Criar Conta e Decolar 🚀'}
+                    </span>
+                  )}
+                </button>
+              </form>
+              
+              <div className="mt-8 text-center relative z-10">
+                <span className="text-[10px] font-bold text-white/30 mr-2 uppercase tracking-wider">{isLogin ? "Novo na frota?" : "Já é um comandante?"}</span>
+                <button 
+                  onClick={() => setIsLogin(!isLogin)} 
+                  className="text-[10px] font-black uppercase text-white hover:text-primary transition-colors underline decoration-white/20 underline-offset-4"
+                >
+                  {isLogin ? "Criar Conta" : "Fazer Login"}
+                </button>
+              </div>
+            </div>
+            
+            <button onClick={() => setStage('welcome')} className="hidden md:flex mx-auto mt-8 items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors"><ChevronLeft className="w-4 h-4" /> Voltar para o Início</button>
+          </div>
+
         </div>
       </motion.div>
 

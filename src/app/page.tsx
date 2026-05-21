@@ -182,7 +182,7 @@ export default function DesafioEstrelas() {
   
   const [isPremium, setIsPremium] = useState(false);
   const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly' | null>(null);
   
   // Utiliza o hook extraído para sincronização na nuvem
   const { isSyncing, loadFromCloud, saveToCloud } = useCloudSync({
@@ -1275,7 +1275,7 @@ export default function DesafioEstrelas() {
                           win.__mercadopago_initialized__ = true;
                         });
                       }
-                      setSelectedPlan('monthly'); setStage('auth'); setIsLogin(false);
+                      setSelectedPlan('monthly'); setStage('checkout');
                     }}
                     className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
                   >
@@ -1303,7 +1303,7 @@ export default function DesafioEstrelas() {
                           win.__mercadopago_initialized__ = true;
                         });
                       }
-                      setSelectedPlan('yearly'); setStage('auth'); setIsLogin(false);
+                      setSelectedPlan('yearly'); setStage('checkout');
                     }}
                     className="w-full mt-6 py-4 bg-primary text-black hover:bg-teal-300 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-lg shadow-primary/10"
                   >
@@ -1318,7 +1318,7 @@ export default function DesafioEstrelas() {
         {/* --- STAGE: CHECKOUT TRANSPARENTE --- */}
         {stage === 'checkout' && (
           <CheckoutStage
-            selectedPlan={selectedPlan}
+            selectedPlan={selectedPlan || 'monthly'}
             onBack={() => setStage('no_subscription')}
             onSuccess={async () => {
               setIsPremium(true);
