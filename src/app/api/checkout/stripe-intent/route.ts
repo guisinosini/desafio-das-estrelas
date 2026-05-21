@@ -3,38 +3,45 @@ import { createClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe';
 import Stripe from 'stripe';
 
-async function resolveClientSecret(subscription: Stripe.Subscription): Promise<string | null> {
-  // Busca direta e explícita: nunca depende do expand
+async function resolveClientSecret(subscription: Stripe.Subscription): Promise<string> {
   const invoiceId = typeof subscription.latest_invoice === 'string'
     ? subscription.latest_invoice
     : (subscription.latest_invoice as any)?.id;
 
   if (!invoiceId) {
-    // Fallback para Free Trial: usa Setup Intent
     const siId = typeof subscription.pending_setup_intent === 'string'
       ? subscription.pending_setup_intent
       : (subscription.pending_setup_intent as any)?.id;
     
     if (siId) {
       const si = await stripe.setupIntents.retrieve(siId);
-      return si.client_secret;
+      return si.client_secret || 'ERROR: Setup Intent exists mas não tem client_secret';
     }
-    return null;
+    return `ERROR: Sem invoiceId e sem pending_setup_intent na subscription ${subscription.id}`;
   }
 
-  // Busca a invoice explicitamente com o payment_intent expandido
   const invoice = await stripe.invoices.retrieve(invoiceId, {
     expand: ['payment_intent'],
   }) as any;
+
+  if (!invoice.payment_intent) {
+    return `ERROR: A fatura ${invoiceId} não gerou payment_intent. Status da fatura: ${invoice.status}, Valor devido: ${invoice.amount_due}`;
+  }
 
   const paymentIntentId = typeof invoice.payment_intent === 'string'
     ? invoice.payment_intent
     : invoice.payment_intent?.id;
 
-  if (!paymentIntentId) return null;
+  if (!paymentIntentId) {
+    return `ERROR: Falha ao extrair o ID do payment_intent: ${JSON.stringify(invoice.payment_intent)}`;
+  }
 
-  // Busca o PaymentIntent explicitamente
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  
+  if (!paymentIntent.client_secret) {
+    return `ERROR: PaymentIntent ${paymentIntentId} não tem client_secret. Status do PI: ${paymentIntent.status}`;
+  }
+
   return paymentIntent.client_secret;
 }
 
@@ -147,10 +154,8 @@ export async function POST(req: Request) {
     // 4. Resolver o client_secret de forma robusta
     const clientSecret = await resolveClientSecret(subscription);
 
-    console.log(`[Stripe] client_secret encontrado: ${clientSecret ? 'SIM' : 'NÃO'}`);
-
-    if (!clientSecret) {
-      throw new Error(`Stripe criou a assinatura (${subscription.id}) mas não retornou o token de pagamento. Status: ${subscription.status}`);
+    if (clientSecret.startsWith('ERROR:')) {
+      throw new Error(`Diagnóstico detalhado: ${clientSecret}`);
     }
 
     return NextResponse.json({
