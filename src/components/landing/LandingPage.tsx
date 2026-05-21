@@ -69,6 +69,17 @@ const currencyMap: Record<string, { symbol: string, monthly: string, yearly: str
   'zh': { symbol: '¥', monthly: '26,65', yearly: '265,00' },
 };
 
+const SectionCTA = ({ onClick, text }: { onClick: () => void, text: string }) => (
+  <div className="mt-12 md:mt-16 flex justify-center w-full relative z-30">
+    <button 
+      onClick={onClick} 
+      className="px-6 py-3 bg-white/[0.02] hover:bg-white/[0.08] border border-white/10 hover:border-primary/30 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-all flex items-center gap-2 group cursor-pointer"
+    >
+      {text} <Rocket className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
+    </button>
+  </div>
+);
+
 export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageChange, onStart, onSubscribe, deferredPrompt, onInstall }) => {
   const t = translations[language];
   const [billingInterval, setBillingInterval] = React.useState<'monthly' | 'yearly'>('monthly');
@@ -283,6 +294,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             </div>
           </div>
         </div>
+        <SectionCTA onClick={onStart} text={t.lp_cta_start} />
       </section>
 
       {/* The Method / How it Works */}
@@ -319,6 +331,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 </FadeInWhenVisible>
             ))}
         </div>
+        <SectionCTA onClick={onStart} text={t.lp_cta_start} />
       </section>
 
       {/* Journey Ecosystem Section */}
@@ -370,6 +383,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             </FadeInWhenVisible>
           </div>
         </div>
+        <SectionCTA onClick={onStart} text={t.lp_cta_start} />
       </section>
 
       {/* Mentor Dashboard Highlight */}
@@ -435,6 +449,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             </div>
           </FadeInWhenVisible>
         </div>
+        <SectionCTA onClick={onStart} text={t.lp_cta_start} />
       </section>
 
       {/* Pilot Academy / Cognitive Training Section */}
@@ -517,6 +532,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
           </div>
 
         </div>
+        <SectionCTA onClick={onStart} text={t.lp_cta_start} />
       </section>
 
       {/* Galactic Alliance Section */}
@@ -574,6 +590,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             </div>
           </FadeInWhenVisible>
         </div>
+        <SectionCTA onClick={onStart} text={t.lp_cta_start} />
       </section>
 
       {/* Clinical Bridge Section */}
@@ -619,6 +636,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
             </FadeInWhenVisible>
           </div>
         </div>
+        <SectionCTA onClick={onStart} text={t.lp_cta_start} />
       </section>
 
       {/* Impact Quote Section */}
