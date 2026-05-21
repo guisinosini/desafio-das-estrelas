@@ -331,7 +331,7 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     },
     paymentMethods: {
       maxInstallments: selectedPlan === 'yearly' ? 12 : 1,
-      bankTransfer: selectedPlan === 'yearly' ? 'all' : undefined, // Habilita PIX no plano anual
+      bankTransfer: 'all', // Habilita PIX em ambos os planos
     }
   };
 
