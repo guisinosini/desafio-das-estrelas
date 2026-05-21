@@ -265,22 +265,34 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     }
   }, [isInternational, selectedPlan, stripeCurrency, language]);
 
-  const handleSubmitMercadoPago = async (cardFormData: any) => {
+  const handleSubmitMercadoPago = async (param: any) => {
     setStatus('processing');
     setErrorMessage('');
     try {
+      console.log('[Mercado Pago Submit] Raw param:', param);
+      
+      // O Payment Brick retorna { formData, additionalData, ... }
+      const data = param.formData || param;
+      
+      // Alguns métodos (como saldo MP) podem enviar a string do método em outro lugar
+      const resolvedPaymentMethodId = data.payment_method_id || param.selectedPaymentMethod || 'pix';
+
+      const payload = {
+        interval: selectedPlan,
+        cardTokenId: data.token,
+        paymentMethodId: resolvedPaymentMethodId,
+        issuerId: data.issuer_id,
+        installments: data.installments,
+        identificationType: data.payer?.identification?.type,
+        identificationNumber: data.payer?.identification?.number,
+      };
+      
+      console.log('[Mercado Pago Submit] Payload sent to backend:', payload);
+
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          interval: selectedPlan,
-          cardTokenId: cardFormData.token,
-          paymentMethodId: cardFormData.payment_method_id,
-          issuerId: cardFormData.issuer_id,
-          installments: cardFormData.installments,
-          identificationType: cardFormData.payer?.identification?.type,
-          identificationNumber: cardFormData.payer?.identification?.number,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
