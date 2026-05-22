@@ -185,7 +185,10 @@ export default function DesafioEstrelas() {
   const [subscriptionPriceId, setSubscriptionPriceId] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly' | null>(null);
   
-  // Utiliza o hook extraído para sincronização na nuvem
+  const [impersonatedPatientId, setImpersonatedPatientId] = useState<string | null>(null);
+  const [isProfessionalViewer, setIsProfessionalViewer] = useState(false);
+
+  // Hook de Nuvem (Estado Global)
   const { isSyncing, loadFromCloud, saveToCloud } = useCloudSync({
     supabase,
     setIsPremium,
@@ -274,8 +277,6 @@ export default function DesafioEstrelas() {
   const [isLogin, setIsLogin] = useState(false);
   const [authRole, setAuthRole] = useState<'patient' | 'professional'>('patient');
   const [accessCode, setAccessCode] = useState('');
-  const [impersonatedPatientId, setImpersonatedPatientId] = useState<string | null>(null);
-  const [isProfessionalViewer, setIsProfessionalViewer] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
