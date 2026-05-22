@@ -1663,7 +1663,9 @@ export default function DesafioEstrelas() {
         {/* --- DASHBOARD ADVENTURE --- */}
         {stage === 'adventure' && (
           <motion.div key="adventure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 pb-32">
-          <DailyConquestCelebration tasks={tasks} t={t} onAwardStars={handleAwardStars} />
+          {view !== 'admin' && view !== 'professional' && (
+            <DailyConquestCelebration tasks={tasks} t={t} onAwardStars={handleAwardStars} />
+          )}
 
             <header className="sticky top-0 z-50 bg-[#16213e]/80 backdrop-blur-xl border-b border-white/10 p-3 md:p-6 flex justify-between items-center md:grid md:grid-cols-3 shadow-2xl">
               {/* Coluna 1: Esquerda - Avatar e Status da Criança */}
