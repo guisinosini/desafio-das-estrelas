@@ -156,11 +156,23 @@ export async function POST(req: Request) {
       if (interval.startsWith('pro_')) {
         const parts = interval.split('_');
         const limit = parseInt(parts[1], 10);
-        await supabaseAdmin.from('professional_subscriptions').upsert({
-          professional_id: user.id,
-          plan_limit: limit,
-          status: 'active'
-        }, { onConflict: 'professional_id' });
+        
+        const { data: existingSub } = await supabaseAdmin.from('professional_subscriptions')
+          .select('id').eq('professional_id', user.id).order('created_at', { ascending: false }).limit(1);
+          
+        if (existingSub && existingSub.length > 0) {
+          await supabaseAdmin.from('professional_subscriptions').update({
+            plan_limit: limit,
+            status: 'active',
+            updated_at: new Date().toISOString()
+          }).eq('id', existingSub[0].id);
+        } else {
+          await supabaseAdmin.from('professional_subscriptions').insert({
+            professional_id: user.id,
+            plan_limit: limit,
+            status: 'active'
+          });
+        }
       }
 
       console.log(`[MP Checkout] Perfil ${user.id} ativado (${interval}) ✅`);

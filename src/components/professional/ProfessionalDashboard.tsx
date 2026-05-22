@@ -59,10 +59,11 @@ export const ProfessionalDashboard = ({
         .from('professional_subscriptions')
         .select('*')
         .eq('professional_id', currentUser.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
       
-      if (subData) {
-        setSubscription(subData);
+      if (subData && subData.length > 0) {
+        setSubscription(subData[0]);
       } else {
         // Se não tem subscription, cria um plano padrão (ex: limit 4)
         const { data: newSub } = await supabase.from('professional_subscriptions').insert({

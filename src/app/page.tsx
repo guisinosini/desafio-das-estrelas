@@ -566,7 +566,8 @@ export default function DesafioEstrelas() {
            await supabase.from('professional_invites').update({ status: 'used', used_at: new Date().toISOString() }).eq('id', validInvite.id);
            
            // Atualiza contagem
-           const { data: sub } = await supabase.from('professional_subscriptions').select('id, used_invites').eq('professional_id', validInvite.professional_id).single();
+           const { data: subData } = await supabase.from('professional_subscriptions').select('id, used_invites').eq('professional_id', validInvite.professional_id).order('created_at', { ascending: false }).limit(1);
+           const sub = subData?.[0];
            if (sub) {
               await supabase.from('professional_subscriptions').update({ used_invites: (sub.used_invites || 0) + 1 }).eq('id', sub.id);
            }
