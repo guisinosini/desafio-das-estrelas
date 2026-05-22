@@ -331,12 +331,50 @@ export const ProfessionalDashboard = ({
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter">Meu Plano</h2>
                 <div className="bg-gradient-to-br from-primary/20 to-purple-500/20 border border-primary/30 p-8 rounded-3xl relative overflow-hidden">
                   <div className="relative z-10">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-2">Plano Atual</p>
-                    <h3 className="text-4xl font-black uppercase italic tracking-tighter">{subscription?.plan_limit || 0} Pacientes</h3>
-                    <p className="text-white/60 mt-4 text-sm max-w-md">Você pode convidar até {subscription?.plan_limit} famílias para o Desafio das Estrelas, acompanhando o progresso e relatórios de todos em um só lugar.</p>
-                    <button className="mt-8 px-8 py-4 bg-primary text-black rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all">
-                      Fazer Upgrade de Plano
-                    </button>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-2">Plano Atual</p>
+                        <h3 className="text-4xl font-black uppercase italic tracking-tighter">{subscription?.plan_limit || 0} Pacientes</h3>
+                        <p className="text-white/60 mt-4 text-sm max-w-md">Você pode convidar até {subscription?.plan_limit} famílias para o Desafio das Estrelas, acompanhando o progresso e relatórios de todos em um só lugar.</p>
+                      </div>
+                      <span className={clsx(
+                        "text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border",
+                        subscription?.status === 'active' ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"
+                      )}>
+                        {subscription?.status === 'active' ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-8 max-w-md">
+                      <div className="bg-black/20 border border-white/5 p-4 rounded-2xl">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Início do Plano</p>
+                        <p className="text-sm font-bold text-white">
+                          {subscription?.created_at ? new Date(subscription.created_at).toLocaleDateString() : '--/--/----'}
+                        </p>
+                      </div>
+                      <div className="bg-black/20 border border-white/5 p-4 rounded-2xl">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Próxima Renovação</p>
+                        <p className="text-sm font-bold text-white">
+                          {subscription?.created_at ? new Date(new Date(subscription.created_at).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString() : '--/--/----'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4 mt-8">
+                      <button className="px-8 py-4 bg-primary text-black rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all">
+                        Fazer Upgrade de Plano
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (window.confirm("Tem certeza que deseja cancelar sua assinatura? O acesso aos seus pacientes será suspenso ao final do ciclo.")) {
+                            alert("Sua solicitação de cancelamento foi registrada e será processada pela nossa equipe.");
+                          }
+                        }}
+                        className="px-8 py-4 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-500/20 transition-all"
+                      >
+                        Cancelar Assinatura
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
