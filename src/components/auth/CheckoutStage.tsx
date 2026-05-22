@@ -242,13 +242,11 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       const isYearly = parts[2] === 'yearly';
       
       const symbol = stripeCurrency === 'EUR' ? '€' : 'R$';
-      let amount = 0;
-      let priceStr = '';
-      
-      if (limit === 1) { amount = isYearly ? 199.00 : 19.90; priceStr = isYearly ? '199,00' : '19,90'; }
-      if (limit === 4) { amount = isYearly ? 597.00 : 59.70; priceStr = isYearly ? '597,00' : '59,70'; }
-      if (limit === 9) { amount = isYearly ? 1390.00 : 139.90; priceStr = isYearly ? '1390,00' : '139,90'; }
-      if (limit === 15) { amount = isYearly ? 1900.00 : 199.90; priceStr = isYearly ? '1900,00' : '199,90'; }
+      let titleName = '';
+      if (limit === 1) { titleName = 'Pioneiro'; amount = isYearly ? 199.00 : 19.90; priceStr = isYearly ? '199,00' : '19,90'; }
+      if (limit === 4) { titleName = 'Esquadrão'; amount = isYearly ? 597.00 : 59.70; priceStr = isYearly ? '597,00' : '59,70'; }
+      if (limit === 9) { titleName = 'Frota Estelar'; amount = isYearly ? 1390.00 : 139.90; priceStr = isYearly ? '1390,00' : '139,90'; }
+      if (limit === 15) { titleName = 'Aliança'; amount = isYearly ? 1900.00 : 199.90; priceStr = isYearly ? '1900,00' : '199,90'; }
 
       if (isInternational) {
          // Valores fictícios para intl, caso precise
@@ -257,7 +255,7 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       }
 
       return {
-        title: `Plano Profissional (${limit} Licenças)`,
+        title: `Plano ${titleName} (${limit} Licenças)`,
         subtitle: isYearly ? 'Anual • B2B' : 'Mensal • B2B',
         price: `${symbol} ${priceStr}`,
         period: isYearly ? '/ano' : '/mês',

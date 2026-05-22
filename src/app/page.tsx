@@ -1350,23 +1350,65 @@ export default function DesafioEstrelas() {
                       1 Licença = <strong className="text-primary">1 Pai/Mentor</strong>, que poderá cadastrar <strong className="text-primary">até 4 crianças</strong> na plataforma.
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                      { limit: 1, monthly: "19,90", yearly: "199,00" },
-                      { limit: 4, monthly: "59,70", yearly: "597,00" },
-                      { limit: 9, monthly: "139,90", yearly: "1390,00" },
-                      { limit: 15, monthly: "199,90", yearly: "1900,00" }
+                      { 
+                        limit: 1, monthly: "19,90", yearly: "199,00", 
+                        name: "Pioneiro", 
+                        desc: "Para pequenos acompanhamentos",
+                        icon: "🚀", 
+                        color: "from-blue-500/20 to-blue-900/20",
+                        borderColor: "hover:border-blue-500/50"
+                      },
+                      { 
+                        limit: 4, monthly: "59,70", yearly: "597,00", 
+                        name: "Esquadrão", 
+                        desc: "Forme sua equipe de exploradores",
+                        icon: "🛸", 
+                        color: "from-emerald-500/20 to-emerald-900/20",
+                        borderColor: "hover:border-emerald-500/50",
+                        popular: true
+                      },
+                      { 
+                        limit: 9, monthly: "139,90", yearly: "1390,00", 
+                        name: "Frota Estelar", 
+                        desc: "Para grandes grupos clínicos",
+                        icon: "🛰️", 
+                        color: "from-purple-500/20 to-purple-900/20",
+                        borderColor: "hover:border-purple-500/50"
+                      },
+                      { 
+                        limit: 15, monthly: "199,90", yearly: "1900,00", 
+                        name: "Aliança", 
+                        desc: "Alcance máximo intergaláctico",
+                        icon: "🌌", 
+                        color: "from-amber-500/20 to-amber-900/20",
+                        borderColor: "hover:border-amber-500/50"
+                      }
                     ].map(plan => (
-                      <div key={plan.limit} className="bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-col items-center text-center space-y-4 hover:border-primary transition-all">
-                        <span className="text-3xl font-black italic text-white">{plan.limit}</span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Licenças</span>
+                      <div key={plan.limit} className={`bg-gradient-to-b ${plan.color} bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-col justify-between space-y-6 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl ${plan.borderColor} relative overflow-hidden group`}>
+                        {plan.popular && (
+                          <div className="absolute top-0 inset-x-0 bg-primary text-black text-[9px] font-black uppercase tracking-widest py-1 text-center">
+                            Mais Escolhido
+                          </div>
+                        )}
+                        <div className="text-center space-y-2 mt-2">
+                          <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{plan.icon}</div>
+                          <h4 className="text-lg font-black uppercase italic tracking-tighter text-white">{plan.name}</h4>
+                          <p className="text-[10px] text-white/60 uppercase tracking-widest">{plan.desc}</p>
+                        </div>
+
+                        <div className="flex flex-col items-center justify-center py-4 border-y border-white/10">
+                          <span className="text-5xl font-black italic text-white drop-shadow-lg">{plan.limit}</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-white/50 mt-1">Licenças</span>
+                        </div>
                         
-                        <div className="w-full space-y-2 mt-4 pt-4 border-t border-white/10">
-                          <button onClick={() => { setSelectedPlan(`pro_${plan.limit}_monthly` as any); setStage('checkout'); }} className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
-                            R$ {plan.monthly} / mês
+                        <div className="w-full space-y-3 mt-4">
+                          <button onClick={() => { setSelectedPlan(`pro_${plan.limit}_monthly` as any); setStage('checkout'); }} className="w-full py-3 bg-white/5 hover:bg-white/15 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all hover:border-white/30">
+                            Mensal: R$ {plan.monthly}
                           </button>
-                          <button onClick={() => { setSelectedPlan(`pro_${plan.limit}_yearly` as any); setStage('checkout'); }} className="w-full py-3 bg-primary hover:bg-teal-300 text-black text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-primary/10">
-                            R$ {plan.yearly} / ano
+                          <button onClick={() => { setSelectedPlan(`pro_${plan.limit}_yearly` as any); setStage('checkout'); }} className="w-full py-3.5 bg-primary hover:bg-teal-300 text-black text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(45,212,191,0.2)] hover:shadow-[0_0_30px_rgba(45,212,191,0.4)]">
+                            Anual: R$ {plan.yearly}
                           </button>
                         </div>
                       </div>
