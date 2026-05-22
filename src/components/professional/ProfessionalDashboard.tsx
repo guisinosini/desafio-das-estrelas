@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Users, Link as LinkIcon, RefreshCw, CheckCircle2, ShieldCheck, Plus, Trash, Copy } from 'lucide-react';
+import { Settings, Users, Link as LinkIcon, RefreshCw, CheckCircle2, ShieldCheck, Plus, Trash, Copy, ChevronLeft, FileText } from 'lucide-react';
 import clsx from 'clsx';
 import { createClient } from '@/lib/supabase/client';
 import { YEARLY_PRICE_IDS } from '@/lib/constants';
+import { ClinicalReport } from '../desafio/ClinicalReport';
 
 export const ProfessionalDashboard = ({
   handleLogout,
@@ -16,9 +17,11 @@ export const ProfessionalDashboard = ({
 }) => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'invites' | 'patients' | 'profile' | 'subscription'>('invites');
+  const [activeTab, setActiveTab] = useState<'invites' | 'patients' | 'profile' | 'subscription' | 'report'>('invites');
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
+  const [selectedChildIndex, setSelectedChildIndex] = useState(0);
 
   // Profile Form
   const [specialty, setSpecialty] = useState(profile?.specialty || '');
@@ -296,8 +299,26 @@ export const ProfessionalDashboard = ({
                         <p className="font-bold text-lg">{p.full_name}</p>
                         <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Conta Familiar</p>
                       </div>
-                      <button onClick={() => handleViewPatient(p.id)} className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-black transition-all">
-                        <Users className="w-5 h-5" />
+                      <button onClick={async () => {
+                        setLoading(true);
+                        try {
+                          const res = await fetch(`/api/professional/patient-gamification?patientId=${p.id}`);
+                          if (!res.ok) throw new Error("Erro na API ao carregar dados do paciente.");
+                          const { data } = await res.json();
+                          if (data?.state?.children?.length > 0) {
+                            setReportData(data.state);
+                            setSelectedChildIndex(0);
+                            setActiveTab('report');
+                          } else {
+                            alert("Este paciente ainda não possui progresso salvo (nenhuma criança criada).");
+                          }
+                        } catch (err) {
+                          console.error("Erro ao carregar paciente:", err);
+                          alert("Falha ao carregar relatório do paciente.");
+                        }
+                        setLoading(false);
+                      }} className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-black transition-all">
+                        {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileText className="w-5 h-5" />}
                       </button>
                     </div>
                   ))}
@@ -317,6 +338,42 @@ export const ProfessionalDashboard = ({
                       Fazer Upgrade de Plano
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'report' && reportData && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 border-b border-white/10 pb-6">
+                  <button onClick={() => setActiveTab('patients')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+                    <ChevronLeft className="w-4 h-4" /> Voltar
+                  </button>
+                  <h2 className="text-2xl font-black italic uppercase tracking-tighter">Relatório Clínico</h2>
+                </div>
+                
+                {reportData.children.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-4">
+                    {reportData.children.map((child: any, idx: number) => (
+                      <button
+                        key={child.id}
+                        onClick={() => setSelectedChildIndex(idx)}
+                        className={clsx(
+                          "px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all",
+                          selectedChildIndex === idx ? "bg-primary text-black" : "bg-white/5 text-white/40 hover:bg-white/10"
+                        )}
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="bg-black/20 rounded-[40px] overflow-hidden">
+                  <ClinicalReport 
+                    activeChild={reportData.children[selectedChildIndex]} 
+                    language={reportData.language || 'pt-BR'} 
+                    isSharedView={true} 
+                  />
                 </div>
               </div>
             )}
