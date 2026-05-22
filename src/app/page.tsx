@@ -1989,7 +1989,9 @@ export default function DesafioEstrelas() {
                   handleViewPatient={async (patientId) => {
                     setAuthLoading(true);
                     try {
-                      const { data } = await supabase.from('patient_gamification').select('state').eq('profile_id', patientId).maybeSingle();
+                      const res = await fetch(`/api/professional/patient-gamification?patientId=${patientId}`);
+                      if (!res.ok) throw new Error("Erro na API ao carregar dados do paciente.");
+                      const { data } = await res.json();
                       if (data?.state) {
                         const cloudData = data.state;
                         if (cloudData.children) {
