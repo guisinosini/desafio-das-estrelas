@@ -1343,7 +1343,13 @@ export default function DesafioEstrelas() {
 
               {userProfile?.role === 'professional' ? (
                 <div className="pt-4 space-y-6">
-                  <h3 className="text-xl font-black italic text-primary uppercase text-center mb-8">Escolha a capacidade do seu plano:</h3>
+                  <div className="text-center mb-8 space-y-3 bg-white/5 p-4 rounded-2xl border border-primary/20 inline-block mx-auto w-full">
+                    <h3 className="text-xl font-black italic text-primary uppercase">Escolha a capacidade do seu plano:</h3>
+                    <p className="text-xs md:text-sm text-white/80">
+                      <strong className="text-white">O que é uma licença?</strong><br/>
+                      1 Licença = <strong className="text-primary">1 Pai/Mentor</strong>, que poderá cadastrar <strong className="text-primary">até 4 crianças</strong> na plataforma.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                       { limit: 1, monthly: "19,90", yearly: "199,00" },
