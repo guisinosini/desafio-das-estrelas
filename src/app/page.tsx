@@ -556,10 +556,8 @@ export default function DesafioEstrelas() {
         if (signUpError) throw signUpError;
         user = signUpData.user;
 
-        // Força a atualização da tabela profiles para garantir a flag do profissional
-        if (user && authRole === 'professional') {
-           await supabase.from('profiles').update({ role: 'professional' }).eq('id', user.id);
-        }
+        // O trigger padrão do banco pode colocar como 'lead'. 
+        // A correção é feita em checkAndLoadData lendo o user_metadata.
 
         // Se o cadastro foi de paciente com convite válido, vincula
         if (user && validInvite) {
@@ -600,6 +598,20 @@ export default function DesafioEstrelas() {
           .select('subscription_status, subscription_price_id, role, linked_professional_id')
           .eq('id', user.id)
           .maybeSingle();
+
+        if (profileData) {
+          let effectiveRole = profileData.role;
+          if (effectiveRole !== 'professional' && user.user_metadata?.role === 'professional') {
+            effectiveRole = 'professional';
+            // Dispara chamada para a API admin para corrigir o banco em segundo plano (ignora RLS)
+            fetch('/api/auth/update-role', { 
+              method: 'POST', 
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.id, role: 'professional' }) 
+            }).catch(console.error);
+          }
+          profileData.role = effectiveRole;
+        }
 
         if (profileData?.subscription_status !== 'active') {
           return { active: false, profileData };
