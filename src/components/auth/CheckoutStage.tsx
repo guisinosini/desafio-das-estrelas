@@ -495,7 +495,7 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
             </div>
 
             <div className="space-y-3 relative z-10">
-              {plan.features.map((feat, i) => (
+              {plan.features.map((feat: string, i: number) => (
                 <div key={i} className="flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm font-bold text-white/80">{feat}</span>
