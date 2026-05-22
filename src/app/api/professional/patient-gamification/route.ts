@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
 
 export async function GET(req: Request) {
   try {
@@ -13,7 +12,7 @@ export async function GET(req: Request) {
     }
 
     // 1. Validar quem está pedindo (tem que estar autenticado)
-    const supabaseClient = createClient(cookies());
+    const supabaseClient = await createClient();
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
