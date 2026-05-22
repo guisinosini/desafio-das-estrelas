@@ -242,6 +242,8 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       const isYearly = parts[2] === 'yearly';
       
       const symbol = stripeCurrency === 'EUR' ? '€' : 'R$';
+      let amount = 0;
+      let priceStr = '';
       let titleName = '';
       if (limit === 1) { titleName = 'Pioneiro'; amount = isYearly ? 199.00 : 19.90; priceStr = isYearly ? '199,00' : '19,90'; }
       if (limit === 4) { titleName = 'Esquadrão'; amount = isYearly ? 597.00 : 59.70; priceStr = isYearly ? '597,00' : '59,70'; }
