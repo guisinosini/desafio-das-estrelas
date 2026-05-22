@@ -587,7 +587,7 @@ export default function DesafioEstrelas() {
         // 1. Busca o status de assinatura
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('subscription_status, subscription_price_id, role')
+          .select('subscription_status, subscription_price_id, role, linked_professional_id')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -655,6 +655,10 @@ export default function DesafioEstrelas() {
       }
 
       setIsPremium(true);
+      if (result.profileData) {
+        setUserProfile(result.profileData);
+      }
+
       if (result.profileData?.subscription_price_id) {
         setSubscriptionPriceId(result.profileData.subscription_price_id);
       }
@@ -1852,6 +1856,7 @@ export default function DesafioEstrelas() {
                   setLanguage={setLanguage}
                   t={t}
                   parentName={parentName}
+                  linkedProfessionalId={userProfile?.linked_professional_id || null}
                 />
               ) : view === 'professional' ? (
                 <ProfessionalDashboard 

@@ -66,6 +66,7 @@ interface ParentDashboardProps {
   parentName: string;
   isPremium: boolean;
   subscriptionPriceId: string | null;
+  linkedProfessionalId?: string | null;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -110,6 +111,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   parentName,
   isPremium,
   subscriptionPriceId,
+  linkedProfessionalId,
 }) => {
   const getPlanName = () => {
     if (!isPremium) return 'Sem Plano';
@@ -141,9 +143,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           { id: 'fleet', label: t.alliance, icon: Zap },
           { id: 'behavior', label: t.behavior, icon: AlertCircle },
           { id: 'settings', label: t.profileSettings, icon: Settings },
-          { id: 'subscription', label: 'Assinatura', icon: CreditCard },
+          ...(!linkedProfessionalId ? [{ id: 'subscription', label: 'Assinatura', icon: CreditCard }] : []),
           { id: 'history', label: t.history, icon: History },
-          { id: 'reports', label: t.reports, icon: Brain },
+          ...(!linkedProfessionalId ? [{ id: 'reports', label: t.reports, icon: Brain }] : []),
         ].map(item => (
           <button
             key={item.id}
@@ -162,12 +164,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         >
           <Plus className="w-4 h-4" /> {t.newHero}
         </button>
-        <button
-          onClick={() => setShowDeleteModal(true)}
-          className="w-full flex items-center gap-3 px-8 py-5 mt-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all"
-        >
-          <Trash className="w-4 h-4" /> {t.deleteProfile}
-        </button>
+        {!linkedProfessionalId && (
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="w-full flex items-center gap-3 px-8 py-5 mt-4 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all"
+          >
+            <Trash className="w-4 h-4" /> {t.deleteProfile}
+          </button>
+        )}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-8 py-5 mt-8 md:mt-20 rounded-[28px] text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
