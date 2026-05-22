@@ -116,9 +116,7 @@ export async function POST(req: Request) {
           currency: currency.toUpperCase(),
         });
       } else {
-        console.log(`[Stripe] Falha ao reutilizar. Motivo: ${clientSecret}`);
-        // Se a antiga está bugada, cancelamos ela para tentar criar uma nova do zero
-        await stripe.subscriptions.cancel(reusableSub.id);
+        console.log(`[Stripe] A subscription existente ainda está processando ou bugada. Ignorando ela e criando nova...`);
       }
     }
 
