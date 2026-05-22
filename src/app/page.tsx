@@ -556,6 +556,11 @@ export default function DesafioEstrelas() {
         if (signUpError) throw signUpError;
         user = signUpData.user;
 
+        // Força a atualização da tabela profiles para garantir a flag do profissional
+        if (user && authRole === 'professional') {
+           await supabase.from('profiles').update({ role: 'professional' }).eq('id', user.id);
+        }
+
         // Se o cadastro foi de paciente com convite válido, vincula
         if (user && validInvite) {
            await supabase.from('profiles').update({ linked_professional_id: validInvite.professional_id, subscription_status: 'active' }).eq('id', user.id);
@@ -596,7 +601,7 @@ export default function DesafioEstrelas() {
           .eq('id', user.id)
           .maybeSingle();
 
-        if (profileData?.subscription_status !== 'active' && profileData?.role !== 'professional') {
+        if (profileData?.subscription_status !== 'active') {
           return { active: false, profileData };
         }
 
@@ -650,15 +655,10 @@ export default function DesafioEstrelas() {
         return;
       }
 
-      // Se for profissional
-      if (result.profileData?.role === 'professional') {
-        setIsPremium(true);
-        setView('professional');
-        setStage('adventure');
-        setAuthLoading(false);
-        return;
-      }
-
+      // Removido bypass de professional aqui, pois agora eles precisam pagar também
+      // A transição para o ProfessionalDashboard ocorrerá após o pagamento, ou
+      // se já tiver status active, ele cai no mesmo if abaixo que usa o userProfile
+      
       setIsPremium(true);
       if (result.profileData) {
         setUserProfile(result.profileData);
@@ -680,6 +680,10 @@ export default function DesafioEstrelas() {
           if (cloudData.fleetId) setFleetId(cloudData.fleetId);
           if (cloudData.language) setLanguage(cloudData.language);
 
+        if (result.profileData?.role === 'professional') {
+          setView('professional');
+          setStage('adventure'); // Aqui a gente manda pro adventure, mas como a view é professional, vai renderizar o painel
+        } else {
           if (cloudData.children.length === 0) {
             setStage('setup_child');
           } else {
@@ -687,11 +691,17 @@ export default function DesafioEstrelas() {
             setStage(nextStage);
             if (nextStage === 'adventure') setView('child');
           }
+        }
         } else {
           setStage(children.length > 0 ? 'select_child' : 'setup_child');
         }
       } else {
-        setStage(children.length > 0 ? 'select_child' : 'setup_child');
+        if (result.profileData?.role === 'professional') {
+          setView('professional');
+          setStage('adventure');
+        } else {
+          setStage(children.length > 0 ? 'select_child' : 'setup_child');
+        }
       }
 
     } catch (err: any) {
@@ -1317,62 +1327,88 @@ export default function DesafioEstrelas() {
                 {t.noSubscriptionDesc}
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                {/* Plano Mensal */}
-                <div className="bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl flex flex-col justify-between hover:border-white/30 transition-all hover:scale-[1.02] group">
-                  <div className="space-y-2 text-left">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.planMonthlyLabel}</span>
-                    <h3 className="text-xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">{t.planMonthlyName}</h3>
-                    <p className="text-3xl font-black italic text-white">{t.planMonthlyPrice}<span className="text-xs font-normal text-white/40">{t.planMonthlyPeriod}</span></p>
-                    <p className="text-[10px] text-white/50">{t.planMonthlyDesc}</p>
+              {userProfile?.role === 'professional' ? (
+                <div className="pt-4 space-y-6">
+                  <h3 className="text-xl font-black italic text-primary uppercase text-center mb-8">Escolha a capacidade do seu plano:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { limit: 1, monthly: "19,90", yearly: "199,00" },
+                      { limit: 4, monthly: "59,70", yearly: "597,00" },
+                      { limit: 9, monthly: "139,90", yearly: "1390,00" },
+                      { limit: 15, monthly: "199,90", yearly: "1900,00" }
+                    ].map(plan => (
+                      <div key={plan.limit} className="bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-col items-center text-center space-y-4 hover:border-primary transition-all">
+                        <span className="text-3xl font-black italic text-white">{plan.limit}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Licenças</span>
+                        
+                        <div className="w-full space-y-2 mt-4 pt-4 border-t border-white/10">
+                          <button onClick={() => { setSelectedPlan(`pro_${plan.limit}_monthly` as any); setStage('checkout'); }} className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
+                            R$ {plan.monthly} / mês
+                          </button>
+                          <button onClick={() => { setSelectedPlan(`pro_${plan.limit}_yearly` as any); setStage('checkout'); }} className="w-full py-3 bg-primary hover:bg-teal-300 text-black text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-primary/10">
+                            R$ {plan.yearly} / ano
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <button
-                    onClick={() => {
-                      // Pré-inicializa o SDK do MP antes de navegar para o checkout
-                      // Isso garante que o Brick já esteja carregando quando o componente montar
-                      const win = window as any;
-                      if (!win.__mercadopago_initialized__ && process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY) {
-                        import('@mercadopago/sdk-react').then(({ initMercadoPago }) => {
-                          initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!, { locale: 'pt-BR' });
-                          win.__mercadopago_initialized__ = true;
-                        });
-                      }
-                      setSelectedPlan('monthly'); setStage('checkout');
-                    }}
-                    className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
-                  >
-                    {t.planMonthlyActivate}
-                  </button>
                 </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                  {/* Plano Mensal */}
+                  <div className="bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl flex flex-col justify-between hover:border-white/30 transition-all hover:scale-[1.02] group">
+                    <div className="space-y-2 text-left">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t.planMonthlyLabel}</span>
+                      <h3 className="text-xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">{t.planMonthlyName}</h3>
+                      <p className="text-3xl font-black italic text-white">{t.planMonthlyPrice}<span className="text-xs font-normal text-white/40">{t.planMonthlyPeriod}</span></p>
+                      <p className="text-[10px] text-white/50">{t.planMonthlyDesc}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const win = window as any;
+                        if (!win.__mercadopago_initialized__ && process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY) {
+                          import('@mercadopago/sdk-react').then(({ initMercadoPago }) => {
+                            initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!, { locale: 'pt-BR' });
+                            win.__mercadopago_initialized__ = true;
+                          });
+                        }
+                        setSelectedPlan('monthly'); setStage('checkout');
+                      }}
+                      className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
+                    >
+                      {t.planMonthlyActivate}
+                    </button>
+                  </div>
 
-                {/* Plano Anual */}
-                <div className="bg-primary/5 border-2 border-primary/20 p-6 md:p-8 rounded-3xl flex flex-col justify-between hover:border-primary/40 transition-all hover:scale-[1.02] relative overflow-hidden group shadow-lg shadow-primary/5">
-                  <div className="absolute top-3 right-3 bg-primary text-black font-black text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-full">
-                    {t.planAnnualSave}
+                  {/* Plano Anual */}
+                  <div className="bg-primary/5 border-2 border-primary/20 p-6 md:p-8 rounded-3xl flex flex-col justify-between hover:border-primary/40 transition-all hover:scale-[1.02] relative overflow-hidden group shadow-lg shadow-primary/5">
+                    <div className="absolute top-3 right-3 bg-primary text-black font-black text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-full">
+                      {t.planAnnualSave}
+                    </div>
+                    <div className="space-y-2 text-left">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary">{t.planAnnualLabel}</span>
+                      <h3 className="text-xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">{t.planAnnualName}</h3>
+                      <p className="text-3xl font-black italic text-white">{t.planAnnualPrice}<span className="text-xs font-normal text-white/40">{t.planAnnualPeriod}</span></p>
+                      <p className="text-[10px] text-white/50">{t.planAnnualDesc}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const win = window as any;
+                        if (!win.__mercadopago_initialized__ && process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY) {
+                          import('@mercadopago/sdk-react').then(({ initMercadoPago }) => {
+                            initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!, { locale: 'pt-BR' });
+                            win.__mercadopago_initialized__ = true;
+                          });
+                        }
+                        setSelectedPlan('yearly'); setStage('checkout');
+                      }}
+                      className="w-full mt-6 py-4 bg-primary text-black hover:bg-teal-300 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-lg shadow-primary/10"
+                    >
+                      {t.planAnnualActivate}
+                    </button>
                   </div>
-                  <div className="space-y-2 text-left">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">{t.planAnnualLabel}</span>
-                    <h3 className="text-xl font-black uppercase italic tracking-tight text-white group-hover:text-primary transition-colors">{t.planAnnualName}</h3>
-                    <p className="text-3xl font-black italic text-white">{t.planAnnualPrice}<span className="text-xs font-normal text-white/40">{t.planAnnualPeriod}</span></p>
-                    <p className="text-[10px] text-white/50">{t.planAnnualDesc}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const win = window as any;
-                      if (!win.__mercadopago_initialized__ && process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY) {
-                        import('@mercadopago/sdk-react').then(({ initMercadoPago }) => {
-                          initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!, { locale: 'pt-BR' });
-                          win.__mercadopago_initialized__ = true;
-                        });
-                      }
-                      setSelectedPlan('yearly'); setStage('checkout');
-                    }}
-                    className="w-full mt-6 py-4 bg-primary text-black hover:bg-teal-300 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-lg shadow-primary/10"
-                  >
-                    {t.planAnnualActivate}
-                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </motion.div>
         )}

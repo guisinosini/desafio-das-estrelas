@@ -70,11 +70,21 @@ export async function POST(req: Request) {
 
     // Se for mensal via PIX ou Anual (Cartão/PIX), cai para pagamento único (Payment API)
 
-    const prices = { monthly: 19.90, yearly: 199.00 };
-    const amount = interval === 'yearly' ? prices.yearly : prices.monthly;
-    const title = interval === 'yearly'
+    let amount = interval === 'yearly' ? 199.00 : 19.90;
+    let title = interval === 'yearly'
       ? 'Desafio das Estrelas - Plano Comandante (Anual)'
       : 'Desafio das Estrelas - Plano Cadete (Mensal)';
+
+    if (interval.startsWith('pro_')) {
+      const parts = interval.split('_');
+      const limit = parseInt(parts[1], 10);
+      const isYearly = parts[2] === 'yearly';
+      if (limit === 1) amount = isYearly ? 199.00 : 19.90;
+      if (limit === 4) amount = isYearly ? 597.00 : 59.70;
+      if (limit === 9) amount = isYearly ? 1390.00 : 139.90;
+      if (limit === 15) amount = isYearly ? 1900.00 : 199.90;
+      title = `Desafio das Estrelas - Licença Profissional B2B (${limit} famílias - ${isYearly ? 'Anual' : 'Mensal'})`;
+    }
 
     const payment = new Payment(mpClient);
 
@@ -141,6 +151,16 @@ export async function POST(req: Request) {
           subscription_status: 'active',
           subscription_price_id: interval,
         });
+      }
+
+      if (interval.startsWith('pro_')) {
+        const parts = interval.split('_');
+        const limit = parseInt(parts[1], 10);
+        await supabaseAdmin.from('professional_subscriptions').upsert({
+          professional_id: user.id,
+          plan_limit: limit,
+          status: 'active'
+        }, { onConflict: 'professional_id' });
       }
 
       console.log(`[MP Checkout] Perfil ${user.id} ativado (${interval}) ✅`);

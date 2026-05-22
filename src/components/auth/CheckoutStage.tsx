@@ -27,7 +27,7 @@ if (typeof window !== 'undefined') {
 interface CheckoutStageProps {
   onBack: () => void;
   onSuccess: () => void;
-  selectedPlan: 'monthly' | 'yearly';
+  selectedPlan: string;
 }
 
 const PLANS = {
@@ -66,7 +66,7 @@ function StripeForm({
   clientSecret: string;
   planAmount: number;
   planCurrency: string;
-  selectedPlan: 'monthly' | 'yearly';
+  selectedPlan: string;
   onSuccess: () => void;
   setErrorMessage: (msg: string) => void;
   setStatus: (status: any) => void;
@@ -235,8 +235,41 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
 
   // Plano traduzido dinamicamente de acordo com o idioma do usuário
   const plan = useMemo(() => {
+    // Verifica se é um plano de profissional
+    if (selectedPlan.startsWith('pro_')) {
+      const parts = selectedPlan.split('_');
+      const limit = parseInt(parts[1], 10);
+      const isYearly = parts[2] === 'yearly';
+      
+      const symbol = stripeCurrency === 'EUR' ? '€' : 'R$';
+      let amount = 0;
+      let priceStr = '';
+      
+      if (limit === 1) { amount = isYearly ? 199.00 : 19.90; priceStr = isYearly ? '199,00' : '19,90'; }
+      if (limit === 4) { amount = isYearly ? 597.00 : 59.70; priceStr = isYearly ? '597,00' : '59,70'; }
+      if (limit === 9) { amount = isYearly ? 1390.00 : 139.90; priceStr = isYearly ? '1390,00' : '139,90'; }
+      if (limit === 15) { amount = isYearly ? 1900.00 : 199.90; priceStr = isYearly ? '1900,00' : '199,90'; }
+
+      if (isInternational) {
+         // Valores fictícios para intl, caso precise
+         amount = isYearly ? amount / 5 : amount / 5;
+         priceStr = amount.toFixed(2);
+      }
+
+      return {
+        title: `Plano Profissional (${limit} Licenças)`,
+        subtitle: isYearly ? 'Anual • B2B' : 'Mensal • B2B',
+        price: `${symbol} ${priceStr}`,
+        period: isYearly ? '/ano' : '/mês',
+        description: isYearly ? 'Faturamento anual único.' : 'Cobrado automaticamente todo mês.',
+        features: ['Gerenciamento de pacientes', 'Relatórios clínicos detalhados', 'Visualização do painel dos pais', `Até ${limit} convites ativos`],
+        badge: isYearly ? '🚀 Anual' : null,
+        amount: amount,
+      };
+    }
+
     if (!isInternational) {
-      return PLANS[selectedPlan];
+      return (PLANS as any)[selectedPlan] || PLANS['monthly'];
     }
 
     const symbol = stripeCurrency === 'EUR' ? '€' : '$';
