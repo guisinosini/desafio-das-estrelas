@@ -1675,12 +1675,15 @@ export default function DesafioEstrelas() {
                   if (view === 'child') {
                     setShowPin(true);
                   } else {
-                    setShowPin(false); // Fecha qualquer popup de PIN residual ao entrar na view child
+                    setShowPin(false);
                     setView('child');
                   }
-                }} className="cursor-pointer group relative shrink-0">
+                }}>
+                <div className={clsx("cursor-pointer group relative shrink-0", (view === 'professional' || view === 'admin') && "pointer-events-none")}>
                   <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border-2 border-primary p-0.5 bg-zinc-900 shadow-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform text-xl md:text-2xl overflow-hidden">
                     {(() => {
+                      if (view === 'professional') return <Users className="w-6 h-6 text-primary" />;
+                      if (view === 'admin') return <ShieldCheck className="w-6 h-6 text-primary" />;
                       const a = AVATARS.find(a => a.id === activeChild?.avatar);
                       if (!a) return null;
                       return a.image ? (
@@ -1695,12 +1698,28 @@ export default function DesafioEstrelas() {
                   </div>
                 </div>
                 
-                <div className="cursor-pointer min-w-0" onClick={() => setStage('select_child')}>
+                <div className={clsx("min-w-0", view !== 'professional' && view !== 'admin' && "cursor-pointer")} onClick={() => {
+                  if (view !== 'professional' && view !== 'admin') {
+                    setStage('select_child');
+                  }
+                }}>
                   <h1 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-white/40 flex items-center gap-1.5 md:gap-2 flex-wrap truncate">
-                    <span className="hidden md:inline">{t.mentor}: {parentName || 'Comandante Galáctico'}</span>
-                    <span className="hidden md:inline text-white/20">•</span>
-                    <span className="text-white font-bold">{activeChild?.name}</span>
-                    <RefreshCw className="w-2.5 h-2.5 md:w-3 md:h-3 text-white/40 shrink-0" />
+                    {view === 'professional' ? (
+                      <span className="hidden md:inline">Especialista: {parentName || 'Profissional'}</span>
+                    ) : view === 'admin' ? (
+                      <span className="hidden md:inline">Administrador: {parentName || 'Admin'}</span>
+                    ) : (
+                      <>
+                        <span className="hidden md:inline">{t.mentor}: {parentName || 'Comandante Galáctico'}</span>
+                        {activeChild && (
+                          <>
+                            <span className="hidden md:inline text-white/20">•</span>
+                            <span className="text-white font-bold">{activeChild.name}</span>
+                          </>
+                        )}
+                        <RefreshCw className="w-2.5 h-2.5 md:w-3 md:h-3 text-white/40 shrink-0" />
+                      </>
+                    )}
                   </h1>
                   
                   <div className="flex items-center gap-1.5 md:gap-2 mt-0.5 md:mt-1 flex-wrap">
