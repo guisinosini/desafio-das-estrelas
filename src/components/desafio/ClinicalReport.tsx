@@ -340,17 +340,24 @@ export const ClinicalReport: React.FC<ClinicalReportProps> = ({ activeChild, lan
           </div>
 
           <div className="flex flex-col gap-3 w-full sm:w-auto">
-            <button
-              onClick={() => setShowShareModal(true)}
-              className="flex-1 sm:flex-none px-4 py-3 bg-indigo-500 text-white font-black uppercase tracking-[0.05em] text-[10px] rounded-[16px] shadow-[0_10px_20px_-10px_rgba(99,102,241,0.4)] hover:scale-105 hover:bg-indigo-600 transition-all flex items-center justify-center gap-2"
-            >
-              <Share2 className="w-4 h-4" /> {t.shareReport}
-            </button>
+            {!isSharedView && (
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="flex-1 sm:flex-none px-4 py-3 bg-indigo-500 text-white font-black uppercase tracking-[0.05em] text-[10px] rounded-[16px] shadow-[0_10px_20px_-10px_rgba(99,102,241,0.4)] hover:scale-105 hover:bg-indigo-600 transition-all flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-4 h-4" /> {t.shareReport}
+              </button>
+            )}
             <button
               onClick={handlePrint}
-              className="flex-1 sm:flex-none px-4 py-3 bg-white/10 text-white font-black uppercase tracking-[0.05em] text-[10px] rounded-[16px] border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-2"
+              className={clsx(
+                "flex-1 sm:flex-none px-6 py-3 font-black uppercase tracking-[0.05em] text-[10px] rounded-[16px] transition-all flex items-center justify-center gap-2",
+                isSharedView 
+                  ? "bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg hover:scale-105" 
+                  : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+              )}
             >
-              <Printer className="w-4 h-4" /> {t.reportExport}
+              <Printer className="w-4 h-4" /> Imprimir Relatório
             </button>
           </div>
         </div>
