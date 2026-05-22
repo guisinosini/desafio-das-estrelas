@@ -108,13 +108,17 @@ export async function POST(req: Request) {
     if (reusableSub) {
       console.log(`[Stripe] Reutilizando subscription incompleta: ${reusableSub.id}`);
       const clientSecret = await resolveClientSecret(reusableSub);
-      if (clientSecret) {
+      if (clientSecret && !clientSecret.startsWith('ERROR:')) {
         return NextResponse.json({
           clientSecret,
           subscriptionId: reusableSub.id,
           amount: selectedPlan === 'yearly' ? 99.00 : 9.90,
           currency: currency.toUpperCase(),
         });
+      } else {
+        console.log(`[Stripe] Falha ao reutilizar. Motivo: ${clientSecret}`);
+        // Se a antiga está bugada, cancelamos ela para tentar criar uma nova do zero
+        await stripe.subscriptions.cancel(reusableSub.id);
       }
     }
 
@@ -124,7 +128,10 @@ export async function POST(req: Request) {
       customer: customerId,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
+      payment_settings: { 
+        save_default_payment_method: 'on_subscription',
+        payment_method_types: ['card'] // Força a Stripe a gerar um PaymentIntent para Cartão
+      },
       expand: ['latest_invoice.payment_intent', 'pending_setup_intent'],
       metadata: {
         userId: user.id,
