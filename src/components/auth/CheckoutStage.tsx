@@ -397,9 +397,8 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       }
     },
     paymentMethods: {
-      maxInstallments: selectedPlan === 'yearly' ? 12 : 1,
+      maxInstallments: selectedPlan.includes('yearly') ? 12 : 1,
       creditCard: 'all',
-      mercadoPago: 'all',
       bankTransfer: 'all', 
     }
   };

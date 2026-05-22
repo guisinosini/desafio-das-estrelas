@@ -1489,7 +1489,13 @@ export default function DesafioEstrelas() {
                 setChildren(cloudData.children);
                 setActiveChildId(cloudData.activeChildId || null);
               }
-              setStage(children.length > 0 ? 'select_child' : 'setup_child');
+              
+              if (userProfile?.role === 'professional') {
+                setView('professional');
+                setStage('adventure');
+              } else {
+                setStage(children.length > 0 ? 'select_child' : 'setup_child');
+              }
             }}
           />
         )}
