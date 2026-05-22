@@ -189,7 +189,8 @@ export default function DesafioEstrelas() {
   const { isSyncing, loadFromCloud, saveToCloud } = useCloudSync({
     supabase,
     setIsPremium,
-    setSubscriptionPriceId
+    setSubscriptionPriceId,
+    impersonatedPatientId
   });
 
   const loadFleetRanking = async () => {
@@ -273,6 +274,8 @@ export default function DesafioEstrelas() {
   const [isLogin, setIsLogin] = useState(false);
   const [authRole, setAuthRole] = useState<'patient' | 'professional'>('patient');
   const [accessCode, setAccessCode] = useState('');
+  const [impersonatedPatientId, setImpersonatedPatientId] = useState<string | null>(null);
+  const [isProfessionalViewer, setIsProfessionalViewer] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
@@ -872,6 +875,16 @@ export default function DesafioEstrelas() {
   };
 
   const handleLogout = async () => {
+    if (isProfessionalViewer) {
+      setIsProfessionalViewer(false);
+      setImpersonatedPatientId(null);
+      setChildren([]); 
+      setActiveChildId(null);
+      setView('professional');
+      return;
+    }
+    
+    setAuthLoading(true);
     // Força a sincronização dos dados atuais antes de deslogar (bypass do debounce de 2s)
     if (children.length > 0) {
       const currentState = { children, activeChildId, stage, parentPin, fleetId, language };
@@ -1856,12 +1869,37 @@ export default function DesafioEstrelas() {
                   setLanguage={setLanguage}
                   t={t}
                   parentName={parentName}
-                  linkedProfessionalId={userProfile?.linked_professional_id || null}
+                  linkedProfessionalId={isProfessionalViewer ? null : (userProfile?.linked_professional_id || null)}
                 />
               ) : view === 'professional' ? (
                 <ProfessionalDashboard 
                   handleLogout={handleLogout}
                   setStage={setStage}
+                  handleViewPatient={async (patientId) => {
+                    setAuthLoading(true);
+                    try {
+                      const { data } = await supabase.from('patient_gamification').select('state').eq('profile_id', patientId).maybeSingle();
+                      if (data?.state) {
+                        const cloudData = data.state;
+                        if (cloudData.children) {
+                          setChildren(cloudData.children);
+                          setActiveChildId(cloudData.activeChildId || null);
+                          if (cloudData.parentPin) setParentPin(cloudData.parentPin);
+                          if (cloudData.fleetId) setFleetId(cloudData.fleetId);
+                          if (cloudData.language) setLanguage(cloudData.language);
+                        }
+                        setIsProfessionalViewer(true);
+                        setImpersonatedPatientId(patientId);
+                        setView('parent');
+                        setParentSubView('approvals');
+                      } else {
+                        alert("Este paciente ainda não possui progresso salvo.");
+                      }
+                    } catch (e) {
+                      console.error("Erro ao carregar paciente:", e);
+                    }
+                    setAuthLoading(false);
+                  }}
                 />
               ) : (
                 <AdminDashboard setView={setView} language={language} t={t} handleLogout={handleLogout} />

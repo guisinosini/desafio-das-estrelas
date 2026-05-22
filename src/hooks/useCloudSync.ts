@@ -5,9 +5,10 @@ interface UseCloudSyncProps {
   supabase: SupabaseClient<any, "public", any>;
   setIsPremium: (isPremium: boolean) => void;
   setSubscriptionPriceId: (id: string | null) => void;
+  impersonatedPatientId?: string | null;
 }
 
-export function useCloudSync({ supabase, setIsPremium, setSubscriptionPriceId }: UseCloudSyncProps) {
+export function useCloudSync({ supabase, setIsPremium, setSubscriptionPriceId, impersonatedPatientId }: UseCloudSyncProps) {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const loadFromCloud = useCallback(async (existingUser?: any) => {
@@ -63,8 +64,9 @@ export function useCloudSync({ supabase, setIsPremium, setSubscriptionPriceId }:
 
     setIsSyncing(true);
     try {
+      const targetId = impersonatedPatientId || user.id;
       const payload: any = {
-        profile_id: user.id,
+        profile_id: targetId,
         state: state,
         updated_at: new Date().toISOString()
       };

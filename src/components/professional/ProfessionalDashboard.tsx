@@ -11,6 +11,7 @@ export const ProfessionalDashboard = ({
 }: {
   handleLogout: () => void;
   setStage: (stage: string) => void;
+  handleViewPatient: (patientId: string) => void;
 }) => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -276,7 +277,7 @@ export const ProfessionalDashboard = ({
                         <p className="font-bold text-lg">{p.full_name}</p>
                         <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Conta Familiar</p>
                       </div>
-                      <button className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-black transition-all">
+                      <button onClick={() => handleViewPatient(p.id)} className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-black transition-all">
                         <Users className="w-5 h-5" />
                       </button>
                     </div>
