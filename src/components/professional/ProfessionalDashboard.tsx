@@ -113,9 +113,22 @@ export const ProfessionalDashboard = ({
 
   const handleCreateInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subscription) return;
-    if (subscription.used_invites >= subscription.plan_limit) {
-      alert('Limite de convites atingido. Faça upgrade do seu plano.');
+    
+    if (!newInviteEmail) {
+      alert('Por favor, informe o e-mail do pai/responsável.');
+      return;
+    }
+
+    if (!subscription) {
+      alert('Carregando dados da sua assinatura... Aguarde alguns instantes e tente novamente.');
+      return;
+    }
+
+    const used = subscription.used_invites || 0;
+    const limit = subscription.plan_limit || 0;
+
+    if (used >= limit) {
+      alert(`Você já atingiu o limite de convites do seu plano (${used}/${limit}). Faça um upgrade para liberar mais licenças.`);
       return;
     }
 
@@ -129,7 +142,10 @@ export const ProfessionalDashboard = ({
         parent_email: newInviteEmail,
         access_code: accessCode
       });
-      if (error) throw error;
+      if (error) {
+        console.error("Erro ao inserir convite no banco:", error);
+        throw error;
+      }
       
       // Enviar email simulado (ideal via API)
       await fetch('/api/send-invite', {
@@ -138,11 +154,12 @@ export const ProfessionalDashboard = ({
         body: JSON.stringify({ email: newInviteEmail, code: accessCode })
       }).catch(e => console.error("API falhou, mas convite salvo no DB."));
       
-      alert(`Convite gerado! O código é: ${accessCode}`);
+      alert(`Convite gerado com sucesso! O código de acesso é: ${accessCode}`);
       setNewInviteEmail('');
       loadData();
     } catch (err: any) {
-      alert(`Erro: ${err.message}`);
+      console.error("Erro completo ao gerar convite:", err);
+      alert(`Erro ao gerar convite: ${err.message || 'Falha de comunicação com o servidor.'}`);
     }
     setLoading(false);
   };
