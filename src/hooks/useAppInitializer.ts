@@ -79,6 +79,8 @@ export function useAppInitializer({
         }
       }
 
+      let currentRole = 'patient';
+      
       // Verifica primeiro se o usuário está logado e se tem assinatura ativa
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -120,16 +122,16 @@ export function useAppInitializer({
           .maybeSingle();
 
         if (profile) {
-          let effectiveRole = profile.role;
-          if (effectiveRole !== 'professional' && user.user_metadata?.role === 'professional') {
-            effectiveRole = 'professional';
+          currentRole = profile.role;
+          if (currentRole !== 'professional' && user.user_metadata?.role === 'professional') {
+            currentRole = 'professional';
             fetch('/api/auth/update-role', { 
               method: 'POST', 
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId: user.id, role: 'professional' }) 
             }).catch(console.error);
           }
-          profile.role = effectiveRole;
+          profile.role = currentRole;
           setUserProfile(profile);
         }
 
@@ -149,14 +151,22 @@ export function useAppInitializer({
                   if (cloudData.fleetId) setFleetId(cloudData.fleetId);
                   if (cloudData.language) setLanguage(cloudData.language);
                   
-                  if (cloudData.children.length === 0) {
+                  if (currentRole === 'professional') {
+                    setView('professional');
+                    setStage('adventure');
+                  } else if (cloudData.children.length === 0) {
                     setStage('setup_child');
                   } else {
                     const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
                     setStage(nextStage);
                   }
                 } else {
-                  setStage('setup_child');
+                  if (currentRole === 'professional') {
+                    setView('professional');
+                    setStage('adventure');
+                  } else {
+                    setStage('setup_child');
+                  }
                 }
                 return;
               }
@@ -230,7 +240,10 @@ export function useAppInitializer({
         if (finalData.parentPin) setParentPin(finalData.parentPin);
         if (finalData.fleetId) setFleetId(finalData.fleetId);
         
-        if (updatedChildren.length === 0) {
+        if (currentRole === 'professional') {
+          setView('professional');
+          setStage('adventure');
+        } else if (updatedChildren.length === 0) {
           setStage('setup_child');
         } else {
           // Stages proibidos de serem restaurados automaticamente:
@@ -243,7 +256,12 @@ export function useAppInitializer({
         }
       } else if (user) {
         // Se o usuário está logado, é premium, mas não possui dados salvos (primeiro login)
-        setStage('setup_child');
+        if (currentRole === 'professional') {
+          setView('professional');
+          setStage('adventure');
+        } else {
+          setStage('setup_child');
+        }
       }
     };
 
@@ -300,13 +318,21 @@ export function useAppInitializer({
             setSubscriptionPriceId(profile.subscription_price_id);
           }
           const cloudData = await loadFromCloud(session?.user);
+          let onAuthRole = profile?.role || 'patient';
+          if (onAuthRole !== 'professional' && session.user.user_metadata?.role === 'professional') {
+             onAuthRole = 'professional';
+          }
+
           if (cloudData && cloudData.children) {
             setChildren(cloudData.children);
             setActiveChildId(cloudData.activeChildId || null);
             if (cloudData.fleetId) setFleetId(cloudData.fleetId);
             if (cloudData.language) setLanguage(cloudData.language);
             
-            if (cloudData.children.length === 0) {
+            if (onAuthRole === 'professional') {
+              setView('professional');
+              setStage('adventure');
+            } else if (cloudData.children.length === 0) {
               setStage('setup_child');
             } else {
               const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
@@ -315,7 +341,12 @@ export function useAppInitializer({
           } else {
             setChildren([]);
             setActiveChildId(null);
-            setStage('setup_child');
+            if (onAuthRole === 'professional') {
+              setView('professional');
+              setStage('adventure');
+            } else {
+              setStage('setup_child');
+            }
           }
         }
       }
