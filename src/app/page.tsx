@@ -276,6 +276,7 @@ export default function DesafioEstrelas() {
   const [parentName, setParentName] = useState("");
   const [isLogin, setIsLogin] = useState(false);
   const [authRole, setAuthRole] = useState<'patient' | 'professional'>('patient');
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [accessCode, setAccessCode] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
