@@ -22,6 +22,10 @@ interface AuthStageProps {
   password: string;
   setPassword: (password: string) => void;
   handleForgotPassword: () => void;
+  authRole: 'patient' | 'professional';
+  setAuthRole: (role: 'patient' | 'professional') => void;
+  accessCode: string;
+  setAccessCode: (code: string) => void;
 }
 
 const AuthStage = memo(({
@@ -41,7 +45,11 @@ const AuthStage = memo(({
   setEmail,
   password,
   setPassword,
-  handleForgotPassword
+  handleForgotPassword,
+  authRole,
+  setAuthRole,
+  accessCode,
+  setAccessCode
 }: AuthStageProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -159,9 +167,24 @@ const AuthStage = memo(({
                 )}
                 
                 {!isLogin && (
+                  <div className="flex gap-2 mb-6">
+                    <button type="button" onClick={() => setAuthRole('patient')} className={clsx("flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", authRole === 'patient' ? "bg-primary text-black border-primary" : "bg-white/5 text-white/40 border-white/10")}>Pai / Mentor</button>
+                    <button type="button" onClick={() => setAuthRole('professional')} className={clsx("flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", authRole === 'professional' ? "bg-primary text-black border-primary" : "bg-white/5 text-white/40 border-white/10")}>Profissional</button>
+                  </div>
+                )}
+                {!isLogin && (
                   <div className="space-y-2 group/input">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-white/40 group-focus-within/input:text-primary transition-colors ml-1">{t.mentorName}</label>
-                    <input required type="text" placeholder="Ex: Capitão Carlos" value={parentName} onChange={e => setParentName(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary focus:bg-white/5 transition-all text-white placeholder-white/20 shadow-inner" />
+                    <label className="text-[9px] font-black uppercase tracking-widest text-white/40 group-focus-within/input:text-primary transition-colors ml-1">{authRole === 'patient' ? t.mentorName : 'Nome do Profissional'}</label>
+                    <input required type="text" placeholder={authRole === 'patient' ? "Ex: Capitão Carlos" : "Ex: Dr. Carlos"} value={parentName} onChange={e => setParentName(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary focus:bg-white/5 transition-all text-white placeholder-white/20 shadow-inner" />
+                  </div>
+                )}
+                {!isLogin && authRole === 'patient' && (
+                  <div className="space-y-2 group/input pt-2">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-white/40 group-focus-within/input:text-primary transition-colors ml-1 flex items-center justify-between">
+                      Código de Acesso do Profissional
+                      <span className="text-[8px] bg-white/10 px-2 py-0.5 rounded text-white/50">Opcional</span>
+                    </label>
+                    <input type="text" placeholder="Deixe em branco caso não tenha código" value={accessCode} onChange={e => setAccessCode(e.target.value.toUpperCase())} className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold tracking-widest outline-none focus:border-primary focus:bg-white/5 transition-all text-white placeholder-white/20 shadow-inner" />
                   </div>
                 )}
 

@@ -69,6 +69,7 @@ import { RocketLaunchStage } from "@/components/desafio/RocketLaunchStage";
 import { useAppInitializer } from "@/hooks/useAppInitializer";
 import { AppHeader } from "@/components/shared/AppHeader";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { ProfessionalDashboard } from "@/components/professional/ProfessionalDashboard";
 import { Footer } from "@/components/Footer";
 import { YEARLY_PRICE_IDS } from "@/lib/constants";
 import { useCloudSync } from "@/hooks/useCloudSync";
@@ -161,7 +162,7 @@ export default function DesafioEstrelas() {
   const [customTask, setCustomTask] = useState<{ title: string, stars: number, recurrence: TaskRecurrence, planetId?: string }>({ title: "", stars: 5, recurrence: 'daily', planetId: "" });
   const [customReward, setCustomReward] = useState({ title: "", cost: 50 });
 
-  const [view, setView] = useState<'child' | 'parent' | 'admin'>('child');
+  const [view, setView] = useState<'child' | 'parent' | 'admin' | 'professional'>('child');
   const [parentSubView, setParentSubView] = useState<'approvals' | 'behavior' | 'history' | 'missions' | 'ranking' | 'settings' | 'fleet'>('approvals');
   const [parentPin, setParentPin] = useState("1234");
   const [fleetId, setFleetId] = useState("");
@@ -270,6 +271,8 @@ export default function DesafioEstrelas() {
   const [password, setPassword] = useState("");
   const [parentName, setParentName] = useState("");
   const [isLogin, setIsLogin] = useState(false);
+  const [authRole, setAuthRole] = useState<'patient' | 'professional'>('patient');
+  const [accessCode, setAccessCode] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
@@ -524,14 +527,41 @@ export default function DesafioEstrelas() {
       } else {
         if (!parentName) throw new Error("Por favor, digite seu nome.");
 
+        // Validação de código de acesso para pacientes, se fornecido
+        let validInvite: any = null;
+        if (authRole === 'patient' && accessCode.trim()) {
+           const { data: invite, error: inviteError } = await supabase
+             .from('professional_invites')
+             .select('id, professional_id, status')
+             .eq('access_code', accessCode.trim())
+             .single();
+           
+           if (inviteError || !invite || invite.status !== 'pending') {
+              throw new Error("Código de acesso inválido ou já utilizado.");
+           }
+           validInvite = invite;
+        }
+
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: parentName, role: 'lead', source: 'desafio_estrelas' } }
+          options: { data: { full_name: parentName, role: authRole, source: 'desafio_estrelas' } }
         });
 
         if (signUpError) throw signUpError;
         user = signUpData.user;
+
+        // Se o cadastro foi de paciente com convite válido, vincula
+        if (user && validInvite) {
+           await supabase.from('profiles').update({ linked_professional_id: validInvite.professional_id, subscription_status: 'active' }).eq('id', user.id);
+           await supabase.from('professional_invites').update({ status: 'used', used_at: new Date().toISOString() }).eq('id', validInvite.id);
+           
+           // Atualiza contagem
+           const { data: sub } = await supabase.from('professional_subscriptions').select('id, used_invites').eq('professional_id', validInvite.professional_id).single();
+           if (sub) {
+              await supabase.from('professional_subscriptions').update({ used_invites: (sub.used_invites || 0) + 1 }).eq('id', sub.id);
+           }
+        }
 
         if (signUpData.user && !signUpData.session) {
           setAuthError("Confirme seu e-mail para continuar.");
@@ -557,12 +587,12 @@ export default function DesafioEstrelas() {
         // 1. Busca o status de assinatura
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('subscription_status, subscription_price_id')
+          .select('subscription_status, subscription_price_id, role')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (profileData?.subscription_status !== 'active') {
-          return { active: false };
+        if (profileData?.subscription_status !== 'active' && profileData?.role !== 'professional') {
+          return { active: false, profileData };
         }
 
         // 2. Busca o estado do jogo na nuvem
@@ -611,6 +641,15 @@ export default function DesafioEstrelas() {
         } else {
           setStage('no_subscription');
         }
+        setAuthLoading(false);
+        return;
+      }
+
+      // Se for profissional
+      if (result.profileData?.role === 'professional') {
+        setIsPremium(true);
+        setView('professional');
+        setStage('adventure');
         setAuthLoading(false);
         return;
       }
@@ -1145,6 +1184,10 @@ export default function DesafioEstrelas() {
             password={password}
             setPassword={setPassword}
             handleForgotPassword={handleForgotPassword}
+            authRole={authRole}
+            setAuthRole={setAuthRole}
+            accessCode={accessCode}
+            setAccessCode={setAccessCode}
           />
         )}
 
@@ -1809,6 +1852,11 @@ export default function DesafioEstrelas() {
                   setLanguage={setLanguage}
                   t={t}
                   parentName={parentName}
+                />
+              ) : view === 'professional' ? (
+                <ProfessionalDashboard 
+                  handleLogout={handleLogout}
+                  setStage={setStage}
                 />
               ) : (
                 <AdminDashboard setView={setView} language={language} t={t} handleLogout={handleLogout} />
