@@ -642,6 +642,11 @@ export default function DesafioEstrelas() {
         return;
       }
 
+      // Define o userProfile logo cedo, para que as telas (como no_subscription) saibam o role
+      if (result.profileData) {
+        setUserProfile(result.profileData);
+      }
+
       if (!result.active) {
         setIsPremium(false);
         setSubscriptionPriceId(null);
@@ -660,9 +665,6 @@ export default function DesafioEstrelas() {
       // se já tiver status active, ele cai no mesmo if abaixo que usa o userProfile
       
       setIsPremium(true);
-      if (result.profileData) {
-        setUserProfile(result.profileData);
-      }
 
       if (result.profileData?.subscription_price_id) {
         setSubscriptionPriceId(result.profileData.subscription_price_id);
