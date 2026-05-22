@@ -337,7 +337,8 @@ export default function DesafioEstrelas() {
     setFleetId,
     setSubscriptionPriceId,
     setParentPin,
-    setParentName
+    setParentName,
+    setUserProfile
   });
 
   useEffect(() => {

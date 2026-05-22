@@ -18,6 +18,7 @@ interface UseAppInitializerProps {
   setSubscriptionPriceId: (id: string | null) => void;
   setParentPin: (pin: string) => void;
   setParentName: (name: string) => void;
+  setUserProfile: (profile: any) => void;
 }
 
 export function useAppInitializer({
@@ -33,7 +34,8 @@ export function useAppInitializer({
   setFleetId,
   setSubscriptionPriceId,
   setParentPin,
-  setParentName
+  setParentName,
+  setUserProfile
 }: UseAppInitializerProps) {
   useEffect(() => {
     // Detecção Automática de Idioma e Região
@@ -113,9 +115,23 @@ export function useAppInitializer({
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status, subscription_price_id')
+          .select('subscription_status, subscription_price_id, role, linked_professional_id')
           .eq('id', user.id)
           .maybeSingle();
+
+        if (profile) {
+          let effectiveRole = profile.role;
+          if (effectiveRole !== 'professional' && user.user_metadata?.role === 'professional') {
+            effectiveRole = 'professional';
+            fetch('/api/auth/update-role', { 
+              method: 'POST', 
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.id, role: 'professional' }) 
+            }).catch(console.error);
+          }
+          profile.role = effectiveRole;
+          setUserProfile(profile);
+        }
 
         if (profile?.subscription_status !== 'active') {
           try {
@@ -256,9 +272,23 @@ export function useAppInitializer({
         // Verifica a assinatura
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status, subscription_price_id')
+          .select('subscription_status, subscription_price_id, role, linked_professional_id')
           .eq('id', session.user.id)
           .maybeSingle();
+
+        if (profile) {
+          let effectiveRole = profile.role;
+          if (effectiveRole !== 'professional' && session.user.user_metadata?.role === 'professional') {
+            effectiveRole = 'professional';
+            fetch('/api/auth/update-role', { 
+              method: 'POST', 
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: session.user.id, role: 'professional' }) 
+            }).catch(console.error);
+          }
+          profile.role = effectiveRole;
+          setUserProfile(profile);
+        }
 
         if (profile?.subscription_status !== 'active') {
           setIsPremium(false);
