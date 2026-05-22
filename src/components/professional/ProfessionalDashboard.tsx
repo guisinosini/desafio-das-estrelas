@@ -10,7 +10,7 @@ export const ProfessionalDashboard = ({
   setStage
 }: {
   handleLogout: () => void;
-  setStage: (stage: string) => void;
+  setStage: (stage: any) => void;
   handleViewPatient: (patientId: string) => void;
 }) => {
   const [user, setUser] = useState<any>(null);
