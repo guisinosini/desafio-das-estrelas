@@ -7,7 +7,8 @@ import { YEARLY_PRICE_IDS } from '@/lib/constants';
 
 export const ProfessionalDashboard = ({
   handleLogout,
-  setStage
+  setStage,
+  handleViewPatient
 }: {
   handleLogout: () => void;
   setStage: (stage: any) => void;
