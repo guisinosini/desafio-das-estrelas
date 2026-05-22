@@ -562,14 +562,15 @@ export default function DesafioEstrelas() {
 
         // Se o cadastro foi de paciente com convite válido, vincula
         if (user && validInvite) {
-           await supabase.from('profiles').update({ linked_professional_id: validInvite.professional_id, subscription_status: 'active' }).eq('id', user.id);
-           await supabase.from('professional_invites').update({ status: 'used', used_at: new Date().toISOString() }).eq('id', validInvite.id);
+           const res = await fetch('/api/auth/validate-invite', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ userId: user.id, accessCode: accessCode.trim() })
+           });
            
-           // Atualiza contagem
-           const { data: subData } = await supabase.from('professional_subscriptions').select('id, used_invites').eq('professional_id', validInvite.professional_id).order('created_at', { ascending: false }).limit(1);
-           const sub = subData?.[0];
-           if (sub) {
-              await supabase.from('professional_subscriptions').update({ used_invites: (sub.used_invites || 0) + 1 }).eq('id', sub.id);
+           if (!res.ok) {
+              const errorData = await res.json();
+              console.error("Erro ao validar/vincular convite no servidor:", errorData);
            }
         }
 
