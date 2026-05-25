@@ -46,23 +46,12 @@ export async function POST(req: Request) {
       const userId = data.external_reference;
       if (!userId || userId === 'anonymous') return new NextResponse('OK', { status: 200 });
 
-      // Em processamento ou autorizado libera o acesso (active)
-      if (['authorized', 'in_process'].includes(data.status || '')) {
-        const reason = data.reason?.toLowerCase() || '';
-        const priceId = reason.includes('comandante') || reason.includes('anual') ? 'yearly' : 'monthly';
-
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            subscription_status: 'active',
-            subscription_price_id: priceId,
-          })
-          .eq('id', userId);
-
-        if (error) console.error('Erro ao atualizar usuário via assinatura (active):', error);
+      // Removida a ativação por PreApproval 'authorized'. 
+      // O PreApproval fica 'authorized' mesmo quando o pagamento falha, o que gerava o falso positivo.
+      // A ativação agora depende inteiramente do Webhook de Payment (dinheiro real) ou do fluxo de checkout.
 
       // Pendente, recusado, cancelado ou pausado revoga o acesso (inactive)
-      } else if (['pending', 'paused', 'cancelled', 'rejected'].includes(data.status || '')) {
+      if (['pending', 'paused', 'cancelled', 'rejected'].includes(data.status || '')) {
         const { error } = await supabase
           .from('profiles')
           .update({ subscription_status: 'inactive' })
