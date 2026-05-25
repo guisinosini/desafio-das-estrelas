@@ -161,6 +161,21 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
   // Proteção contra duplo clique no Brick do Mercado Pago
   const isSubmittingRef = React.useRef(false);
 
+  // User Email state for MP
+  const [userEmail, setUserEmail] = useState<string>('');
+  
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      if (data?.user?.email) {
+        setUserEmail(data.user.email);
+      }
+    };
+    fetchUser();
+  }, []);
+
   // Stripe States
   const [stripeClientSecret, setStripeClientSecret] = useState('');
   const [stripeCurrency, setStripeCurrency] = useState('USD');
@@ -699,7 +714,10 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
 
                     <div className={clsx("relative z-10 transition-opacity duration-300", !isBrickReady ? "opacity-0 absolute inset-0 pointer-events-none" : "opacity-100")}>
                       <MPPayment
-                        initialization={{ amount: plan.amount }}
+                        initialization={{ 
+                          amount: plan.amount,
+                          payer: userEmail ? { email: userEmail } : undefined
+                        }}
                         customization={customizationMercadoPago}
                         onSubmit={handleSubmitMercadoPago}
                         onReady={() => setIsBrickReady(true)}
