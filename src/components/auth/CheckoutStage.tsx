@@ -33,22 +33,22 @@ interface CheckoutStageProps {
 const PLANS = {
   monthly: {
     title: 'Plano Cadete Espacial',
-    subtitle: 'Mensal • Recorrente automático',
+    subtitle: 'Mensal • 7 dias grátis',
     price: 'R$ 19,90',
     period: '/mês',
-    description: 'Cobrado automaticamente todo mês. Cancele quando quiser.',
-    features: ['Crianças ilimitadas', 'Todas as missões e planetas', 'Relatórios clínicos compartilhados', 'Dashboard completo do mentor', 'Suporte prioritário'],
-    badge: null,
+    description: 'Comece com 7 dias grátis. Cobrado automaticamente após o período. Cancele quando quiser.',
+    features: ['7 dias de teste gratuito', 'Crianças ilimitadas', 'Todas as missões e planetas', 'Relatórios clínicos compartilhados', 'Dashboard completo do mentor', 'Suporte prioritário'],
+    badge: '🎁 7 Dias Grátis',
     amount: 19.90,
   },
   yearly: {
     title: 'Plano Comandante Estelar',
-    subtitle: 'Anual • Melhor custo-benefício',
+    subtitle: 'Anual • 7 dias grátis',
     price: 'R$ 199,00',
     period: '/ano',
-    description: 'Cobrado uma vez por ano. Equivale a R$ 16,58/mês. Economize 17%!',
-    features: ['Tudo do Plano Cadete', '2 meses grátis inclusos', 'Acesso antecipado a novidades', 'Badge exclusivo de Comandante'],
-    badge: '🚀 Economize 17%',
+    description: 'Comece com 7 dias grátis. Cobrado uma vez por ano. Equivale a R$ 16,58/mês. Economize 17%!',
+    features: ['7 dias de teste gratuito', 'Tudo do Plano Cadete', '2 meses grátis inclusos', 'Acesso antecipado a novidades', 'Badge exclusivo de Comandante'],
+    badge: '🚀 7 Dias Grátis + 17% OFF',
     amount: 199.00,
   }
 };
