@@ -1485,19 +1485,13 @@ export default function DesafioEstrelas() {
             selectedPlan={selectedPlan || 'monthly'}
             onBack={() => setStage('no_subscription')}
             onSuccess={async () => {
-              setIsPremium(true);
-              setSubscriptionPriceId(selectedPlan);
-              const cloudData = await loadFromCloud();
-              if (cloudData?.children) {
-                setChildren(cloudData.children);
-                setActiveChildId(cloudData.activeChildId || null);
-              }
-              
-              if (userProfile?.role === 'professional') {
-                setView('professional');
-                setStage('adventure');
-              } else {
-                setStage(children.length > 0 ? 'select_child' : 'setup_child');
+              try {
+                // Força um reload completo para garantir que o estado Premium venha direto do banco (Supabase)
+                // Isso evita qualquer tela travada por promessas pendentes ou estados defasados.
+                window.location.reload();
+              } catch (e) {
+                console.error("Erro ao redirecionar após checkout:", e);
+                window.location.href = '/';
               }
             }}
           />
