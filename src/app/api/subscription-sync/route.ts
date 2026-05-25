@@ -43,6 +43,8 @@ export async function POST() {
           const now = new Date();
 
           for (const pay of paymentsResult.results) {
+            if (!pay.status || !pay.date_created) continue;
+
             // Se o pagamento for pendente/rejeitado, ignoramos e continuamos procurando
             if (['approved', 'in_process', 'authorized'].includes(pay.status)) {
               const payDate = new Date(pay.date_created);
