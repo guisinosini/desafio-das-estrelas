@@ -299,27 +299,52 @@ export const ProfessionalDashboard = ({
                         <p className="font-bold text-lg">{p.full_name}</p>
                         <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Conta Familiar</p>
                       </div>
-                      <button onClick={async () => {
-                        setLoading(true);
-                        try {
-                          const res = await fetch(`/api/professional/patient-gamification?patientId=${p.id}`);
-                          if (!res.ok) throw new Error("Erro na API ao carregar dados do paciente.");
-                          const { data } = await res.json();
-                          if (data?.state?.children?.length > 0) {
-                            setReportData(data.state);
-                            setSelectedChildIndex(0);
-                            setActiveTab('report');
-                          } else {
-                            alert("Este paciente ainda não possui progresso salvo (nenhuma criança criada).");
+                      <div className="flex gap-2">
+                        <button onClick={async () => {
+                          if (!window.confirm("Tem certeza que deseja desvincular esta família? O acesso premium deles será revogado imediatamente, a vaga retornará para sua assinatura e eles serão notificados por e-mail.")) return;
+                          setLoading(true);
+                          try {
+                            const res = await fetch(`/api/professional/unlink-mentor`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ patientId: p.id })
+                            });
+                            if (!res.ok) {
+                              const err = await res.json();
+                              throw new Error(err.error || "Erro ao desvincular paciente.");
+                            }
+                            alert("Família desvinculada com sucesso! Eles receberão um e-mail com as instruções.");
+                            loadData(); // Atualiza a lista
+                          } catch (err: any) {
+                            console.error("Erro ao desvincular:", err);
+                            alert(`Falha ao desvincular família: ${err.message}`);
                           }
-                        } catch (err) {
-                          console.error("Erro ao carregar paciente:", err);
-                          alert("Falha ao carregar relatório do paciente.");
-                        }
-                        setLoading(false);
-                      }} className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-black transition-all">
-                        {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileText className="w-5 h-5" />}
-                      </button>
+                          setLoading(false);
+                        }} className="w-10 h-10 bg-red-500/10 text-red-400 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all" title="Desvincular Mentor">
+                          <Trash className="w-5 h-5" />
+                        </button>
+                        <button onClick={async () => {
+                          setLoading(true);
+                          try {
+                            const res = await fetch(`/api/professional/patient-gamification?patientId=${p.id}`);
+                            if (!res.ok) throw new Error("Erro na API ao carregar dados do paciente.");
+                            const { data } = await res.json();
+                            if (data?.state?.children?.length > 0) {
+                              setReportData(data.state);
+                              setSelectedChildIndex(0);
+                              setActiveTab('report');
+                            } else {
+                              alert("Este paciente ainda não possui progresso salvo (nenhuma criança criada).");
+                            }
+                          } catch (err) {
+                            console.error("Erro ao carregar paciente:", err);
+                            alert("Falha ao carregar relatório do paciente.");
+                          }
+                          setLoading(false);
+                        }} className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-black transition-all" title="Ver Relatório">
+                          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileText className="w-5 h-5" />}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
