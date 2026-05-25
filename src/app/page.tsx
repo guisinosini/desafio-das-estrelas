@@ -914,19 +914,19 @@ export default function DesafioEstrelas() {
       return;
     }
     
-    setAuthLoading(true);
-    // Força a sincronização dos dados atuais antes de deslogar (bypass do debounce de 2s)
-    if (children.length > 0) {
-      const currentState = { children, activeChildId, stage, parentPin, fleetId, language };
-      await saveToCloud(currentState);
-    }
-
-    // Reseta estados locais de interface para garantir logout limpo em qualquer view
-    setShowPin(false);
-    setPin('');
-    setView('child');
-
     try {
+      setAuthLoading(true);
+      // Força a sincronização dos dados atuais antes de deslogar (bypass do debounce de 2s)
+      if (children.length > 0) {
+        const currentState = { children, activeChildId, stage, parentPin, fleetId, language };
+        await saveToCloud(currentState).catch(e => console.warn('Falha ignorada na sincronização de logout', e));
+      }
+
+      // Reseta estados locais de interface para garantir logout limpo em qualquer view
+      setShowPin(false);
+      setPin('');
+      setView('child');
+
       await supabase.auth.signOut();
     } catch (err) {
       console.error("❌ Erro ao invalidar sessão na API do Supabase:", err);
@@ -1804,10 +1804,14 @@ export default function DesafioEstrelas() {
                     sempre clicável independente de view, overlay ou animações ativas */}
                 <button
                   onClick={handleLogout}
-                  className="relative z-[80] bg-red-500/10 border border-red-500/20 text-red-400 p-2.5 md:p-3 rounded-full hover:bg-red-500/20 active:scale-95 transition-all shadow-lg cursor-pointer shrink-0"
+                  disabled={authLoading}
+                  className={clsx(
+                    "relative z-[80] bg-red-500/10 border border-red-500/20 text-red-400 p-2.5 md:p-3 rounded-full hover:bg-red-500/20 transition-all shadow-lg shrink-0",
+                    authLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95"
+                  )}
                   title={t.exitChallenge}
                 >
-                  <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+                  {authLoading ? <RefreshCw className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <LogOut className="w-4 h-4 md:w-5 md:h-5" />}
                 </button>
               </div>
             </header>
