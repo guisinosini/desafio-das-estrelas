@@ -34,10 +34,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Access denied. Patient not linked to you.' }, { status: 403 });
     }
 
-    // 3. Desvincular mentor (set linked_professional_id to null)
+    // 3. Desvincular mentor (set linked_professional_id to null e subscription_status to inactive)
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ linked_professional_id: null })
+      .update({ 
+        linked_professional_id: null,
+        subscription_status: 'inactive'
+      })
       .eq('id', patientId);
 
     if (updateError) {
