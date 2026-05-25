@@ -135,54 +135,30 @@ export function useAppInitializer({
           setUserProfile(profile);
         }
 
-        if (profile?.subscription_status !== 'active') {
-          try {
-            const syncRes = await fetch('/api/subscription-sync', { method: 'POST' });
-            if (syncRes.ok) {
-              const syncData = await syncRes.json();
-              if (syncData.status === 'active') {
-                setIsPremium(true);
-                if (syncData.priceId) setSubscriptionPriceId(syncData.priceId);
-                
-                const cloudData = await loadFromCloud(user);
-                if (cloudData && cloudData.children) {
-                  setChildren(cloudData.children);
-                  if (cloudData.activeChildId) setActiveChildId(cloudData.activeChildId);
-                  if (cloudData.fleetId) setFleetId(cloudData.fleetId);
-                  if (cloudData.language) setLanguage(cloudData.language);
-                  
-                  if (currentRole === 'professional') {
-                    setView('professional');
-                    setStage('adventure');
-                  } else if (cloudData.children.length === 0) {
-                    setStage('setup_child');
-                  } else {
-                    const nextStage = (cloudData.stage === 'auth' || !cloudData.stage) ? 'select_child' : cloudData.stage;
-                    setStage(nextStage);
-                  }
-                } else {
-                  if (currentRole === 'professional') {
-                    setView('professional');
-                    setStage('adventure');
-                  } else {
-                    setStage('setup_child');
-                  }
-                }
-                return;
-              }
-            }
-          } catch (syncErr) {
-            console.error("Falha ao tentar sincronizar assinatura na inicialização:", syncErr);
-          }
+        // SEMPRE faz a verificação dupla com Mercado Pago
+        let syncStatus = profile?.subscription_status;
+        let syncPriceId = profile?.subscription_price_id;
 
+        try {
+          const syncRes = await fetch('/api/subscription-sync', { method: 'POST' });
+          if (syncRes.ok) {
+            const syncData = await syncRes.json();
+            syncStatus = syncData.status;
+            syncPriceId = syncData.priceId;
+          }
+        } catch (syncErr) {
+          console.error("Falha ao tentar sincronizar assinatura na inicialização:", syncErr);
+        }
+
+        if (syncStatus !== 'active') {
           setIsPremium(false);
           setSubscriptionPriceId(null);
           setStage('no_subscription');
-          return; // Para a inicialização normal
+          return; // Para a inicialização normal bloqueando o acesso
         } else {
           setIsPremium(true);
-          if (profile.subscription_price_id) {
-            setSubscriptionPriceId(profile.subscription_price_id);
+          if (syncPriceId) {
+            setSubscriptionPriceId(syncPriceId);
           }
         }
       } else {
@@ -308,14 +284,29 @@ export function useAppInitializer({
           setUserProfile(profile);
         }
 
-        if (profile?.subscription_status !== 'active') {
+        // DUPLA VERIFICAÇÃO COM MERCADO PAGO NO LOGIN
+        let syncStatus = profile?.subscription_status;
+        let syncPriceId = profile?.subscription_price_id;
+
+        try {
+          const syncRes = await fetch('/api/subscription-sync', { method: 'POST' });
+          if (syncRes.ok) {
+            const syncData = await syncRes.json();
+            syncStatus = syncData.status;
+            syncPriceId = syncData.priceId;
+          }
+        } catch (syncErr) {
+          console.error("Falha ao sincronizar assinatura no login:", syncErr);
+        }
+
+        if (syncStatus !== 'active') {
           setIsPremium(false);
           setSubscriptionPriceId(null);
           setStage('no_subscription');
         } else {
           setIsPremium(true);
-          if (profile.subscription_price_id) {
-            setSubscriptionPriceId(profile.subscription_price_id);
+          if (syncPriceId) {
+            setSubscriptionPriceId(syncPriceId);
           }
           const cloudData = await loadFromCloud(session?.user);
           let onAuthRole = profile?.role || 'patient';
