@@ -1696,6 +1696,7 @@ export default function DesafioEstrelas() {
                   <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-black w-4.5 h-4.5 md:w-5 md:h-5 rounded-full flex items-center justify-center border border-white">
                     {view === 'child' ? <Lock className="w-2.5 h-2.5 md:w-3 md:h-3" /> : <Settings className="w-2.5 h-2.5 md:w-3 md:h-3" />}
                   </div>
+                  </div>
                 </div>
                 
                 <div className={clsx("min-w-0", view !== 'professional' && view !== 'admin' && "cursor-pointer")} onClick={() => {
