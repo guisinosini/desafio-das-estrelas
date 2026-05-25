@@ -70,13 +70,16 @@ const currencyMap: Record<string, { symbol: string, monthly: string, yearly: str
 };
 
 const SectionCTA = ({ onClick, text }: { onClick: () => void, text: string }) => (
-  <div className="mt-12 md:mt-16 flex justify-center w-full relative z-30">
+  <div className="mt-12 md:mt-16 flex flex-col items-center justify-center w-full relative z-30 space-y-3">
     <button 
       onClick={onClick} 
       className="px-6 py-3 bg-white/[0.02] hover:bg-white/[0.08] border border-white/10 hover:border-primary/30 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-all flex items-center gap-2 group cursor-pointer"
     >
       {text} <Rocket className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:text-primary transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
     </button>
+    <div className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full flex items-center gap-1.5">
+      <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-primary/80">🎁 7 Dias Grátis</span>
+    </div>
   </div>
 );
 
@@ -203,8 +206,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
               transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <button onClick={onStart} className="px-8 md:px-12 py-4 md:py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl md:rounded-[32px] shadow-[0_15px_45px_-10px_rgba(45,212,191,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-4 text-base md:text-lg">
-                {t.lp_cta_start} <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
+              <button onClick={onStart} className="px-8 md:px-12 py-4 md:py-6 bg-primary text-black font-black uppercase tracking-widest rounded-2xl md:rounded-[32px] shadow-[0_15px_45px_-10px_rgba(45,212,191,0.4)] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 md:gap-2 text-base md:text-lg group overflow-hidden relative">
+                <div className="flex items-center gap-3 md:gap-4 relative z-10">
+                  {t.lp_cta_start} <ArrowRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] bg-black/10 px-3 py-1 rounded-full flex items-center gap-1.5 relative z-10">
+                  🎁 7 Dias Grátis
+                </div>
               </button>
             </motion.div>
           </div>
@@ -666,8 +674,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ language, onLanguageCh
                 <p className="text-lg md:text-2xl text-white/50 max-w-2xl mx-auto relative z-10">
                     {t.lp_cta_desc}
                 </p>
-                <button onClick={onStart} className="px-10 md:px-16 py-6 md:py-8 bg-primary text-black font-black uppercase tracking-widest rounded-2xl md:rounded-[32px] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3 md:gap-4 text-lg md:text-xl relative z-10 w-full md:w-auto justify-center">
-                    {t.lp_cta_start} <Rocket className="w-6 h-6 md:w-7 md:h-7" />
+                <button onClick={onStart} className="px-10 md:px-16 py-6 md:py-8 bg-primary text-black font-black uppercase tracking-widest rounded-2xl md:rounded-[32px] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 text-lg md:text-xl relative z-10 w-full md:w-auto group">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      {t.lp_cta_start} <Rocket className="w-6 h-6 md:w-7 md:h-7 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </div>
+                    <div className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] bg-black/10 px-4 py-1.5 rounded-full flex items-center gap-1.5">
+                      🎁 7 Dias Grátis
+                    </div>
                 </button>
             </div>
         </FadeInWhenVisible>
