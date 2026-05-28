@@ -33,10 +33,13 @@ export async function POST(req: Request) {
     if (interval === 'monthly' && cardTokenId) {
       const preApproval = new PreApproval(mpClient);
       try {
-        console.log(`[PreApproval] Tentando criar assinatura com Token: ${cardTokenId}, Plano: fc9189bc5b5e4389a37dd24e5cb99991`);
+        const planId = process.env.MERCADOPAGO_PLAN_ID;
+        if (!planId) throw new Error('Plano de assinatura não configurado no servidor.');
+
+        console.log(`[PreApproval] Tentando criar assinatura com Token: ${cardTokenId}, Plano: ${planId}`);
         const preApprovalData = await preApproval.create({
           body: {
-            preapproval_plan_id: 'fc9189bc5b5e4389a37dd24e5cb99991',
+            preapproval_plan_id: planId,
             payer_email: user.email!,
             card_token_id: cardTokenId,
             external_reference: user.id,
