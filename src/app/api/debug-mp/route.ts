@@ -1,65 +1,94 @@
 import { NextResponse } from 'next/server';
-import https from 'https';
+import { PreApproval } from 'mercadopago';
+import { mpClient } from '@/lib/mercadopago';
+
+async function testarPermissaoPreApproval(): Promise<{ status: number; body: any }> {
+  return new Promise((resolve) => {
+    const { default: https } = require('https');
+    const token = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
+
+    // Faz um GET na lista de preapprovals — se der 401/403, a conta não tem permissão
+    const options = {
+      hostname: 'api.mercadopago.com',
+      path: '/preapproval/search?status=authorized&limit=1',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    };
+
+    const req = https.request(options, (res: any) => {
+      let data = '';
+      res.on('data', (c: any) => (data += c));
+      res.on('end', () => {
+        try {
+          resolve({ status: res.statusCode, body: JSON.parse(data) });
+        } catch {
+          resolve({ status: res.statusCode, body: data });
+        }
+      });
+    });
+    req.on('error', (e: any) => resolve({ status: 0, body: e.message }));
+    req.end();
+  });
+}
+
+async function buscarInfoConta(): Promise<any> {
+  return new Promise((resolve) => {
+    const { default: https } = require('https');
+    const token = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
+
+    const options = {
+      hostname: 'api.mercadopago.com',
+      path: '/users/me',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    };
+
+    const req = https.request(options, (res: any) => {
+      let data = '';
+      res.on('data', (c: any) => (data += c));
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); }
+        catch { resolve({}); }
+      });
+    });
+    req.on('error', () => resolve({}));
+    req.end();
+  });
+}
 
 function mascarar(chave: string | undefined, visivel = 12) {
   if (!chave) return '❌ NÃO CONFIGURADA';
   return chave.substring(0, visivel) + '...' + chave.substring(chave.length - 6);
 }
 
-async function testarToken(token: string): Promise<{ ok: boolean; status: number; userId?: string }> {
-  return new Promise((resolve) => {
-    const options = {
-      hostname: 'api.mercadopago.com',
-      path: '/v1/payment_methods',
-      method: 'GET',
-      headers: { Authorization: `Bearer ${token}` },
-    };
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (c) => (data += c));
-      res.on('end', () => {
-        try {
-          // Tenta pegar o user ID da conta dono do token
-          const userReq = https.request(
-            { ...options, path: '/v1/users/me' },
-            (r2) => {
-              let d2 = '';
-              r2.on('data', (c) => (d2 += c));
-              r2.on('end', () => {
-                try {
-                  const parsed = JSON.parse(d2);
-                  resolve({ ok: res.statusCode === 200, status: res.statusCode!, userId: parsed.id?.toString() });
-                } catch {
-                  resolve({ ok: res.statusCode === 200, status: res.statusCode! });
-                }
-              });
-            }
-          );
-          userReq.on('error', () => resolve({ ok: res.statusCode === 200, status: res.statusCode! }));
-          userReq.end();
-        } catch {
-          resolve({ ok: res.statusCode === 200, status: res.statusCode! });
-        }
-      });
-    });
-    req.on('error', () => resolve({ ok: false, status: 0 }));
-    req.end();
-  });
-}
-
 export async function GET() {
   const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
   const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || '';
-  const planId = process.env.MERCADOPAGO_PLAN_ID || '';
 
-  const tokenTest = accessToken ? await testarToken(accessToken) : { ok: false, status: 0 };
+  const [preApprovalTest, contaInfo] = await Promise.all([
+    testarPermissaoPreApproval(),
+    buscarInfoConta(),
+  ]);
+
+  const preApprovalOk = preApprovalTest.status === 200;
+  const preApprovalErro = preApprovalOk ? null : preApprovalTest.body;
 
   return NextResponse.json({
-    '1_NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY (frontend/build)': mascarar(publicKey),
-    '2_MERCADOPAGO_ACCESS_TOKEN (backend)': mascarar(accessToken),
-    '3_MERCADOPAGO_PLAN_ID': planId || '(não configurado — ok)',
-    '4_TOKEN_VALIDO_NA_API': tokenTest.ok ? '✅ SIM' : `❌ NÃO (status ${tokenTest.status})`,
-    '5_CONTA_ID_DO_ACCESS_TOKEN': tokenTest.userId || 'não encontrado',
-    '6_INSTRUCAO': 'Confira se o início da PUBLIC_KEY e do ACCESS_TOKEN pertencem à mesma conta. APP_USR-XXXXXXXX deve ser o mesmo número.'
+    chaves: {
+      PUBLIC_KEY: mascarar(publicKey),
+      ACCESS_TOKEN: mascarar(accessToken),
+    },
+    conta: {
+      id: contaInfo.id,
+      email: contaInfo.email,
+      site_id: contaInfo.site_id,
+      status_conta: contaInfo.status,
+      tipo: contaInfo.account_type,
+    },
+    preapproval: {
+      permissao_ok: preApprovalOk ? '✅ SIM — conta pode criar assinaturas' : '❌ NÃO — conta sem permissão para assinaturas',
+      status_http: preApprovalTest.status,
+      erro_completo_mp: preApprovalErro,
+    },
   });
 }
