@@ -129,7 +129,7 @@ export function buildMentorReminderHtml({
       <div style="text-align:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;">
         <p style="color:#475569;font-size:12px;margin:0;line-height:1.6;">
           Você está recebendo este e-mail porque é mentor de <strong>${childName}</strong> no Desafio das Estrelas.<br/>
-          Instituto Kamaleon · <a href="https://www.desafiodasestrelas.com.br" style="color:#2dd4bf;text-decoration:none;">desafiodasestrelas.com.br</a>
+          Instituto Kamaleon · <a href="https://www.desafioestrelas.com" style="color:#2dd4bf;text-decoration:none;">desafioestrelas.com</a>
         </p>
       </div>
 
@@ -218,7 +218,7 @@ export function buildProfessionalReminderHtml({
 
         <!-- CTA -->
         <div style="text-align:center;">
-          <a href="https://www.desafiodasestrelas.com.br"
+          <a href="https://www.desafioestrelas.com"
              style="display:inline-block;background:#051210;color:#2dd4bf;padding:14px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">
             Ver Painel do Paciente
           </a>
