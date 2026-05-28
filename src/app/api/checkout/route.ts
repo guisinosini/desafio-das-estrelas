@@ -33,17 +33,24 @@ export async function POST(req: Request) {
     if (interval === 'monthly' && cardTokenId) {
       const preApproval = new PreApproval(mpClient);
       try {
-        const planId = process.env.MERCADOPAGO_PLAN_ID;
-        if (!planId) throw new Error('Plano de assinatura não configurado no servidor.');
+        console.log(`[PreApproval] Tentando criar assinatura direta com Token: ${cardTokenId}`);
+        
+        const origin = req.headers.get('origin') || 'https://www.desafioestrelas.com';
 
-        console.log(`[PreApproval] Tentando criar assinatura com Token: ${cardTokenId}, Plano: ${planId}`);
         const preApprovalData = await preApproval.create({
           body: {
-            preapproval_plan_id: planId,
             payer_email: user.email!,
             card_token_id: cardTokenId,
             external_reference: user.id,
-            status: 'authorized'
+            status: 'authorized',
+            reason: 'Desafio das Estrelas - Plano Cadete (Mensal)',
+            back_url: `${origin}/dashboard`,
+            auto_recurring: {
+              frequency: 1,
+              frequency_type: 'months',
+              transaction_amount: 19.90,
+              currency_id: 'BRL'
+            }
           },
           requestOptions: { idempotencyKey: crypto.randomUUID() }
         });
