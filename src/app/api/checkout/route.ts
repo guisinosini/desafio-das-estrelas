@@ -3,12 +3,59 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
 import { Payment, PreApproval } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
+import https from 'https';
+
+// Cache em memória do ID do plano ativo (evita chamar a API do MP a cada checkout)
+let cachedPlanId: string | null = null;
+let cacheExpiresAt: number = 0;
+
+async function buscarPlanIdAtivo(): Promise<string> {
+  const agora = Date.now();
+  if (cachedPlanId && agora < cacheExpiresAt) {
+    console.log(`[PreApproval] Usando plano em cache: ${cachedPlanId}`);
+    return cachedPlanId;
+  }
+
+  return new Promise((resolve, reject) => {
+    const token = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
+    const options = {
+      hostname: 'api.mercadopago.com',
+      path: '/preapproval_plan/search?status=active&limit=10',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          const planos = json.results as any[];
+          if (!planos || planos.length === 0) {
+            return reject(new Error('Nenhum plano de assinatura ativo encontrado na conta do Mercado Pago. Crie um plano em mercadopago.com.br/subscription-plans'));
+          }
+          // Usa o primeiro plano ativo encontrado
+          cachedPlanId = planos[0].id;
+          cacheExpiresAt = Date.now() + 60 * 60 * 1000; // cache por 1 hora
+          console.log(`[PreApproval] Plano encontrado e cacheado: ${cachedPlanId} (${planos[0].reason})`);
+          resolve(cachedPlanId!);
+        } catch (e) {
+          reject(new Error(`Erro ao buscar plano no Mercado Pago: ${data}`));
+        }
+      });
+    });
+    req.on('error', (e) => reject(new Error(`Erro de rede ao buscar plano: ${e.message}`)));
+    req.end();
+  });
+}
 
 // Supabase Admin para atualizar perfil com service role (ignora RLS)
 const supabaseAdmin = createSupabaseAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
 
 export async function POST(req: Request) {
   try {
@@ -33,32 +80,24 @@ export async function POST(req: Request) {
     if (interval === 'monthly' && cardTokenId) {
       const preApproval = new PreApproval(mpClient);
       try {
-        console.log(`[PreApproval] Tentando criar assinatura direta com Token: ${cardTokenId}`);
-        
-        const origin = req.headers.get('origin') || 'https://www.desafioestrelas.com';
+        const planId = await buscarPlanIdAtivo();
 
+        console.log(`[PreApproval] Criando assinatura com Token: ${cardTokenId}, Plano: ${planId}`);
         const preApprovalData = await preApproval.create({
           body: {
+            preapproval_plan_id: planId,
             payer_email: user.email!,
             card_token_id: cardTokenId,
             external_reference: user.id,
-            status: 'authorized',
-            reason: 'Desafio das Estrelas - Plano Cadete (Mensal)',
-            back_url: `${origin}/dashboard`,
-            auto_recurring: {
-              frequency: 1,
-              frequency_type: 'months',
-              transaction_amount: 19.90,
-              currency_id: 'BRL'
-            }
+            status: 'authorized'
           },
           requestOptions: { idempotencyKey: crypto.randomUUID() }
         });
-        
+
         console.log(`[PreApproval] Resposta do MP:`, preApprovalData.id, preApprovalData.status);
 
         const statusOk = ['authorized', 'pending'].includes(preApprovalData.status || '');
-        
+
         if (statusOk) {
           await supabaseAdmin.from('profiles').upsert({
             id: user.id,
