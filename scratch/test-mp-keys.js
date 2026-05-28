@@ -1,0 +1,37 @@
+require('dotenv').config({ path: '.env.local' });
+const https = require('https');
+
+const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+if (!token) {
+  console.error('MERCADOPAGO_ACCESS_TOKEN não encontrado no .env.local');
+  process.exit(1);
+}
+
+const options = {
+  hostname: 'api.mercadopago.com',
+  path: '/v1/payment_methods',
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+};
+
+const req = https.request(options, (res) => {
+  let data = '';
+  res.on('data', chunk => data += chunk);
+  res.on('end', () => {
+    if (res.statusCode === 200) {
+      console.log('✅ SUCESSO: A chave do Mercado Pago é VÁLIDA e está se comunicando com a API.');
+    } else {
+      console.error(`❌ ERRO: A chave do Mercado Pago falhou. Status code: ${res.statusCode}`);
+      console.error('Detalhes do erro:', data);
+    }
+  });
+});
+
+req.on('error', (error) => {
+  console.error('❌ ERRO de rede ao tentar conectar com a API do Mercado Pago:', error);
+});
+
+req.end();
