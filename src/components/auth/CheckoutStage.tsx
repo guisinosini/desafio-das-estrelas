@@ -330,6 +330,9 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     }
   }, [isInternational, selectedPlan, stripeCurrency, language]);
 
+  // Determina se o plano selecionado é anual (afeta PIX, parcelas e gateway)
+  const isYearlyPlan = selectedPlan === 'yearly' || selectedPlan.endsWith('_yearly');
+
   const handleSubmitMercadoPago = async (param: any) => {
     if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
@@ -344,6 +347,15 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       
       // Alguns métodos (como saldo MP) podem enviar a string do método em outro lugar
       const resolvedPaymentMethodId = data.payment_method_id || param.selectedPaymentMethod || 'pix';
+      const isPix = resolvedPaymentMethodId === 'pix' || (!data.token && !resolvedPaymentMethodId?.includes('credit') && !resolvedPaymentMethodId?.includes('debit'));
+
+      // Guarda de segurança: PIX só é permitido em planos anuais
+      if (isPix && !isYearlyPlan) {
+        setErrorMessage('Pagamento via PIX não está disponível para planos mensais. Por favor, use um cartão de crédito.');
+        setStatus('error');
+        isSubmittingRef.current = false;
+        return;
+      }
 
       const payload = {
         interval: selectedPlan,
@@ -405,6 +417,7 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
     }
   };
 
+
   const customizationMercadoPago: any = {
     visual: {
       style: {
@@ -412,9 +425,11 @@ export default function CheckoutStage({ onBack, onSuccess, selectedPlan }: Check
       }
     },
     paymentMethods: {
-      maxInstallments: selectedPlan.includes('yearly') ? 12 : 1,
+      // Planos anuais: até 12 parcelas. Mensais: sempre 1x (sem parcelamento)
+      maxInstallments: isYearlyPlan ? 12 : 1,
       creditCard: 'all',
-      bankTransfer: 'all', 
+      // PIX (bankTransfer) disponível SOMENTE em planos anuais
+      ...(isYearlyPlan ? { bankTransfer: 'all' } : {}),
     }
   };
 
