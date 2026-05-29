@@ -128,7 +128,7 @@ export async function POST(req: Request) {
           console.log(`[MP Webhook] PreApproval ${id} authorized → active (${interval}) para usuário ${userId}`);
         } else {
           // Plan ID não mapeado — ativa apenas o status sem alterar o priceId existente
-          console.warn(`[MP Webhook] Plan ID "${data.preapproval_plan_id}" não encontrado no mapa. Ativando apenas status.`);
+          console.warn(`[MP Webhook] Plan ID "${(data as any).preapproval_plan_id}" não encontrado no mapa. Ativando apenas status.`);
           await supabase.from('profiles').update({ subscription_status: 'active' }).eq('id', userId);
         }
 
