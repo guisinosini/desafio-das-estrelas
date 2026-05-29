@@ -120,7 +120,8 @@ export async function POST(req: Request) {
 
       if (data.status === 'authorized') {
         // Ativação via PreApproval (funciona como backup — checkout já ativou no fluxo principal)
-        const interval = getIntervalFromPlanId(data.preapproval_plan_id || '');
+        // Cast para any: o SDK do MP não expõe preapproval_plan_id no tipo PreApprovalResponse
+        const interval = getIntervalFromPlanId((data as any).preapproval_plan_id || '');
 
         if (interval) {
           await ativarPerfil(userId, interval);
@@ -161,7 +162,8 @@ export async function POST(req: Request) {
           try {
             const preApproval = new PreApproval(mpClient);
             const preApprovalData = await preApproval.get({ id: preapprovalId });
-            interval = getIntervalFromPlanId(preApprovalData.preapproval_plan_id || '');
+            // Cast para any: preapproval_plan_id não está no tipo PreApprovalResponse do SDK
+            interval = getIntervalFromPlanId((preApprovalData as any).preapproval_plan_id || '');
             if (interval) {
               console.log(`[MP Webhook] Plano identificado via PreApproval: ${interval}`);
             }
