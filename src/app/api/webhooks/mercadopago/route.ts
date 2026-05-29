@@ -184,7 +184,7 @@ export async function POST(req: Request) {
           console.log(`[MP Webhook] Plano identificado via DB (fallback): ${interval}`);
         }
 
-        await ativarPerfil(userId, interval);
+        await ativarPerfil(userId, interval ?? 'monthly');
         console.log(`[MP Webhook] Payment ${id} (${paymentData.status}) → active (${interval}) para usuário ${userId}`);
 
       } else if (['pending', 'rejected', 'refunded', 'charged_back', 'cancelled', 'in_mediation'].includes(paymentData.status || '')) {
