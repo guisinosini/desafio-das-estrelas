@@ -3,11 +3,90 @@ import { createClient } from '@supabase/supabase-js';
 import { Payment, PreApproval } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
 
-// Instância do Supabase Service Role para ignorar RLS e poder atualizar a tabela
+// Instância do Supabase Service Role para ignorar RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+/**
+ * Mapa reverso: Plan ID do Mercado Pago → interval interno da aplicação.
+ * Permite identificar o plano exato a partir de qualquer webhook de pagamento recorrente.
+ */
+function getIntervalFromPlanId(planId: string): string | null {
+  if (!planId) return null;
+  const map: Record<string, string> = {
+    [process.env.MP_PLAN_ID_MONTHLY        || '__VAZIO__']: 'monthly',
+    [process.env.MP_PLAN_ID_YEARLY         || '__VAZIO__']: 'yearly',
+    [process.env.MP_PLAN_ID_PRO_1_MONTHLY  || '__VAZIO__']: 'pro_1_monthly',
+    [process.env.MP_PLAN_ID_PRO_4_MONTHLY  || '__VAZIO__']: 'pro_4_monthly',
+    [process.env.MP_PLAN_ID_PRO_9_MONTHLY  || '__VAZIO__']: 'pro_9_monthly',
+    [process.env.MP_PLAN_ID_PRO_15_MONTHLY || '__VAZIO__']: 'pro_15_monthly',
+    [process.env.MP_PLAN_ID_PRO_1_YEARLY   || '__VAZIO__']: 'pro_1_yearly',
+    [process.env.MP_PLAN_ID_PRO_4_YEARLY   || '__VAZIO__']: 'pro_4_yearly',
+    [process.env.MP_PLAN_ID_PRO_9_YEARLY   || '__VAZIO__']: 'pro_9_yearly',
+    [process.env.MP_PLAN_ID_PRO_15_YEARLY  || '__VAZIO__']: 'pro_15_yearly',
+  };
+  return map[planId] ?? null;
+}
+
+/**
+ * Ativa o perfil do usuário e, se for plano profissional,
+ * sincroniza a tabela professional_subscriptions com o limite correto de licenças.
+ */
+async function ativarPerfil(userId: string, interval: string): Promise<void> {
+  // 1. Atualiza o perfil principal
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ subscription_status: 'active', subscription_price_id: interval })
+    .eq('id', userId);
+
+  if (profileError) {
+    console.error(`[MP Webhook] Erro ao ativar perfil ${userId}:`, profileError);
+  }
+
+  // 2. Se for plano profissional, sincroniza professional_subscriptions
+  if (interval.startsWith('pro_')) {
+    const limit = parseInt(interval.split('_')[1], 10);
+
+    const { data: existingSub } = await supabase
+      .from('professional_subscriptions')
+      .select('id')
+      .eq('professional_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (existingSub && existingSub.length > 0) {
+      await supabase.from('professional_subscriptions').update({
+        plan_limit: limit,
+        status: 'active',
+        updated_at: new Date().toISOString(),
+      }).eq('id', existingSub[0].id);
+    } else {
+      await supabase.from('professional_subscriptions').insert({
+        professional_id: userId,
+        plan_limit: limit,
+        status: 'active',
+      });
+    }
+  }
+}
+
+/**
+ * Desativa o perfil do usuário e marca a assinatura profissional como inativa.
+ */
+async function desativarPerfil(userId: string): Promise<void> {
+  await supabase
+    .from('profiles')
+    .update({ subscription_status: 'inactive' })
+    .eq('id', userId);
+
+  // Também marca a assinatura profissional como inativa (se existir)
+  await supabase
+    .from('professional_subscriptions')
+    .update({ status: 'inactive', updated_at: new Date().toISOString() })
+    .eq('professional_id', userId);
+}
 
 export async function POST(req: Request) {
   try {
@@ -15,30 +94,23 @@ export async function POST(req: Request) {
     let id = url.searchParams.get('data.id') || url.searchParams.get('id');
     let type = url.searchParams.get('type') || url.searchParams.get('topic');
 
-    // Tentar ler o corpo da requisição (Mercado Pago envia os webhooks mais recentes como JSON)
+    // MP envia webhooks mais recentes como JSON no body
     let bodyData: any = null;
-    try {
-      bodyData = await req.json();
-    } catch (e) {
-      // Ignora erro se o corpo não for JSON
-    }
+    try { bodyData = await req.json(); } catch (e) { /* body não é JSON, ignora */ }
 
-    // Se não encontrou na URL, pega do Body
-    if (!id && bodyData) {
-      id = bodyData?.data?.id || bodyData?.id;
-    }
-
+    if (!id && bodyData)   id   = bodyData?.data?.id || bodyData?.id;
     if (!type && bodyData) {
       type = bodyData?.type || bodyData?.topic;
-      if (!type && bodyData?.action?.includes('payment.')) {
-        type = 'payment';
-      } else if (!type && bodyData?.action?.includes('preapproval.')) {
-        type = 'subscription_preapproval';
-      }
+      if (!type && bodyData?.action?.includes('payment.'))     type = 'payment';
+      else if (!type && bodyData?.action?.includes('preapproval.')) type = 'subscription_preapproval';
     }
 
     if (!id) return new NextResponse('OK', { status: 200 });
 
+    // ─────────────────────────────────────────────────────────────────
+    // EVENTO: Mudança de status de assinatura (PreApproval)
+    // Cobre: criação, renovação, cancelamento, pausa de assinaturas recorrentes
+    // ─────────────────────────────────────────────────────────────────
     if (type === 'subscription_preapproval') {
       const preApproval = new PreApproval(mpClient);
       const data = await preApproval.get({ id });
@@ -46,63 +118,84 @@ export async function POST(req: Request) {
       const userId = data.external_reference;
       if (!userId || userId === 'anonymous') return new NextResponse('OK', { status: 200 });
 
-      // Removida a ativação por PreApproval 'authorized'. 
-      // O PreApproval fica 'authorized' mesmo quando o pagamento falha, o que gerava o falso positivo.
-      // A ativação agora depende inteiramente do Webhook de Payment (dinheiro real) ou do fluxo de checkout.
+      if (data.status === 'authorized') {
+        // Ativação via PreApproval (funciona como backup — checkout já ativou no fluxo principal)
+        const interval = getIntervalFromPlanId(data.preapproval_plan_id || '');
 
-      // Pendente, recusado, cancelado ou pausado revoga o acesso (inactive)
-      if (['pending', 'paused', 'cancelled', 'rejected'].includes(data.status || '')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ subscription_status: 'inactive' })
-          .eq('id', userId);
+        if (interval) {
+          await ativarPerfil(userId, interval);
+          console.log(`[MP Webhook] PreApproval ${id} authorized → active (${interval}) para usuário ${userId}`);
+        } else {
+          // Plan ID não mapeado — ativa apenas o status sem alterar o priceId existente
+          console.warn(`[MP Webhook] Plan ID "${data.preapproval_plan_id}" não encontrado no mapa. Ativando apenas status.`);
+          await supabase.from('profiles').update({ subscription_status: 'active' }).eq('id', userId);
+        }
 
-        if (error) console.error(`Erro ao atualizar usuário via assinatura (${data.status}):`, error);
+      } else if (['pending', 'paused', 'cancelled', 'rejected'].includes(data.status || '')) {
+        await desativarPerfil(userId);
+        console.log(`[MP Webhook] PreApproval ${id} (${data.status}) → inactive para usuário ${userId}`);
       }
 
+    // ─────────────────────────────────────────────────────────────────
+    // EVENTO: Pagamento processado (Payment)
+    // Cobre: pagamentos PIX anuais e cobranças recorrentes de PreApproval
+    // ─────────────────────────────────────────────────────────────────
     } else if (type === 'payment') {
       const payment = new Payment(mpClient);
       const paymentData = await payment.get({ id });
 
-      // O Mercado Pago às vezes omite o external_reference em pagamentos decorrentes de PreApproval
-      // Buscamos no metadata como fallback se existir
       const userId = paymentData.external_reference || paymentData.metadata?.external_reference;
-      
       if (!userId || userId === 'anonymous') {
-         console.warn(`[MP Webhook] Pagamento ${id} sem external_reference. Ignorando atualização de status.`);
-         return new NextResponse('OK', { status: 200 });
+        console.warn(`[MP Webhook] Pagamento ${id} sem external_reference. Ignorando.`);
+        return new NextResponse('OK', { status: 200 });
       }
 
-      // Em processamento ou aprovado libera o acesso (active)
       if (['approved', 'in_process', 'authorized'].includes(paymentData.status || '')) {
-        const description = paymentData.description?.toLowerCase() || '';
-        const priceId = description.includes('comandante') || description.includes('anual') ? 'yearly' : 'monthly';
-        
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            subscription_status: 'active',
-            subscription_price_id: priceId,
-          })
-          .eq('id', userId);
 
-        if (error) console.error('Erro ao atualizar usuário via pagamento (active):', error);
+        // Estratégia 1: Identificar o plano pelo preapproval_plan_id do PreApproval vinculado
+        let interval: string | null = null;
+        const preapprovalId = (paymentData as any).preapproval_id
+          || paymentData.metadata?.preapproval_id;
 
-      // Pendente, rejeitado, estornado, chargeback ou cancelado revoga o acesso (inactive)
+        if (preapprovalId) {
+          try {
+            const preApproval = new PreApproval(mpClient);
+            const preApprovalData = await preApproval.get({ id: preapprovalId });
+            interval = getIntervalFromPlanId(preApprovalData.preapproval_plan_id || '');
+            if (interval) {
+              console.log(`[MP Webhook] Plano identificado via PreApproval: ${interval}`);
+            }
+          } catch (e) {
+            console.warn('[MP Webhook] Falha ao buscar PreApproval vinculado ao pagamento:', e);
+          }
+        }
+
+        // Estratégia 2 (fallback): Preservar o priceId que já está salvo no banco
+        if (!interval) {
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('subscription_price_id')
+            .eq('id', userId)
+            .maybeSingle();
+
+          interval = existingProfile?.subscription_price_id || 'monthly';
+          console.log(`[MP Webhook] Plano identificado via DB (fallback): ${interval}`);
+        }
+
+        await ativarPerfil(userId, interval);
+        console.log(`[MP Webhook] Payment ${id} (${paymentData.status}) → active (${interval}) para usuário ${userId}`);
+
       } else if (['pending', 'rejected', 'refunded', 'charged_back', 'cancelled', 'in_mediation'].includes(paymentData.status || '')) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ subscription_status: 'inactive' })
-          .eq('id', userId);
-
-        if (error) console.error(`Erro ao atualizar usuário via pagamento (${paymentData.status}):`, error);
+        await desativarPerfil(userId);
+        console.log(`[MP Webhook] Payment ${id} (${paymentData.status}) → inactive para usuário ${userId}`);
       }
     }
 
     return new NextResponse('OK', { status: 200 });
+
   } catch (error) {
-    console.error('Erro no Webhook do Mercado Pago:', error);
-    // Retorna 200 para que o MP pare de reenviar as notificações repetidamente e estressar o servidor
+    console.error('[MP Webhook] Erro geral:', error);
+    // Retorna 200 para evitar reenvio infinito pelo MP
     return new NextResponse('Webhook Handler Error', { status: 200 });
   }
 }
