@@ -617,7 +617,7 @@ export default function DesafioEstrelas() {
           profileData.role = effectiveRole;
         }
 
-        if (profileData?.subscription_status !== 'active') {
+        if (profileData?.subscription_status !== 'active' && !profileData?.linked_professional_id) {
           return { active: false, profileData };
         }
 

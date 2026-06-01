@@ -24,9 +24,23 @@ export async function POST() {
     // Busca o status atual no banco de dados local para preservar o priceId (como pro_1_monthly)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('subscription_status, subscription_price_id')
+      .select('subscription_status, subscription_price_id, linked_professional_id')
       .eq('id', user.id)
       .maybeSingle();
+
+    // Se possui profissional vinculado, a assinatura é herdada e considerada ativa
+    if (profile?.linked_professional_id) {
+      if (profile.subscription_status !== 'active') {
+        await supabaseAdmin
+          .from('profiles')
+          .update({ subscription_status: 'active' })
+          .eq('id', user.id);
+      }
+      return NextResponse.json({
+        status: 'active',
+        priceId: profile?.subscription_price_id || null,
+      });
+    }
 
     if (user.email) {
       try {
