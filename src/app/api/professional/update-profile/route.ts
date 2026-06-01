@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     // 2. Atualizar perfil com o admin bypass para contornar qualquer RLS que esteja bloqueando
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ 
+      .update({
         specialty,
         council_registration,
         company
