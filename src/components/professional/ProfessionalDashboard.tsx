@@ -102,14 +102,26 @@ export const ProfessionalDashboard = ({
     e.preventDefault();
     setLoading(true);
     try {
-      await supabase.from('profiles').update({
-        specialty,
-        council_registration: council,
-        company
-      }).eq('id', user?.id);
+      const res = await fetch('/api/professional/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          specialty, 
+          council_registration: council, 
+          company 
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro desconhecido na API');
+      }
+      
       alert('Perfil atualizado com sucesso!');
-    } catch (err) {
-      alert('Erro ao atualizar perfil.');
+    } catch (err: any) {
+      console.error("Erro ao atualizar perfil:", err);
+      alert('Erro ao atualizar perfil: ' + err.message);
     }
     setLoading(false);
   };
