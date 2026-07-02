@@ -69,6 +69,7 @@ interface ParentDashboardProps {
   isPremium: boolean;
   subscriptionPriceId: string | null;
   linkedProfessionalId?: string | null;
+  supabase: any;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({
@@ -114,8 +115,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   isPremium,
   subscriptionPriceId,
   linkedProfessionalId,
+  supabase
 }) => {
-  const [supabase] = useState(() => createClient());
   const [newPassword, setNewPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
 

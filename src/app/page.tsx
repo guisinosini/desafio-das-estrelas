@@ -2035,6 +2035,7 @@ export default function DesafioEstrelas() {
                   t={t}
                   parentName={parentName}
                   linkedProfessionalId={isProfessionalViewer ? null : (userProfile?.linked_professional_id || null)}
+                  supabase={supabase}
                 />
               ) : view === 'professional' ? (
                 <ProfessionalDashboard 
