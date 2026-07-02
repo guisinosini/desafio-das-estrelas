@@ -746,7 +746,9 @@ export default function DesafioEstrelas() {
     setAuthError("");
     setAuthSuccess("");
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}?stage=reset_password`
+      });
       if (error) throw error;
       setAuthSuccess("Código enviado! Verifique seu e-mail.");
       setStage('enter_code');
