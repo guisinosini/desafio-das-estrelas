@@ -378,18 +378,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     ));
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          subscription_status: newStatus,
-          subscription_price_id: newPriceId,
-          subscription_start: nowStr,
-          subscription_end: expStr
+      const res = await fetch('/api/admin/update-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profileId,
+          newStatus,
+          newPriceId,
+          nowStr,
+          expStr
         })
-        .eq('id', profileId);
+      });
 
-      if (error) throw error;
-      setSyncMessage('Acesso Premium atualizado no Supabase com sucesso!');
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Erro na API');
+      }
+
+      setSyncMessage('Acesso Premium atualizado com sucesso!');
       setTimeout(() => setSyncMessage(''), 3000);
     } catch (e: any) {
       alert(`Falha ao sincronizar com o banco de dados: ${e.message}`);
@@ -415,17 +421,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     ));
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          subscription_status: newStatus,
-          subscription_price_id: newPriceId,
-          subscription_start: nowStr,
-          subscription_end: expStr
+      const res = await fetch('/api/admin/update-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profileId,
+          newStatus,
+          newPriceId,
+          nowStr,
+          expStr
         })
-        .eq('id', profileId);
+      });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Erro na API');
+      }
+
       setSyncMessage('Acesso Tester atualizado com sucesso!');
       setTimeout(() => setSyncMessage(''), 3000);
     } catch (e: any) {
