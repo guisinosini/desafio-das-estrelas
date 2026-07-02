@@ -129,6 +129,20 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+         await fetch('/api/send-email', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             to: user.email,
+             subject: 'Sua nova chave de acesso estelar!',
+             body: `Olá, Comandante! 🚀\n\nSua senha foi atualizada com sucesso na base de comando do Desafio das Estrelas.\n\nE-mail de acesso: ${user.email}\nNova Senha: ${newPassword}\n\nGuarde essas credenciais em segurança e prepare-se para a próxima decolagem!\n\nAbraços galácticos,\nEquipe Desafio das Estrelas`
+           })
+         }).catch(console.error);
+      }
+
       alert("Senha alterada com sucesso!");
       setNewPassword('');
     } catch (err: any) {
