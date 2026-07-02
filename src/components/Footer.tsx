@@ -26,10 +26,6 @@ export const Footer: React.FC<FooterProps> = ({ language = 'pt-BR' }) => {
           <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 leading-relaxed">
             {t.footerRights} <span className="text-primary font-black">{t.footerTrademark}</span>.
           </div>
-          <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-emerald-400/80 bg-emerald-500/5 px-3 py-1 rounded-lg border border-emerald-500/10 w-fit">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span>{t.footerTechnical}</span>
-          </div>
         </div>
 
         {/* Botões de Contato e Redes Sociais */}
