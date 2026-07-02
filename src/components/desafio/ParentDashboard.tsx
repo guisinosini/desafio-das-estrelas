@@ -18,11 +18,13 @@ import {
   Brain,
   FileText,
   CreditCard,
+  Lock,
 } from 'lucide-react';
 import type { Task, Reward, ChildData, TaskRecurrence } from '@/types/desafio';
 import { AVATARS } from '@/components/desafio/HeroElements';
 import { ClinicalReport } from './ClinicalReport';
 import { YEARLY_PRICE_IDS } from '@/lib/constants';
+import { createClient } from '@/lib/supabase/client';
 
 interface ParentDashboardProps {
   parentSubView: string;
@@ -113,6 +115,28 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   subscriptionPriceId,
   linkedProfessionalId,
 }) => {
+  const [supabase] = useState(() => createClient());
+  const [newPassword, setNewPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+
+  const handleUpdatePassword = async () => {
+    if (newPassword.length < 6) {
+      alert("A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    setUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      alert("Senha alterada com sucesso!");
+      setNewPassword('');
+    } catch (err: any) {
+      alert(err.message || "Erro ao alterar a senha.");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
   const getPlanName = () => {
     if (!isPremium) return 'Sem Plano';
     if (subscriptionPriceId && YEARLY_PRICE_IDS.has(subscriptionPriceId)) {
@@ -507,6 +531,28 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   <p className="text-[10px] text-white/40 leading-tight flex-1 flex items-center">
                     {t.pinNotice}
                   </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10 space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                  <Lock className="w-3 h-3" /> Alterar Senha de Acesso
+                </label>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <input
+                    type="password"
+                    placeholder="Digite a nova senha (mín. 6 caracteres)"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black outline-none focus:border-primary placeholder:text-white/20 text-white"
+                  />
+                  <button
+                    disabled={updatingPassword || !newPassword}
+                    onClick={handleUpdatePassword}
+                    className="px-8 py-4 bg-primary text-black font-black uppercase rounded-2xl hover:scale-105 transition-all disabled:opacity-40 text-xs tracking-widest flex items-center justify-center whitespace-nowrap"
+                  >
+                    {updatingPassword ? "Salvando..." : "Salvar Senha"}
+                  </button>
                 </div>
               </div>
 
