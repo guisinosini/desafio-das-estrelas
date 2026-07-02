@@ -165,6 +165,12 @@ const AuthStage = memo(({
                     <X className="w-4 h-4 shrink-0 text-red-400" /> {authError}
                   </motion.div>
                 )}
+
+                {authSuccess && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-emerald-500/10 text-emerald-300 text-[10px] font-bold rounded-2xl border border-emerald-500/20 flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400" /> {authSuccess}
+                  </motion.div>
+                )}
                 
                 {!isLogin && (
                   <div className="flex gap-2 mb-6">

@@ -750,8 +750,7 @@ export default function DesafioEstrelas() {
         redirectTo: `${window.location.origin}?stage=reset_password`
       });
       if (error) throw error;
-      setAuthSuccess("Código enviado! Verifique seu e-mail.");
-      setStage('enter_code');
+      setAuthSuccess("Você receberá um link no e-mail para redefinir sua senha.");
     } catch (err: any) {
       setAuthError(err.message || "Erro ao enviar código.");
     } finally {
@@ -1544,6 +1543,54 @@ export default function DesafioEstrelas() {
                 </div>
                 <span className="text-xl font-black uppercase italic text-white/20 group-hover:text-primary">{t.newHero}</span>
               </motion.button>
+            </div>
+          </motion.div>
+        )}
+
+        {stage === 'reset_password' && (
+          <motion.div
+            key="reset_password"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-10 w-full max-w-md mx-auto flex-1 flex flex-col justify-center p-6 space-y-8"
+          >
+            <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-[40px] shadow-2xl relative overflow-hidden group text-center">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
+              <Lock className="w-12 h-12 text-primary mx-auto mb-6" />
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-tight mb-2">Nova Senha</h2>
+              <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-8">Digite sua nova senha de acesso</p>
+              
+              <div className="space-y-6">
+                <input
+                  type="password"
+                  placeholder="Mínimo 6 caracteres"
+                  value={resetPassword}
+                  onChange={e => setResetPassword(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary focus:bg-white/5 transition-all text-white placeholder-white/20 text-center tracking-widest"
+                />
+                
+                <button
+                  onClick={async () => {
+                    if (resetPassword.length < 6) {
+                      alert("A senha deve ter pelo menos 6 caracteres.");
+                      return;
+                    }
+                    try {
+                      const { error } = await supabase.auth.updateUser({ password: resetPassword });
+                      if (error) throw error;
+                      alert("Senha redefinida com sucesso!");
+                      setResetPassword("");
+                      setStage('adventure');
+                    } catch (err: any) {
+                      alert(err.message || "Erro ao redefinir senha.");
+                    }
+                  }}
+                  disabled={!resetPassword || resetPassword.length < 6}
+                  className="w-full py-5 font-black uppercase tracking-widest rounded-2xl shadow-xl bg-primary text-black hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 transition-all flex items-center justify-center gap-2"
+                >
+                  <Check className="w-5 h-5" /> Salvar e Entrar
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
