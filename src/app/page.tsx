@@ -42,7 +42,9 @@ import {
   Facebook,
   MessageCircle,
   Copy,
-  Heart
+  Heart,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { isAdminEmail } from "@/lib/supabase/roles";
@@ -142,6 +144,7 @@ export default function DesafioEstrelas() {
   const [supabase] = useState(() => createClient());
   const [stage, setStage] = useState<Stage>('landing');
   const [resetPassword, setResetPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState("");
   const [language, setLanguage] = useState<Language>('pt-BR');
   const t = useMemo(() => translations[language], [language]);
@@ -1552,45 +1555,28 @@ export default function DesafioEstrelas() {
             key="reset_password"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative z-10 w-full max-w-md mx-auto flex-1 flex flex-col justify-center p-6 space-y-8"
+            className="relative z-10 w-full max-w-lg mx-auto flex-1 flex flex-col justify-center p-6 space-y-8"
           >
-            <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-[40px] shadow-2xl relative overflow-hidden group text-center">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
-              <Lock className="w-12 h-12 text-primary mx-auto mb-6" />
-              <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-tight mb-2">Nova Senha</h2>
-              <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-8">Digite sua nova senha de acesso</p>
+            <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-8 md:p-12 rounded-[40px] shadow-2xl relative overflow-hidden group text-center">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px]" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
               
-              <div className="space-y-6">
-                <input
-                  type="password"
-                  placeholder="Mínimo 6 caracteres"
-                  value={resetPassword}
-                  onChange={e => setResetPassword(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 font-bold outline-none focus:border-primary focus:bg-white/5 transition-all text-white placeholder-white/20 text-center tracking-widest"
-                />
-                
-                <button
-                  onClick={async () => {
-                    if (resetPassword.length < 6) {
-                      alert("A senha deve ter pelo menos 6 caracteres.");
-                      return;
-                    }
-                    try {
-                      const { error } = await supabase.auth.updateUser({ password: resetPassword });
-                      if (error) throw error;
-                      alert("Senha redefinida com sucesso!");
-                      setResetPassword("");
-                      setStage('adventure');
-                    } catch (err: any) {
-                      alert(err.message || "Erro ao redefinir senha.");
-                    }
-                  }}
-                  disabled={!resetPassword || resetPassword.length < 6}
-                  className="w-full py-5 font-black uppercase tracking-widest rounded-2xl shadow-xl bg-primary text-black hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:scale-100 transition-all flex items-center justify-center gap-2"
-                >
-                  <Check className="w-5 h-5" /> Salvar e Entrar
-                </button>
+              <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                <Check className="w-10 h-10 text-emerald-400" />
               </div>
+              
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-tight mb-4">Autenticação Estelar Confirmada!</h2>
+              
+              <p className="text-sm text-white/60 font-bold uppercase tracking-widest mb-8 leading-relaxed">
+                O seu login foi autorizado. Você já pode fechar esta aba e retornar à página original do aplicativo para cadastrar a sua nova senha nas <span className="text-primary">Configurações do Perfil</span>.
+              </p>
+              
+              <button
+                onClick={() => window.close()}
+                className="w-full py-5 font-black uppercase tracking-widest rounded-2xl shadow-xl bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                <Check className="w-5 h-5" /> Fechar Esta Página
+              </button>
             </div>
           </motion.div>
         )}

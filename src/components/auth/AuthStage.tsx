@@ -220,7 +220,7 @@ const AuthStage = memo(({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-primary transition-colors p-1"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-primary transition-colors p-1"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
