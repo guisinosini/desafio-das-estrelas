@@ -65,11 +65,22 @@ interface ChildReportRow {
   reportsCount: number;
 }
 
+interface DecodedProfessional {
+  profileId: string;
+  name: string;
+  email: string;
+  subscriptionStatus: string;
+  totalInvites: number;
+  usedInvites: number;
+  linkedParents: { id: string; name: string; email: string }[];
+}
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, language, t, handleLogout }) => {
   const [supabase] = useState(() => createClient());
   const [mentorsData, setMentorsData] = useState<DecodedMentor[]>([]);
   const [childMissionsData, setChildMissionsData] = useState<ChildMissionRow[]>([]);
   const [childReportsData, setChildReportsData] = useState<ChildReportRow[]>([]);
+  const [professionalsData, setProfessionalsData] = useState<DecodedProfessional[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
@@ -173,7 +184,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end, created_at');
+          .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end, created_at, role, linked_professional_id');
         
         if (error) {
           profError = error;
@@ -191,7 +202,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
           console.warn("⚠️ Coluna created_at ausente. Realizando consulta de fallback resiliente...");
           const { data, error: fallbackError } = await supabase
             .from('profiles')
-            .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end');
+            .select('id, full_name, email, subscription_status, subscription_price_id, subscription_start, subscription_end, role, linked_professional_id');
           
           if (fallbackError) throw fallbackError;
           realProfiles = data || [];
@@ -216,8 +227,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         console.warn("⚠️ RLS ou privilégios de leitura na tabela shared_reports bloqueou o select. Usando contagem zerada.", repError);
       }
 
+      // Busca dados dos convites de profissionais
+      const { data: invitesRows } = await supabase
+        .from('professional_invites')
+        .select('professional_id, status');
+
       const gamifications = gamificationRows || [];
       const sharedReports = sharedReportsRows || [];
+      const allInvites = invitesRows || [];
 
       // Mapeamento analítico de relatórios gerados por ID da Criança
       let childReportCounts: Record<string, number> = {};
@@ -345,9 +362,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         });
       });
 
+      // Mapeamento dos Profissionais
+      const profList: DecodedProfessional[] = [];
+      const parentProfiles = (realProfiles || []).filter(p => p.role !== 'professional');
+
+      (realProfiles || []).filter(p => p.role === 'professional').forEach(p => {
+        const myInvites = allInvites.filter(inv => inv.professional_id === p.id);
+        const myLinkedParents = parentProfiles
+          .filter(par => par.linked_professional_id === p.id)
+          .map(par => ({
+            id: par.id,
+            name: par.full_name || 'Usuário Sem Nome',
+            email: par.email || 'sem-email'
+          }));
+
+        profList.push({
+          profileId: p.id,
+          name: p.full_name || 'Profissional Anônimo',
+          email: p.email || 'sem-email@supa.io',
+          subscriptionStatus: p.subscription_status || 'inactive',
+          totalInvites: myInvites.length,
+          usedInvites: myInvites.filter(inv => inv.status === 'used').length,
+          linkedParents: myLinkedParents
+        });
+      });
+
       setMentorsData(decodedMentors);
       setChildMissionsData(childRows);
       setChildReportsData(reportRows);
+      setProfessionalsData(profList);
     } catch (e: any) {
       console.error("❌ Falha crítica no BI administrativo:", e);
       setDatabaseError(e.message || 'Erro de comunicação ou privilégio de leitura no Supabase.');
@@ -462,6 +505,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     cr.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cr.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cr.childName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredProfessionals = professionalsData.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Totais Consolidados de Produção Real de todos os Mentores
@@ -904,6 +952,84 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                   <tr>
                     <td colSpan={3} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
                       Nenhum relatório localizado por criança.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* 👨‍⚕️ QUADRO 5: Rede de Profissionais */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-md shadow-2xl space-y-6"
+        >
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5" /> Quadro 5: Rede de Profissionais (Mentoria Clínica)
+            </span>
+            <h3 className="text-xl font-black uppercase italic tracking-tighter mt-1 text-white">Lista de Profissionais e Pais Vinculados</h3>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-black/20 custom-scrollbar">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
+                  <th className="p-4 pl-6">Profissional / E-mail</th>
+                  <th className="p-4 text-center">Status</th>
+                  <th className="p-4 text-center">Convites Ativos (Pais Vinculados)</th>
+                  <th className="p-4">Lista de Pais Vinculados</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredProfessionals.map((prof, idx) => (
+                  <tr key={idx} className="hover:bg-white/5 transition-colors group">
+                    <td className="p-4 pl-6 align-top">
+                      <div className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors">{prof.name}</div>
+                      <div className="text-[10px] text-white/40 font-medium">{prof.email}</div>
+                    </td>
+                    <td className="p-4 text-center align-top">
+                      <span className={clsx(
+                        "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border",
+                        prof.subscriptionStatus === 'active' || prof.subscriptionStatus === 'tester' 
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                          : "bg-red-500/10 text-red-400 border-red-500/20"
+                      )}>
+                        {prof.subscriptionStatus === 'tester' ? 'Tester' : (prof.subscriptionStatus === 'active' ? 'Ativo' : 'Inativo')}
+                      </span>
+                    </td>
+                    <td className="p-4 text-center align-top">
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl">
+                          {prof.linkedParents.length} Famílias Ativas
+                        </span>
+                        <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest mt-1">
+                          {prof.totalInvites} Convites Gerados
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4 align-top">
+                      {prof.linkedParents.length === 0 ? (
+                        <span className="text-[10px] font-bold italic text-white/20">Nenhum pai vinculado ainda.</span>
+                      ) : (
+                        <div className="space-y-2">
+                          {prof.linkedParents.map((parent, pIdx) => (
+                            <div key={pIdx} className="p-2 bg-white/5 rounded-lg border border-white/10 flex flex-col">
+                              <span className="text-xs font-bold text-white">{parent.name}</span>
+                              <span className="text-[9px] text-white/40">{parent.email}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {filteredProfessionals.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-12 text-center text-white/20 font-black uppercase italic tracking-widest text-xs">
+                      Nenhum profissional localizado.
                     </td>
                   </tr>
                 )}
