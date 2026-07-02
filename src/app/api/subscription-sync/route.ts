@@ -97,8 +97,8 @@ export async function POST() {
     const dbStatus = profile?.subscription_status;
     let finalStatus = isMpActive ? 'active' : 'inactive';
 
-    // Se o usuário possui acesso especial de 'tester', preservamos o acesso independentemente do MP
-    if (dbStatus === 'tester' && !isMpActive) {
+    // Se o usuário possui acesso especial de 'tester', preservamos o acesso independentemente de qualquer histórico no MP
+    if (dbStatus === 'tester') {
       finalStatus = 'tester';
     }
 
