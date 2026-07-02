@@ -98,6 +98,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     subEnd: string | null,
     createdAt: string | null
   ) => {
+    if (status === 'tester') {
+      return {
+        type: 'Tester (Gratuito 100%)',
+        startDate: subStart ? new Date(subStart).toLocaleDateString('pt-BR') : 'Hoje',
+        endDate: subEnd ? new Date(subEnd).toLocaleDateString('pt-BR') : 'Ilimitado',
+        color: 'text-purple-400 bg-purple-500/10 border-purple-500/20 font-black'
+      };
+    }
+
     if (status !== 'active') {
       return {
         type: 'Gratuito',
@@ -388,6 +397,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     }
   };
 
+  const handleSetTester = async (profileId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'tester' ? 'inactive' : 'tester';
+    const newPriceId = null;
+    const nowStr = newStatus === 'tester' ? new Date().toISOString() : null;
+    const expStr = newStatus === 'tester' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null;
+
+    // Atualização otimista no frontend
+    setMentorsData(prev => prev.map(m => m.profileId === profileId 
+      ? { 
+          ...m, 
+          subscriptionStatus: newStatus,
+          subscriptionStart: nowStr,
+          subscriptionEnd: expStr
+        } 
+      : m
+    ));
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          subscription_status: newStatus,
+          subscription_price_id: newPriceId,
+          subscription_start: nowStr,
+          subscription_end: expStr
+        })
+        .eq('id', profileId);
+
+      if (error) throw error;
+      setSyncMessage('Acesso Tester atualizado com sucesso!');
+      setTimeout(() => setSyncMessage(''), 3000);
+    } catch (e: any) {
+      alert(`Falha ao sincronizar: ${e.message}`);
+      loadProfilesAndData();
+    }
+  };
+
   // Filtragens globais por busca
   const filteredMentors = mentorsData.filter(m => 
     m.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -603,11 +649,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                         </span>
                       </td>
                       <td className="p-4 pr-6">
-                        <div className="flex justify-center">
+                        <div className="flex flex-col items-center gap-2">
                           <button
                             onClick={() => handleTogglePremium(m.profileId, m.subscriptionStatus)}
                             className={clsx(
-                              "px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border flex items-center gap-1.5",
+                              "px-4 py-2 w-full rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-1.5",
                               m.subscriptionStatus === 'active'
                                 ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500 hover:text-white"
                                 : "bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-black"
@@ -619,6 +665,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
                               <><Check className="w-3 h-3" /> Conceder Premium</>
                             )}
                           </button>
+                          {m.subscriptionStatus !== 'active' && (
+                            <button
+                              onClick={() => handleSetTester(m.profileId, m.subscriptionStatus)}
+                              className={clsx(
+                                "px-4 py-2 w-full rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border flex items-center justify-center gap-1.5",
+                                m.subscriptionStatus === 'tester'
+                                  ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500 hover:text-white"
+                                  : "bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500 hover:text-white"
+                              )}
+                            >
+                              {m.subscriptionStatus === 'tester' ? (
+                                <><X className="w-3 h-3" /> Revogar Tester</>
+                              ) : (
+                                <><Shield className="w-3 h-3" /> Conceder Tester</>
+                              )}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

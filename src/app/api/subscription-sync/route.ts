@@ -45,7 +45,7 @@ export async function POST() {
     if (user.email) {
       try {
         const payment = new Payment(mpClient);
-        
+
         // Vamos buscar os pagamentos reais vinculados ao email (a verdade final sobre a transação)
         // O PreApproval do MP pode ficar 'authorized' mesmo quando a tentativa de cobrança falha.
         // Por isso, validamos apenas se existe um Payment real aprovado ou processando.
@@ -76,7 +76,7 @@ export async function POST() {
                 const payDate = new Date(pay.date_created);
                 const desc = pay.description?.toLowerCase() || '';
                 const isYearly = desc.includes('anual') || desc.includes('comandante');
-                
+
                 // Dá uma carência de dias com base no plano detectado
                 const daysValid = isYearly ? 366 : 32;
                 const expirationDate = new Date(payDate.getTime() + daysValid * 24 * 60 * 60 * 1000);
@@ -95,7 +95,12 @@ export async function POST() {
     }
 
     const dbStatus = profile?.subscription_status;
-    const finalStatus = isMpActive ? 'active' : 'inactive';
+    let finalStatus = isMpActive ? 'active' : 'inactive';
+
+    // Se o usuário possui acesso especial de 'tester', preservamos o acesso independentemente do MP
+    if (dbStatus === 'tester' && !isMpActive) {
+      finalStatus = 'tester';
+    }
 
     // Atualiza apenas se divergir, preservando o priceId que já estava no banco
     if (dbStatus !== finalStatus) {

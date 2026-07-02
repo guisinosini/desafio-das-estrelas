@@ -138,7 +138,7 @@ export function useAppInitializer({
           console.error("Falha ao tentar sincronizar assinatura na inicialização:", syncErr);
         }
 
-        if (syncStatus !== 'active' && !profile?.linked_professional_id) {
+        if (syncStatus !== 'active' && syncStatus !== 'tester' && !profile?.linked_professional_id) {
           setIsPremium(false);
           setSubscriptionPriceId(null);
           setStage('no_subscription');
@@ -287,7 +287,7 @@ export function useAppInitializer({
           console.error("Falha ao sincronizar assinatura no login:", syncErr);
         }
 
-        if (syncStatus !== 'active' && !profile?.linked_professional_id) {
+        if (syncStatus !== 'active' && syncStatus !== 'tester' && !profile?.linked_professional_id) {
           setIsPremium(false);
           setSubscriptionPriceId(null);
           setStage('no_subscription');
