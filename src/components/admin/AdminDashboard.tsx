@@ -86,6 +86,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
   const [syncMessage, setSyncMessage] = useState('');
   const [databaseError, setDatabaseError] = useState('');
 
+  // Estados para o Modal de Convite VIP
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+
   const getAvatarEmoji = (avatarId: string) => {
     const map: Record<string, string> = {
       ast1: '🚀',
@@ -489,6 +494,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
     }
   };
 
+  const handleInviteTester = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail) return;
+
+    setIsInviting(true);
+    try {
+      const res = await fetch('/api/admin/invite-tester', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Erro ao enviar convite.');
+      }
+
+      setSyncMessage(`Convite VIP enviado com sucesso para ${inviteEmail}!`);
+      setInviteEmail('');
+      setIsInviteModalOpen(false);
+      setTimeout(() => setSyncMessage(''), 4000);
+    } catch (error: any) {
+      alert(`Falha ao enviar convite: ${error.message}`);
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
   // Filtragens globais por busca
   const filteredMentors = mentorsData.filter(m => 
     m.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -551,6 +584,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Botão de Convidar Tester */}
+          <button 
+            onClick={() => setIsInviteModalOpen(true)}
+            className="hidden md:flex h-12 bg-purple-500/10 border border-purple-500/30 rounded-2xl items-center justify-center px-4 hover:bg-purple-500 hover:text-white transition-all text-purple-400 gap-2 font-bold uppercase tracking-widest text-[10px]"
+          >
+            <Star className="w-4 h-4" /> Convidar Tester
+          </button>
+
           <button 
             onClick={loadProfilesAndData} 
             disabled={loading}
@@ -1039,6 +1080,80 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView, languag
         </motion.div>
 
       </div>
+
+      {/* MODAL: Convidar Tester */}
+      <AnimatePresence>
+        {isInviteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsInviteModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-[#051210] border border-purple-500/30 rounded-[32px] p-8 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-purple-400" />
+              
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20 mb-4">
+                    <Star className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">
+                    Convite VIP
+                  </h2>
+                  <p className="text-sm text-white/50 font-medium mt-1">
+                    Envie um e-mail com acesso Tester para um usuário.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsInviteModalOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleInviteTester} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                    E-mail do Convidado
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="astronauta@galaxia.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isInviting || !inviteEmail}
+                  className="w-full bg-purple-600 hover:bg-purple-500 text-white font-black uppercase tracking-widest text-xs py-4 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                >
+                  {isInviting ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Rocket className="w-4 h-4" />
+                      Enviar Convite Estelar
+                    </>
+                  )}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <div className="flex justify-center">
         <button 
